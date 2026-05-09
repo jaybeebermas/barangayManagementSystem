@@ -1,0 +1,16 @@
+# ROOT
+#import base/root.graphql
+
+# MUTATION GQL
+#import permission/permission.mutation.graphql
+
+# QUERY GQL
+#import permission/permission.query.graphql
+#import navigation/navigation.query.graphql
+
+# INPUT GQL
+#import permission/permission.input.graphql
+
+# TYPE GQL
+#import permission/permission.type.graphql
+#import navigation/navigation.type.graphql

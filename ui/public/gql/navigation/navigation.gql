@@ -1,0 +1,38 @@
+query Navigation {
+  navigation {
+    id
+    title
+    type
+    icon
+    route
+    permission
+    parent
+    children {
+      id
+      title
+      type
+      icon
+      route
+      permission
+      parent
+      children {
+        id
+        title
+        type
+        icon
+        route
+        permission
+        parent
+        children {
+          id
+          title
+          type
+          icon
+          route
+          permission
+          parent
+        }
+      }
+    }
+  }
+}

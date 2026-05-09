@@ -1,0 +1,4 @@
+query PermissionRegistry {
+  availablePermissions
+  basePermissions
+}

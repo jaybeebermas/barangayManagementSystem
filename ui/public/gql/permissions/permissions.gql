@@ -1,0 +1,8 @@
+query Permissions {
+  permissions {
+    id
+    name
+    created_at
+    updated_at
+  }
+}

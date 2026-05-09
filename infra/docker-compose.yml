@@ -10,7 +10,7 @@ services:
     environment:
       NG_CLI_ANALYTICS: "false"
     command: >
-      sh -c "npx ng serve --host 0.0.0.0 --port 4200"
+      sh -c "npx ng serve --host 0.0.0.0 --port 4200 --proxy-config proxy.conf.json"
     stdin_open: true
     tty: true
 

@@ -6,6 +6,16 @@ use Symfony\Component\Console\Input\ArgvInput;
 
 define('LARAVEL_START', microtime(true));
 
+// Enforce Docker-only artisan execution.
+$runningInDocker = file_exists('/.dockerenv')
+    || getenv('IN_DOCKER') === 'true';
+
+if (! $runningInDocker) {
+    fwrite(STDERR, "This project enforces Docker-only artisan usage.\n");
+    fwrite(STDERR, "Use: docker compose -f ../infra/docker-compose.yml exec api php artisan <command>\n");
+    exit(1);
+}
+
 // Register the Composer autoloader...
 require __DIR__.'/vendor/autoload.php';
 
