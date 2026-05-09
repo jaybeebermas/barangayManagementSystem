@@ -1,5 +1,4 @@
 services:
-
   ui:
     image: node:20
     container_name: angular-ui
@@ -8,19 +7,31 @@ services:
       - ../ui:/app
     ports:
       - "4200:4200"
-    command: sh -c "npm install && npm start"
+    environment:
+      NG_CLI_ANALYTICS: "false"
+    command: >
+      sh -c "npx ng serve --host 0.0.0.0 --port 4200"
+    stdin_open: true
+    tty: true
 
   api:
-    build:
-      context: .
-      dockerfile: php/Dockerfile
-    container_name: laravel-api
+    image: webdevops/php-apache:8.4
+    container_name: brgy-api
     working_dir: /var/www
     volumes:
       - ../api:/var/www
     ports:
       - "8000:8000"
-    command: sh -c "composer install && php artisan serve --host=0.0.0.0 --port=8000"
+    depends_on:
+      - mysql
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: app_db
+      DB_USERNAME: app_user
+      DB_PASSWORD: secret
+    command: >
+      sh -c "php artisan serve --host=0.0.0.0 --port=8000"
 
   mysql:
     image: mysql:8
