@@ -1,0 +1,40 @@
+services:
+
+  ui:
+    image: node:20
+    container_name: angular-ui
+    working_dir: /app
+    volumes:
+      - ../ui:/app
+    ports:
+      - "4200:4200"
+    command: sh -c "npm install && npm start"
+
+  api:
+    build:
+      context: .
+      dockerfile: php/Dockerfile
+    container_name: laravel-api
+    working_dir: /var/www
+    volumes:
+      - ../api:/var/www
+    ports:
+      - "8000:8000"
+    command: sh -c "composer install && php artisan serve --host=0.0.0.0 --port=8000"
+
+  mysql:
+    image: mysql:8
+    container_name: mysql-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: app_db
+      MYSQL_USER: app_user
+      MYSQL_PASSWORD: secret
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
