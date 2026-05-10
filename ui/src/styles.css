@@ -1,3 +1,43 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import 'tailwindcss';
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700&display=swap');
+
+/* ─────────────────────────────────────────────────────
+   src/styles.css  —  Global document styles.
+   Angular loads this for the whole page (not scoped).
+   Tailwind's base/components/utilities are imported here.
+───────────────────────────────────────────────────── */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Scrollbar utility (Tailwind v3 doesn't have scrollbar-none built-in) */
+@layer utilities {
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Base document — dark background so the page isn't white */
+html,
+body {
+  @apply h-full w-full bg-zinc-950 text-zinc-100;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Sora', sans-serif;
+}

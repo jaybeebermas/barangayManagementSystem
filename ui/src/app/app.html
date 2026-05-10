@@ -1,46 +1,217 @@
-<div class="app-shell">
-  <aside class="sidebar">
-    <div class="sidebar-brand">Barangay Management</div>
-    <p *ngIf="loadingNavigation()" class="sidebar-state">Loading navigation...</p>
-    <p *ngIf="navigationError()" class="sidebar-state error">{{ navigationError() }}</p>
+<div class="flex h-screen w-screen overflow-hidden bg-[#fcfbf8] text-[#2f2b24]">
+  <aside
+    class="relative flex h-full flex-col overflow-hidden border-r border-[#e7e3da] bg-[#f7f6f3] pt-8 transition-all duration-300 ease-out"
+    [class.w-80]="sidebarOpen()"
+    [class.min-w-80]="sidebarOpen()"
+    [class.w-0]="!sidebarOpen()"
+    [class.min-w-0]="!sidebarOpen()"
+    [class.border-r-0]="!sidebarOpen()">
+    <div class="border-b border-[#e7e3da] px-2 py-5 transition-all duration-300 ease-out sm:px-4 sm:py-6" *ngIf="sidebarOpen()">
+      <div class="flex flex-col items-center justify-center gap-3">
+        <div
+          class="flex items-center justify-center rounded-full bg-[#ece7dc] text-[#6a6358] shadow-sm transition-all duration-300 ease-out"
+          [class.h-20]="sidebarOpen()"
+          [class.w-20]="sidebarOpen()"
+          [class.h-11]="!sidebarOpen()"
+          [class.w-11]="!sidebarOpen()">
+          <svg
+            class="transition-all duration-300 ease-out"
+            [class.h-10]="sidebarOpen()"
+            [class.w-10]="sidebarOpen()"
+            [class.h-5]="!sidebarOpen()"
+            [class.w-5]="!sidebarOpen()"
+            fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="8" r="3.5"></circle>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 19c1.4-3.1 4-4.5 7-4.5s5.6 1.4 7 4.5"></path>
+          </svg>
+        </div>
+        <span *ngIf="sidebarOpen()" class="text-lg font-semibold text-[#4f4a41] transition-opacity duration-300 sm:text-xl">John Doe</span>
+      </div>
+    </div>
 
-    <nav *ngIf="!loadingNavigation() && !navigationError()">
-      <ul class="sidebar-list">
-        <li *ngFor="let section of navigation()" class="sidebar-section">
-          <p class="section-label">{{ section.title }}</p>
-          <ul class="section-items">
+    <!-- <div *ngIf="loadingNavigation()" class="flex items-start gap-2 px-4 py-4 text-xs text-[#7a7368]">
+      <span class="mt-1 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-[#c57932]"></span>
+      <span *ngIf="sidebarOpen()">Loading navigation...</span>
+    </div> -->
+
+    <div *ngIf="navigationError()" class="flex items-start gap-2 px-4 py-4 text-xs text-red-600">
+      <span class="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-red-500"></span>
+      <span *ngIf="sidebarOpen()">{{ navigationError() }}</span>
+    </div>
+
+    <nav *ngIf="sidebarOpen() && !loadingNavigation() && !navigationError()" class="flex-1 overflow-y-auto px-2 py-3 transition-all duration-300 ease-out">
+      <div *ngFor="let section of navigation()" class="mb-1">
+        <a
+          *ngIf="section.type === 'item' && section.route"
+          [routerLink]="section.route"
+          routerLinkActive="bg-[#ece7dc] text-[#2f2b24]"
+          class="group flex h-11 items-center gap-2 rounded-md px-3 text-base font-semibold text-[#6a6358] hover:bg-[#efebe2] hover:text-[#2f2b24] sm:text-[17px]">
+          <img
+            class="h-[18px] w-[18px] shrink-0 object-contain"
+            [src]="getIconPath(section.icon)"
+            [alt]="section.title + ' icon'"
+            loading="lazy" />
+          <span
+            class="min-w-0 overflow-hidden whitespace-nowrap transition-all duration-300 ease-out"
+            [class.max-w-56]="sidebarOpen()"
+            [class.opacity-100]="sidebarOpen()"
+            [class.max-w-0]="!sidebarOpen()"
+            [class.opacity-0]="!sidebarOpen()">
+            {{ section.title }}
+          </span>
+        </a>
+
+        <div *ngIf="section.type === 'group' || section.type === 'collapsible'">
+          <button
+            type="button"
+            class="flex h-11 w-full items-center gap-2 rounded-md px-3 text-left text-base font-semibold text-[#6a6358] hover:bg-[#efebe2] hover:text-[#2f2b24] sm:text-[17px]"
+            (click)="toggleSection(section)">
+            <img
+              class="h-[18px] w-[18px] shrink-0 object-contain"
+              [src]="getIconPath(section.icon)"
+              [alt]="section.title + ' icon'"
+              loading="lazy" />
+            <span
+              class="min-w-0 overflow-hidden whitespace-nowrap transition-all duration-300 ease-out"
+              [class.max-w-56]="sidebarOpen()"
+              [class.opacity-100]="sidebarOpen()"
+              [class.max-w-0]="!sidebarOpen()"
+              [class.opacity-0]="!sidebarOpen()">
+              {{ section.title }}
+            </span>
+            <svg
+              class="ml-auto h-4 w-4 shrink-0 transition-all duration-300"
+              [class.rotate-90]="section._open"
+              [class.opacity-100]="sidebarOpen()"
+              [class.opacity-0]="!sidebarOpen()"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              viewBox="0 0 24 24"
+              aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+
+          <ul
+            class="mt-1 space-y-1 overflow-hidden pl-3 transition-all duration-300 ease-out"
+            [class.max-h-[600px]]="section._open && sidebarOpen()"
+            [class.opacity-100]="section._open && sidebarOpen()"
+            [class.translate-y-0]="section._open && sidebarOpen()"
+            [class.max-h-0]="!section._open || !sidebarOpen()"
+            [class.opacity-0]="!section._open || !sidebarOpen()"
+            [class.-translate-y-2]="!section._open || !sidebarOpen()"
+            [class.pointer-events-none]="!section._open || !sidebarOpen()">
             <li *ngFor="let item of section.children">
               <a
-                *ngIf="item.route"
+                *ngIf="item.type === 'item' && item.route"
                 [routerLink]="item.route"
-                routerLinkActive="active-link"
-                class="sidebar-link"
-              >
-                {{ item.title }}
+                routerLinkActive="bg-[#ece7dc] text-[#2f2b24]"
+                class="flex h-10 items-center gap-2 rounded-md px-3 text-[15px] font-medium text-[#6a6358] hover:bg-[#efebe2] hover:text-[#2f2b24] sm:text-base">
+                <span class="truncate pl-3">{{ item.title }}</span>
               </a>
-              <details *ngIf="!item.route && item.children.length" class="sidebar-collapsible" open>
-                <summary>{{ item.title }}</summary>
-                <ul>
+
+              <div *ngIf="item.type === 'collapsible'">
+                <button
+                  type="button"
+                  class="flex h-10 w-full items-center gap-2 rounded-md px-3 text-left text-[15px] font-medium text-[#6a6358] hover:bg-[#efebe2] hover:text-[#2f2b24] sm:text-base"
+                  (click)="toggleItem(item)">
+                  <span class="truncate pl-3">{{ item.title }}</span>
+                  <svg
+                    class="ml-auto h-4 w-4 shrink-0 transition-transform duration-200"
+                    [class.rotate-90]="item._open"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+
+                <ul
+                  class="mt-1 space-y-1 overflow-hidden pl-5 transition-all duration-300 ease-out"
+                  [class.max-h-80]="item._open"
+                  [class.opacity-100]="item._open"
+                  [class.translate-y-0]="item._open"
+                  [class.max-h-0]="!item._open"
+                  [class.opacity-0]="!item._open"
+                  [class.-translate-y-2]="!item._open"
+                  [class.pointer-events-none]="!item._open">
                   <li *ngFor="let child of item.children">
                     <a
                       *ngIf="child.route"
                       [routerLink]="child.route"
-                      routerLinkActive="active-link"
-                      class="sidebar-link child-link"
-                    >
-                      {{ child.title }}
+                      routerLinkActive="bg-[#ece7dc] text-[#2f2b24]"
+                      class="flex h-9 items-center gap-2 rounded-md px-3 text-sm font-medium text-[#7a7368] hover:bg-[#efebe2] hover:text-[#2f2b24]">
+                      <span class="truncate pl-3">{{ child.title }}</span>
                     </a>
                   </li>
                 </ul>
-              </details>
+              </div>
             </li>
           </ul>
-        </li>
-      </ul>
+        </div>
+      </div>
     </nav>
   </aside>
 
-  <main class="page-content">
-    <router-outlet></router-outlet>
+  <main class="flex flex-1 flex-col overflow-hidden bg-[#fcfbf8]">
+    <header class="flex h-16 items-center justify-between border-b border-[#e7e3da] bg-[#fcfbf8] px-4">
+      <button
+        type="button"
+        class="inline-flex h-9 w-9 items-center justify-center rounded-md text-[#6a6358] hover:bg-[#ece7dc] hover:text-[#2f2b24]"
+        (click)="toggleSidebar()"
+        [attr.aria-label]="sidebarOpen() ? 'Close sidebar' : 'Open sidebar'">
+        <svg
+          *ngIf="sidebarOpen()"
+          class="h-5 w-5"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          viewBox="0 0 24 24"
+          aria-hidden="true">
+          <rect x="3.5" y="4.5" width="17" height="15" rx="2"></rect>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5v15M14.5 12h3"></path>
+        </svg>
+        <svg
+          *ngIf="!sidebarOpen()"
+          class="h-5 w-5"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          viewBox="0 0 24 24"
+          aria-hidden="true">
+          <rect x="3.5" y="4.5" width="17" height="15" rx="2"></rect>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5v15M13.5 12h3"></path>
+        </svg>
+      </button>
+
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          class="inline-flex h-9 w-9 items-center justify-center rounded-md text-[#6a6358] hover:bg-[#ece7dc] hover:text-[#2f2b24]"
+          (click)="toggleFullscreen()"
+          aria-label="Toggle fullscreen">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 9V5h4M20 9V5h-4M4 15v4h4M20 15v4h-4" />
+          </svg>
+        </button>
+
+        <button
+          type="button"
+          class="inline-flex h-9 w-9 items-center justify-center rounded-md text-[#6a6358] hover:bg-[#ece7dc] hover:text-[#2f2b24]"
+          aria-label="Search">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"></circle>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M20 20l-3.5-3.5"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="flex-1 overflow-y-auto">
+      <router-outlet></router-outlet>
+    </div>
   </main>
 </div>
