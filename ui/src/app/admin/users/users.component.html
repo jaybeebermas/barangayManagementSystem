@@ -1,0 +1,142 @@
+<div class="p-6 max-w-7xl mx-auto animate-in fade-in duration-500">
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-zinc-900 tracking-tight">User Management</h1>
+      <p class="text-zinc-500 text-sm">Manage system administrators and their accounts.</p>
+    </div>
+    <button
+      (click)="openAddModal()"
+      class="flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold shadow-lg shadow-blue-500/20 hover:bg-blue-700 active:scale-95 transition-all">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+      Add User
+    </button>
+  </div>
+
+  <!-- Users Table -->
+  <div class="bg-white border border-zinc-200 rounded-2xl shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-zinc-50/50 border-b border-zinc-200">
+            <th class="px-6 py-4 text-xs font-bold text-zinc-400 uppercase tracking-widest">User</th>
+            <th class="px-6 py-4 text-xs font-bold text-zinc-400 uppercase tracking-widest text-center">Role</th>
+            <th class="px-6 py-4 text-xs font-bold text-zinc-400 uppercase tracking-widest">Email</th>
+            <th class="px-6 py-4 text-xs font-bold text-zinc-400 uppercase tracking-widest text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-zinc-100">
+          <tr *ngFor="let user of users()" class="hover:bg-zinc-50/30 transition-colors group">
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-500 font-bold text-sm">
+                  {{ user.first_name[0] }}{{ user.last_name[0] }}
+                </div>
+                <div>
+                  <span class="block text-sm font-semibold text-zinc-900 leading-none mb-1">{{ user.first_name }} {{ user.last_name }}</span>
+                  <span class="text-xs text-zinc-400">@{{ user.username }}</span>
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-4 text-center">
+              <span 
+                [class.bg-blue-50]="user.role === 'super_admin'"
+                [class.text-blue-600]="user.role === 'super_admin'"
+                [class.bg-zinc-100]="user.role !== 'super_admin'"
+                [class.text-zinc-600]="user.role !== 'super_admin'"
+                class="inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                {{ user.role || 'Admin' }}
+              </span>
+            </td>
+            <td class="px-6 py-4 text-sm text-zinc-500">{{ user.email }}</td>
+            <td class="px-6 py-4 text-right whitespace-nowrap">
+              <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button (click)="openViewModal(user)" class="p-2 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 rounded-lg transition-all" title="View details">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                </button>
+                <button (click)="openEditModal(user)" class="p-2 text-zinc-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Edit user">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                </button>
+                <button (click)="deleteUser(user.id)" class="p-2 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Delete user">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="users().length === 0 && !isLoading()" class="p-12 text-center">
+      <div class="inline-flex items-center justify-center p-4 bg-zinc-50 rounded-full mb-4">
+        <svg class="h-8 w-8 text-zinc-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 00-3-3.87m-4-12a4 4 0 010 7.75"></path></svg>
+      </div>
+      <h3 class="text-zinc-900 font-semibold mb-1">No users found</h3>
+      <p class="text-zinc-500 text-sm">Add a new user to start managing your barangay.</p>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading()" class="flex items-center justify-center p-12">
+      <div class="animate-spin h-6 w-6 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div *ngIf="isModalOpen()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/40 backdrop-blur-sm animate-in fade-in duration-300">
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden scale-in-center">
+      <div class="px-8 py-6 border-b border-zinc-100 flex items-center justify-between bg-zinc-50/50">
+        <h2 class="text-lg font-bold text-zinc-900 tracking-tight capitalize">
+          {{ modalMode() }} User
+        </h2>
+        <button (click)="closeModal()" class="p-2 text-zinc-400 hover:text-zinc-900 rounded-lg transition-colors">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+      
+      <form [formGroup]="userForm" (ngSubmit)="handleSubmit()" class="p-8 space-y-5">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">First Name</label>
+            <input type="text" formControlName="first_name" class="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 outline-none transition-all" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">Last Name</label>
+            <input type="text" formControlName="last_name" class="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 outline-none transition-all" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">Username</label>
+          <input type="text" formControlName="username" class="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 outline-none transition-all" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">Email Address</label>
+          <input type="email" formControlName="email" class="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 outline-none transition-all" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">Account Role</label>
+          <select formControlName="role" class="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 outline-none transition-all cursor-pointer">
+            <option *ngFor="let role of roles()" [value]="role">{{ role === 'super_admin' ? 'Super Admin' : 'Admin' }}</option>
+          </select>
+        </div>
+
+        <div *ngIf="modalMode() !== 'view'">
+          <label class="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">
+            {{ modalMode() === 'edit' ? 'New Password (Optional)' : 'Password' }}
+          </label>
+          <input type="password" formControlName="password" class="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 outline-none transition-all" placeholder="••••••••" />
+        </div>
+
+        <div class="flex items-center justify-end gap-3 mt-8 pt-6 border-t border-zinc-100">
+          <button type="button" (click)="closeModal()" class="px-5 py-2 text-sm font-semibold text-zinc-500 hover:text-zinc-900 transition-colors">Cancel</button>
+          <button *ngIf="modalMode() !== 'view'" type="submit" [disabled]="isLoading() || userForm.invalid" class="px-6 py-2 bg-blue-600 text-white rounded-xl text-sm font-semibold shadow-lg shadow-blue-500/10 hover:bg-blue-700 disabled:opacity-50 transition-all">
+            {{ isLoading() ? 'Saving...' : 'Save User' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

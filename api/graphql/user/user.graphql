@@ -1,0 +1,40 @@
+extend type Query {
+    users: [User!]! @field(resolver: "App\\GraphQL\\Queries\\UserQuery@users")
+    user(id: ID! @eq): User @find @guard @can(ability: "user.view")
+}
+
+extend type Mutation {
+    createUser(input: CreateUserInput!): User! @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@createUser") @guard @can(ability: "user.create")
+    updateUser(input: UpdateUserInput!): User! @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@updateUser") @guard @can(ability: "user.edit")
+    deleteUser(id: ID!): User @delete @guard @can(ability: "user.delete")
+}
+
+type User {
+    id: ID!
+    username: String!
+    first_name: String!
+    last_name: String!
+    email: String!
+    role: String
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+input CreateUserInput {
+    username: String!
+    first_name: String!
+    last_name: String!
+    email: String!
+    password: String!
+    role: String!
+}
+
+input UpdateUserInput {
+    id: ID!
+    username: String
+    first_name: String
+    last_name: String
+    email: String
+    password: String
+    role: String
+}

@@ -1,7 +1,7 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, effect } from '@angular/core';
 import { NgFor, NgIf } from '@angular/common';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { NavigationService } from './services';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { NavigationService, AuthService } from './services';
 import { NavigationItem } from './shared/models';
 
 type NavNode = Omit<NavigationItem, 'children'> & {
@@ -25,25 +25,24 @@ export class App implements OnInit {
   sidebarOpen = signal(true);
 
   private readonly navigationService = inject(NavigationService);
+  public readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
   private readonly navigationLoadTimeoutMs = 12000;
 
+  isSubRoute(path: string): boolean {
+    return this.router.url.startsWith(path);
+  }
+
+  constructor() {
+    effect(() => {
+      const isAuth = this.authService.isAuthenticated();
+      // Reload navigation whenever authentication status changes
+      this.loadNavigation();
+    });
+  }
+
   async ngOnInit(): Promise<void> {
-    try {
-      await Promise.race([
-        this.loadNavigation(),
-        new Promise<never>((_, reject) =>
-          setTimeout(
-            () => reject(new Error('Navigation loading timed out. Check API/proxy connectivity.')),
-            this.navigationLoadTimeoutMs
-          )
-        )
-      ]);
-    } catch (error: unknown) {
-      this.navigationError.set(
-        error instanceof Error ? error.message : 'Failed to load navigation.'
-      );
-      this.loadingNavigation.set(false);
-    }
+    // Navigation loading is handled by the effect on authentication status change
   }
 
   private async loadNavigation(): Promise<void> {

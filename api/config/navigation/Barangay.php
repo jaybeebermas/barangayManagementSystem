@@ -1,14 +1,14 @@
 <?php
 
 return [
-    'id' => 'disaster',
-    'title' => 'Disaster',
+    'id' => 'barangay',
+    'title' => 'Barangay',
     'type' => 'collapsible',
-    'icon' => 'heroicons:shield-exclamation',
-    'parent' => 'main-group',
+    'icon' => 'heroicons:building-office-2',
+    'parent' => null,
     'permission' => null,
     'children' => [
-            ['id' => 'disaster-list', 'title' => 'Disaster List', 'parent' => 'disaster', 'type' => 'item',  'route' => '/disaster-list', 'permission' => "permission.view"],
-            ['id' => 'disaster-actions', 'title' => 'Disaster Actions', 'parent' => 'disaster', 'type' => 'item',  'route' => '/disaster-actions', 'permission' => "permission.view" ],
+            ['id' => 'barangay-list', 'title' => 'List', 'parent' => 'barangay', 'type' => 'item',  'route' => '/barangay-list', 'permission' => "barangay.view"],
+            ['id' => 'barangay-actions', 'title' => 'Actions', 'parent' => 'barangay', 'type' => 'item',  'route' => '/barangay-actions', 'permission' => "barangay.view" ],
     ],
 ];

@@ -18,11 +18,17 @@ class DatabaseSeeder extends Seeder
         $this->call([
             PermissionSeeder::class,
             NavigationSeeder::class,
+            AdminSeeder::class,
         ]);
 
         User::query()->firstOrCreate(
-            ['email' => 'test@example.com'],
-            ['name' => 'Test User', 'password' => bcrypt('password')]
+            ['username' => 'testuser'],
+            [
+                'first_name' => 'Test',
+                'last_name' => 'User',
+                'email' => 'test@example.com',
+                'password' => bcrypt('password')
+            ]
         );
     }
 }

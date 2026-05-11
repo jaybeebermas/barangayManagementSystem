@@ -15,13 +15,20 @@ export class GraphqlService {
   private readonly requestTimeoutMs = 10000;
 
   async request<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
+    const token = localStorage.getItem('auth_token');
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      Accept: 'application/json'
+    };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await this.withTimeout(
       fetch(this.endpointBaseUrl, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json'
-        },
+        headers,
         body: JSON.stringify({ query, variables })
       }),
       this.requestTimeoutMs,

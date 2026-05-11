@@ -5,7 +5,7 @@ return [
     'title' => 'Dashboard',
     'type' => 'item',
     'icon' => 'heroicons:home-modern',
-    'parent' => 'main-group',
+    'parent' => null,
     'route' => '/dashboard',
     'permission' => null,
     'children' => [],

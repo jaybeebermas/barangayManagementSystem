@@ -3,6 +3,8 @@
 
 # MUTATION GQL
 #import permission/permission.mutation.graphql
+#import auth/auth.graphql
+#import user/user.graphql
 
 # QUERY GQL
 #import permission/permission.query.graphql

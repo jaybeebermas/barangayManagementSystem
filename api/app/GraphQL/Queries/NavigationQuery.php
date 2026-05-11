@@ -3,15 +3,34 @@
 namespace App\GraphQL\Queries;
 
 use App\Models\Navigation;
+use Illuminate\Support\Facades\Auth;
 
 class NavigationQuery
 {
     public function navigation(): array
     {
+        $user = Auth::user() ?: Auth::guard('sanctum')->user() ?: Auth::guard('web')->user();
+        
+        if (! $user) {
+            \Illuminate\Support\Facades\Log::warning('Navigation requested without authentication.');
+            return [];
+        }
+
+        \Illuminate\Support\Facades\Log::info('Navigation requested by User ID: ' . $user->id . ' (Role: ' . $user->role . ')');
+
+        $isSuperAdmin = $user->hasRole('super_admin');
+
         $items = Navigation::query()
             ->orderBy('parent_key')
             ->orderBy('sort_order')
             ->get()
+            ->filter(function (Navigation $item) use ($user, $isSuperAdmin) {
+                if ($isSuperAdmin || ! $item->permission) {
+                    return true;
+                }
+                // Try checking permission on user regardless of guard.
+                return $user->hasPermissionTo($item->permission);
+            })
             ->map(fn (Navigation $item) => [
                 'id' => $item->key,
                 'title' => $item->title,

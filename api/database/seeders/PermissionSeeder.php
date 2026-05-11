@@ -12,14 +12,38 @@ class PermissionSeeder extends Seeder
     public function run(): void
     {
         $permissionModelClass = config('permission.models.permission');
-        $guardName = config('auth.defaults.guard', 'web');
-        $permissions = config('const.permissions', []);
+        $roleModelClass = config('permission.models.role');
+        $permissionsList = config('const.permissions', []);
+        $guards = ['web', 'sanctum'];
 
-        foreach ($permissions as $permissionName) {
-            $permissionModelClass::query()->updateOrCreate(
-                ['name' => $permissionName, 'guard_name' => $guardName],
+        foreach ($guards as $guardName) {
+            // Create Permissions
+            foreach ($permissionsList as $permissionName) {
+                $permissionModelClass::query()->updateOrCreate(
+                    ['name' => $permissionName, 'guard_name' => $guardName],
+                    []
+                );
+            }
+
+            // Create Roles
+            $superAdmin = $roleModelClass::query()->updateOrCreate(
+                ['name' => 'super_admin', 'guard_name' => $guardName],
                 []
             );
+
+            $admin = $roleModelClass::query()->updateOrCreate(
+                ['name' => 'admin', 'guard_name' => $guardName],
+                []
+            );
+
+            // Assign Permissions
+            $superAdmin->syncPermissions($permissionsList);
+            
+            // Admin gets everything except permission management
+            $adminPermissions = array_filter($permissionsList, function($p) {
+                return !str_starts_with($p, 'permission.');
+            });
+            $admin->syncPermissions($adminPermissions);
         }
 
         $permissionRegistrar = app()->bound('permission.registrar')

@@ -1,217 +1,110 @@
-<div class="flex h-screen w-screen overflow-hidden bg-[#fcfbf8] text-[#2f2b24]">
-  <aside
-    class="relative flex h-full flex-col overflow-hidden border-r border-[#e7e3da] bg-[#f7f6f3] pt-8 transition-all duration-300 ease-out"
-    [class.w-80]="sidebarOpen()"
-    [class.min-w-80]="sidebarOpen()"
-    [class.w-0]="!sidebarOpen()"
-    [class.min-w-0]="!sidebarOpen()"
-    [class.border-r-0]="!sidebarOpen()">
-    <div class="border-b border-[#e7e3da] px-2 py-5 transition-all duration-300 ease-out sm:px-4 sm:py-6" *ngIf="sidebarOpen()">
-      <div class="flex flex-col items-center justify-center gap-3">
-        <div
-          class="flex items-center justify-center rounded-full bg-[#ece7dc] text-[#6a6358] shadow-sm transition-all duration-300 ease-out"
-          [class.h-20]="sidebarOpen()"
-          [class.w-20]="sidebarOpen()"
-          [class.h-11]="!sidebarOpen()"
-          [class.w-11]="!sidebarOpen()">
-          <svg
-            class="transition-all duration-300 ease-out"
-            [class.h-10]="sidebarOpen()"
-            [class.w-10]="sidebarOpen()"
-            [class.h-5]="!sidebarOpen()"
-            [class.w-5]="!sidebarOpen()"
-            fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="12" cy="8" r="3.5"></circle>
-            <path stroke-linecap="round" stroke-linejoin="round" d="M5 19c1.4-3.1 4-4.5 7-4.5s5.6 1.4 7 4.5"></path>
-          </svg>
-        </div>
-        <span *ngIf="sidebarOpen()" class="text-lg font-semibold text-[#4f4a41] transition-opacity duration-300 sm:text-xl">John Doe</span>
-      </div>
-    </div>
-
-    <!-- <div *ngIf="loadingNavigation()" class="flex items-start gap-2 px-4 py-4 text-xs text-[#7a7368]">
-      <span class="mt-1 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-[#c57932]"></span>
-      <span *ngIf="sidebarOpen()">Loading navigation...</span>
-    </div> -->
-
-    <div *ngIf="navigationError()" class="flex items-start gap-2 px-4 py-4 text-xs text-red-600">
-      <span class="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-red-500"></span>
-      <span *ngIf="sidebarOpen()">{{ navigationError() }}</span>
-    </div>
-
-    <nav *ngIf="sidebarOpen() && !loadingNavigation() && !navigationError()" class="flex-1 overflow-y-auto px-2 py-3 transition-all duration-300 ease-out">
-      <div *ngFor="let section of navigation()" class="mb-1">
-        <a
-          *ngIf="section.type === 'item' && section.route"
-          [routerLink]="section.route"
-          routerLinkActive="bg-[#ece7dc] text-[#2f2b24]"
-          class="group flex h-11 items-center gap-2 rounded-md px-3 text-base font-semibold text-[#6a6358] hover:bg-[#efebe2] hover:text-[#2f2b24] sm:text-[17px]">
-          <img
-            class="h-[18px] w-[18px] shrink-0 object-contain"
-            [src]="getIconPath(section.icon)"
-            [alt]="section.title + ' icon'"
-            loading="lazy" />
-          <span
-            class="min-w-0 overflow-hidden whitespace-nowrap transition-all duration-300 ease-out"
-            [class.max-w-56]="sidebarOpen()"
-            [class.opacity-100]="sidebarOpen()"
-            [class.max-w-0]="!sidebarOpen()"
-            [class.opacity-0]="!sidebarOpen()">
-            {{ section.title }}
-          </span>
-        </a>
-
-        <div *ngIf="section.type === 'group' || section.type === 'collapsible'">
-          <button
-            type="button"
-            class="flex h-11 w-full items-center gap-2 rounded-md px-3 text-left text-base font-semibold text-[#6a6358] hover:bg-[#efebe2] hover:text-[#2f2b24] sm:text-[17px]"
-            (click)="toggleSection(section)">
-            <img
-              class="h-[18px] w-[18px] shrink-0 object-contain"
-              [src]="getIconPath(section.icon)"
-              [alt]="section.title + ' icon'"
-              loading="lazy" />
-            <span
-              class="min-w-0 overflow-hidden whitespace-nowrap transition-all duration-300 ease-out"
-              [class.max-w-56]="sidebarOpen()"
-              [class.opacity-100]="sidebarOpen()"
-              [class.max-w-0]="!sidebarOpen()"
-              [class.opacity-0]="!sidebarOpen()">
-              {{ section.title }}
-            </span>
-            <svg
-              class="ml-auto h-4 w-4 shrink-0 transition-all duration-300"
-              [class.rotate-90]="section._open"
-              [class.opacity-100]="sidebarOpen()"
-              [class.opacity-0]="!sidebarOpen()"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-              viewBox="0 0 24 24"
-              aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+<ng-container *ngIf="authService.isAuthenticated() && isSubRoute('/admin'); else authFlow">
+  <div class="flex h-screen w-screen overflow-hidden bg-white text-zinc-900">
+    <!-- Sidebar -->
+    <aside
+      class="relative flex h-full flex-col overflow-hidden border-r border-zinc-200 bg-zinc-50/50 pt-8 transition-all duration-300 ease-out"
+      [class.w-80]="sidebarOpen()"
+      [class.min-w-80]="sidebarOpen()"
+      [class.w-0]="!sidebarOpen()"
+      [class.min-w-0]="!sidebarOpen()"
+      [class.border-r-0]="!sidebarOpen()">
+      
+      <!-- User Profile -->
+      <div class="border-b border-zinc-200 px-2 py-5 transition-all duration-300 ease-out sm:px-4 sm:py-6" *ngIf="sidebarOpen()">
+        <div class="flex flex-col items-center justify-center gap-3">
+          <div
+            class="flex items-center justify-center rounded-full bg-zinc-200 text-zinc-600 shadow-sm transition-all duration-300 ease-out h-20 w-20">
+            <svg class="h-10 w-10 text-zinc-500" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <circle cx="12" cy="8" r="3.5"></circle>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 19c1.4-3.1 4-4.5 7-4.5s5.6 1.4 7 4.5"></path>
             </svg>
-          </button>
-
-          <ul
-            class="mt-1 space-y-1 overflow-hidden pl-3 transition-all duration-300 ease-out"
-            [class.max-h-[600px]]="section._open && sidebarOpen()"
-            [class.opacity-100]="section._open && sidebarOpen()"
-            [class.translate-y-0]="section._open && sidebarOpen()"
-            [class.max-h-0]="!section._open || !sidebarOpen()"
-            [class.opacity-0]="!section._open || !sidebarOpen()"
-            [class.-translate-y-2]="!section._open || !sidebarOpen()"
-            [class.pointer-events-none]="!section._open || !sidebarOpen()">
-            <li *ngFor="let item of section.children">
-              <a
-                *ngIf="item.type === 'item' && item.route"
-                [routerLink]="item.route"
-                routerLinkActive="bg-[#ece7dc] text-[#2f2b24]"
-                class="flex h-10 items-center gap-2 rounded-md px-3 text-[15px] font-medium text-[#6a6358] hover:bg-[#efebe2] hover:text-[#2f2b24] sm:text-base">
-                <span class="truncate pl-3">{{ item.title }}</span>
-              </a>
-
-              <div *ngIf="item.type === 'collapsible'">
-                <button
-                  type="button"
-                  class="flex h-10 w-full items-center gap-2 rounded-md px-3 text-left text-[15px] font-medium text-[#6a6358] hover:bg-[#efebe2] hover:text-[#2f2b24] sm:text-base"
-                  (click)="toggleItem(item)">
-                  <span class="truncate pl-3">{{ item.title }}</span>
-                  <svg
-                    class="ml-auto h-4 w-4 shrink-0 transition-transform duration-200"
-                    [class.rotate-90]="item._open"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.5"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-
-                <ul
-                  class="mt-1 space-y-1 overflow-hidden pl-5 transition-all duration-300 ease-out"
-                  [class.max-h-80]="item._open"
-                  [class.opacity-100]="item._open"
-                  [class.translate-y-0]="item._open"
-                  [class.max-h-0]="!item._open"
-                  [class.opacity-0]="!item._open"
-                  [class.-translate-y-2]="!item._open"
-                  [class.pointer-events-none]="!item._open">
-                  <li *ngFor="let child of item.children">
-                    <a
-                      *ngIf="child.route"
-                      [routerLink]="child.route"
-                      routerLinkActive="bg-[#ece7dc] text-[#2f2b24]"
-                      class="flex h-9 items-center gap-2 rounded-md px-3 text-sm font-medium text-[#7a7368] hover:bg-[#efebe2] hover:text-[#2f2b24]">
-                      <span class="truncate pl-3">{{ child.title }}</span>
-                    </a>
-                  </li>
-                </ul>
-              </div>
-            </li>
-          </ul>
+          </div>
+          <div class="text-center">
+            <span class="block text-lg font-bold text-zinc-900 tracking-tight">
+              {{ authService.currentUser()?.first_name }} {{ authService.currentUser()?.last_name }}
+            </span>
+            <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{{ authService.currentUser()?.username }}</span>
+          </div>
         </div>
       </div>
-    </nav>
-  </aside>
 
-  <main class="flex flex-1 flex-col overflow-hidden bg-[#fcfbf8]">
-    <header class="flex h-16 items-center justify-between border-b border-[#e7e3da] bg-[#fcfbf8] px-4">
-      <button
-        type="button"
-        class="inline-flex h-9 w-9 items-center justify-center rounded-md text-[#6a6358] hover:bg-[#ece7dc] hover:text-[#2f2b24]"
-        (click)="toggleSidebar()"
-        [attr.aria-label]="sidebarOpen() ? 'Close sidebar' : 'Open sidebar'">
-        <svg
-          *ngIf="sidebarOpen()"
-          class="h-5 w-5"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          viewBox="0 0 24 24"
-          aria-hidden="true">
-          <rect x="3.5" y="4.5" width="17" height="15" rx="2"></rect>
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5v15M14.5 12h3"></path>
-        </svg>
-        <svg
-          *ngIf="!sidebarOpen()"
-          class="h-5 w-5"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          viewBox="0 0 24 24"
-          aria-hidden="true">
-          <rect x="3.5" y="4.5" width="17" height="15" rx="2"></rect>
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5v15M13.5 12h3"></path>
-        </svg>
-      </button>
-
-      <div class="flex items-center gap-2">
-        <button
-          type="button"
-          class="inline-flex h-9 w-9 items-center justify-center rounded-md text-[#6a6358] hover:bg-[#ece7dc] hover:text-[#2f2b24]"
-          (click)="toggleFullscreen()"
-          aria-label="Toggle fullscreen">
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 9V5h4M20 9V5h-4M4 15v4h4M20 15v4h-4" />
-          </svg>
-        </button>
-
-        <button
-          type="button"
-          class="inline-flex h-9 w-9 items-center justify-center rounded-md text-[#6a6358] hover:bg-[#ece7dc] hover:text-[#2f2b24]"
-          aria-label="Search">
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="11" cy="11" r="7"></circle>
-            <path stroke-linecap="round" stroke-linejoin="round" d="M20 20l-3.5-3.5"></path>
-          </svg>
-        </button>
+      <!-- Navigation -->
+      <div *ngIf="navigation().length === 0 && !loadingNavigation()" class="p-8 text-center">
+        <p class="text-xs text-zinc-400 italic">No administrative permissions assigned.</p>
       </div>
-    </header>
 
-    <div class="flex-1 overflow-y-auto">
-      <router-outlet></router-outlet>
-    </div>
-  </main>
-</div>
+      <nav *ngIf="sidebarOpen() && !loadingNavigation() && navigation().length > 0" class="flex-1 overflow-y-auto px-4 py-3 space-y-1">
+        <div *ngFor="let section of navigation()" class="mb-1">
+          <!-- Simple Item -->
+          <a
+            *ngIf="section.type === 'item' && section.route"
+            [routerLink]="section.route"
+            routerLinkActive="bg-blue-50 text-blue-600 shadow-sm"
+            class="group flex h-11 items-center gap-3 rounded-xl px-3 text-sm font-semibold text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 transition-all border border-transparent"
+            [routerLinkActiveOptions]="{exact: true}">
+            <img class="h-[18px] w-[18px] shrink-0 opacity-70 group-hover:opacity-100 transition-opacity" [src]="getIconPath(section.icon)" />
+            <span class="truncate">{{ section.title }}</span>
+          </a>
+
+          <!-- Group/Collapsible -->
+          <div *ngIf="section.type === 'group' || section.type === 'collapsible'" class="space-y-1">
+            <button
+              type="button"
+              class="flex h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-semibold text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 transition-all"
+              (click)="toggleSection(section)">
+              <img class="h-[18px] w-[18px] shrink-0 opacity-70" [src]="getIconPath(section.icon)" />
+              <span class="truncate flex-1">{{ section.title }}</span>
+              <svg
+                class="ml-auto h-3.5 w-3.5 shrink-0 transition-transform duration-200"
+                [class.rotate-90]="section._open"
+                fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
+            <!-- Children -->
+            <div
+              class="overflow-hidden transition-all duration-300 ease-out pl-6 space-y-1"
+              [class.max-h-[500px]]="section._open"
+              [class.opacity-100]="section._open"
+              [class.max-h-0]="!section._open"
+              [class.opacity-0]="!section._open">
+              <div *ngFor="let item of section.children">
+                <a
+                  *ngIf="item.type === 'item' && item.route"
+                  [routerLink]="item.route"
+                  routerLinkActive="text-blue-600 border-l-2 border-blue-600 pl-4"
+                  class="flex h-9 items-center gap-2 rounded-lg px-3 text-[13px] font-medium text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 transition-all">
+                  <span class="truncate">{{ item.title }}</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex flex-1 flex-col overflow-hidden bg-zinc-50/30">
+      <header class="flex h-16 items-center justify-between border-b border-zinc-200 bg-white px-4">
+        <div class="flex items-center gap-4">
+          <button type="button" (click)="toggleSidebar()" class="p-2 text-zinc-500 hover:bg-zinc-100 rounded-lg transition-colors">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+          </button>
+          <span class="text-xs font-black text-zinc-800 tracking-[0.2em] uppercase">Barangay Admin</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <button (click)="toggleFullscreen()" class="p-2 text-zinc-400 hover:bg-zinc-100 rounded-lg"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 9V5h4M20 9V5h-4M4 15v4h4M20 15v4h-4" /></svg></button>
+        </div>
+      </header>
+
+      <div class="flex-1 overflow-y-auto">
+        <router-outlet></router-outlet>
+      </div>
+    </main>
+  </div>
+</ng-container>
+
+<ng-template #authFlow>
+  <router-outlet></router-outlet>
+</ng-template>
