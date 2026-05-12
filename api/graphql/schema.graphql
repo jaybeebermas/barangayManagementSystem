@@ -4,15 +4,18 @@
 # MUTATION GQL
 #import permission/permission.mutation.graphql
 #import auth/auth.graphql
-#import user/user.graphql
+#import user/user.mutation.graphql
 
 # QUERY GQL
 #import permission/permission.query.graphql
 #import navigation/navigation.query.graphql
+#import user/user.query.graphql
 
 # INPUT GQL
 #import permission/permission.input.graphql
+#import user/user.input.graphql
 
 # TYPE GQL
 #import permission/permission.type.graphql
 #import navigation/navigation.type.graphql
+#import user/user.types.graphql

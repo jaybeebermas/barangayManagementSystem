@@ -1,0 +1,5 @@
+extend type Mutation {
+    createUser(input: CreateUserInput!): User! @field(resolver: "App\\GraphQL\\Mutations\\User\\CreateUser")
+    updateUser(input: UpdateUserInput!): User! @field(resolver: "App\\GraphQL\\Mutations\\User\\UpdateUser")
+    deleteUser(id: ID!): Boolean! @field(resolver: "App\\GraphQL\\Mutations\\User\\DeleteUser")
+}
