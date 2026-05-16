@@ -8,10 +8,39 @@ import { User } from '../../services/User/user.types';
 import { CreateUserInput, UpdateUserInput } from '../../services/User/user.input';
 
 
+import { UserManagementLayoutComponent } from '../../shared/components/admin/user-management-layout/user-management-layout.component';
+import { PageHeaderComponent } from '../../shared/components/admin/page-header/page-header.component';
+import { SearchFiltersComponent } from '../../shared/components/admin/search-filters/search-filters.component';
+import { UserTableComponent } from '../../shared/components/admin/user-table/user-table.component';
+import { TablePaginationComponent } from '../../shared/components/admin/table-pagination/table-pagination.component';
+import { computed } from '@angular/core';
+import { MatSelectModule } from '@angular/material/select';
+import { MatOptionModule } from '@angular/material/core';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
+
 @Component({
   selector: 'app-users',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [
+    CommonModule, 
+    ReactiveFormsModule,
+    UserManagementLayoutComponent,
+    PageHeaderComponent,
+    SearchFiltersComponent,
+    UserTableComponent,
+    TablePaginationComponent,
+    MatSelectModule,
+    MatOptionModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
+    MatMenuModule
+  ],
   templateUrl: './users.component.html',
   styleUrl: './users.component.css'
 })
@@ -21,12 +50,24 @@ export class UsersComponent implements OnInit {
   public readonly auth = inject(AuthService);
 
   users = signal<User[]>([]);
+  searchTerm = signal('');
   isLoading = signal(false);
   isModalOpen = signal(false);
   modalMode = signal<'add' | 'edit' | 'view'>('add');
   userForm: FormGroup;
   selectedUserId = signal<string | null>(null);
   roles = signal<string[]>(['admin', 'super_admin']);
+
+  filteredUsers = computed(() => {
+    const term = this.searchTerm().toLowerCase();
+    if (!term) return this.users();
+    return this.users().filter(u => 
+      u.first_name.toLowerCase().includes(term) || 
+      u.last_name.toLowerCase().includes(term) || 
+      u.username.toLowerCase().includes(term) ||
+      u.email.toLowerCase().includes(term)
+    );
+  });
 
   constructor() {
     this.userForm = this.fb.group({
@@ -54,6 +95,14 @@ export class UsersComponent implements OnInit {
     } finally {
       this.isLoading.set(false);
     }
+  }
+
+  handleSearch(term: string): void {
+    this.searchTerm.set(term);
+  }
+
+  handlePageSearch(index: number): void {
+    console.log('Page changed to:', index);
   }
 
   openAddModal(): void {
