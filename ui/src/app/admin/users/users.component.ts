@@ -14,6 +14,7 @@ import { PageHeaderComponent } from '../../shared/components/admin/page-header/p
 import { SearchFiltersComponent } from '../../shared/components/admin/search-filters/search-filters.component';
 import { UserTableComponent } from '../../shared/components/admin/user-table/user-table.component';
 import { TablePaginationComponent } from '../../shared/components/admin/table-pagination/table-pagination.component';
+import { DrawerComponent } from '../../shared/components/ui/drawer/drawer.component';
 import { computed } from '@angular/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatOptionModule } from '@angular/material/core';
@@ -40,12 +41,14 @@ import { MatMenuModule } from '@angular/material/menu';
     MatInputModule,
     MatButtonModule,
     MatMenuModule,
-    NgIconComponent
+    NgIconComponent,
+    DrawerComponent
   ],
   templateUrl: './users.component.html',
   styleUrl: './users.component.css'
 })
 export class UsersComponent implements OnInit {
+
   private readonly fb = inject(FormBuilder);
   private readonly gql = inject(GraphqlService);
   public readonly auth = inject(AuthService);
@@ -54,8 +57,7 @@ export class UsersComponent implements OnInit {
   users = signal<User[]>([]);
   searchTerm = signal('');
   isLoading = signal(false);
-  isModalOpen = signal(false);
-  isViewDrawerOpen = signal(false);
+  isDrawerOpen = signal(false);
   modalMode = signal<'add' | 'edit' | 'view'>('add');
   userForm: FormGroup;
   selectedUserId = signal<string | null>(null);
@@ -125,7 +127,7 @@ export class UsersComponent implements OnInit {
     this.userForm.get('role')?.setValue('admin');
     this.userForm.get('password')?.setValidators([Validators.required, Validators.minLength(8)]);
     this.userForm.get('password')?.updateValueAndValidity();
-    this.isModalOpen.set(true);
+    this.isDrawerOpen.set(true);
   }
 
   async openEditModal(user: User): Promise<void> {
@@ -134,19 +136,18 @@ export class UsersComponent implements OnInit {
     this.userForm.patchValue({ ...user, password: '', confirm_password: '' });
     this.userForm.get('password')?.setValidators([Validators.minLength(8)]);
     this.userForm.get('password')?.updateValueAndValidity();
-    this.isModalOpen.set(true);
+    this.isDrawerOpen.set(true);
   }
 
   openViewModal(user: User): void {
     this.modalMode.set('view');
     this.userForm.patchValue(user);
     this.userForm.disable();
-    this.isViewDrawerOpen.set(true);
+    this.isDrawerOpen.set(true);
   }
 
   closeModal(): void {
-    this.isModalOpen.set(false);
-    this.isViewDrawerOpen.set(false);
+    this.isDrawerOpen.set(false);
     this.userForm.enable();
     this.selectedUserId.set(null);
   }

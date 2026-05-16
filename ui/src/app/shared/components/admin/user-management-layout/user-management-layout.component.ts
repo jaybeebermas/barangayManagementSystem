@@ -16,8 +16,8 @@ import { CommonModule } from '@angular/common';
     :host { display: block; height: 100%; }
     .shadow-inner-lg { box-shadow: inset 0 2px 15px 0 rgb(0 0 0 / 0.05); }
     @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; margin-top: 20px; }
+      to { opacity: 1; margin-top: 0; }
     }
     .animate-fade-in-up {
       animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
