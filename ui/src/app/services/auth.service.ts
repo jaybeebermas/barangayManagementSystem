@@ -1,5 +1,6 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { Observable, tap, catchError, of, map } from 'rxjs';
 
 export interface User {
@@ -16,6 +17,7 @@ export interface User {
 })
 export class AuthService {
   private apiUrl = '/api/graphql';
+  private readonly router = inject(Router);
   currentUser = signal<User | null>(null);
   isAuthenticated = signal<boolean>(!!localStorage.getItem('auth_token'));
 
@@ -117,6 +119,7 @@ export class AuthService {
         localStorage.removeItem('auth_timestamp');
         this.currentUser.set(null);
         this.isAuthenticated.set(false);
+        this.router.navigate(['/login']);
       }),
       catchError(() => {
         // Even if server call fails, clear local state
@@ -124,6 +127,7 @@ export class AuthService {
         localStorage.removeItem('auth_timestamp');
         this.currentUser.set(null);
         this.isAuthenticated.set(false);
+        this.router.navigate(['/login']);
         return of(null);
       })
     );
@@ -132,7 +136,7 @@ export class AuthService {
   checkAuth(): void {
     const token = localStorage.getItem('auth_token');
     const timestampStr = localStorage.getItem('auth_timestamp');
-    
+
     if (!token) {
       this.logout().subscribe();
       return;
@@ -146,7 +150,7 @@ export class AuthService {
 
     const timestamp = parseInt(timestampStr, 10);
     const now = Date.now();
-    const expiry = 5 * 60 * 1000;
+    const expiry = 30 * 60 * 1000;
     const elapsed = now - timestamp;
 
     if (elapsed > expiry) {

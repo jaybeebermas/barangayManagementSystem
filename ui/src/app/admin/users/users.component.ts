@@ -3,16 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { GraphqlService } from '../../services/graphql.service';
 import { AuthService } from '../../services/auth.service';
+import { GET_USERS, CREATE_USER, UPDATE_USER, DELETE_USER } from '../../services/User/user.gql';
+import { User } from '../../services/User/user.types';
+import { CreateUserInput, UpdateUserInput } from '../../services/User/user.input';
 
-interface User {
-  id: string;
-  username: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  role?: string;
-  created_at: string;
-}
 
 @Component({
   selector: 'app-users',
@@ -52,20 +46,7 @@ export class UsersComponent implements OnInit {
   async loadUsers(): Promise<void> {
     this.isLoading.set(true);
     try {
-      const query = `
-        query {
-          users {
-            id
-            username
-            first_name
-            last_name
-            email
-            role
-            created_at
-          }
-        }
-      `;
-      const response = await this.gql.request<{ users: User[] }>(query);
+      const response = await this.gql.request<{ users: User[] }>(GET_USERS);
       console.log('Users loaded:', response);
       this.users.set(response.users || []);
     } catch (error) {
@@ -109,25 +90,12 @@ export class UsersComponent implements OnInit {
     this.isLoading.set(true);
     try {
       if (this.modalMode() === 'add') {
-        const mutation = `
-          mutation CreateUser($input: CreateUserInput!) {
-            createUser(input: $input) {
-              id
-            }
-          }
-        `;
-        await this.gql.request(mutation, { input: this.userForm.value });
+        const input: CreateUserInput = this.userForm.value;
+        await this.gql.request(CREATE_USER, { input });
       } else {
-        const mutation = `
-          mutation UpdateUser($input: UpdateUserInput!) {
-            updateUser(input: $input) {
-              id
-            }
-          }
-        `;
-        const input = { ...this.userForm.value, id: this.selectedUserId() };
+        const input: UpdateUserInput = { ...this.userForm.value, id: this.selectedUserId() };
         if (!input.password) delete input.password;
-        await this.gql.request(mutation, { input });
+        await this.gql.request(UPDATE_USER, { input });
       }
       await this.loadUsers();
       this.closeModal();
@@ -143,14 +111,7 @@ export class UsersComponent implements OnInit {
 
     this.isLoading.set(true);
     try {
-      const mutation = `
-        mutation DeleteUser($id: ID!) {
-          deleteUser(id: $id) {
-            id
-          }
-        }
-      `;
-      await this.gql.request(mutation, { id });
+      await this.gql.request(DELETE_USER, { id });
       await this.loadUsers();
     } catch (error) {
       console.error('Delete failed', error);
