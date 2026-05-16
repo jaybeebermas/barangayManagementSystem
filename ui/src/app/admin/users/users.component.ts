@@ -131,6 +131,7 @@ export class UsersComponent implements OnInit {
 
   openAddModal(): void {
     this.modalMode.set('add');
+    this.userForm.enable();
     this.userForm.reset();
     this.userForm.get('role')?.setValue('admin');
     this.userForm.get('password')?.setValidators([Validators.required, Validators.minLength(8)]);
@@ -141,11 +142,13 @@ export class UsersComponent implements OnInit {
       subtitle: 'Personnel Information',
       confirmLabel: 'Register User'
     });
+    this.isDrawerOpen.set(false);
     this.modalService.onConfirm = () => this.handleSubmit();
   }
 
   async openEditModal(user: User): Promise<void> {
     this.modalMode.set('edit');
+    this.userForm.enable();
     this.selectedUserId.set(user.id);
     this.userForm.patchValue({ ...user, password: '', confirm_password: '' });
     this.userForm.get('password')?.setValidators([Validators.minLength(8)]);
@@ -156,6 +159,7 @@ export class UsersComponent implements OnInit {
       subtitle: 'Personnel Information',
       confirmLabel: 'Update Account'
     });
+    this.isDrawerOpen.set(false);
     this.modalService.onConfirm = () => this.handleSubmit();
   }
 
