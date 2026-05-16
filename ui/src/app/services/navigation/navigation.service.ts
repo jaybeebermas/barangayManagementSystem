@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { GraphqlService } from './graphql.service';
-import { NavigationItem } from '../shared/models/navigation.model';
+import { GraphqlService } from '../graphql/graphql.service';
+import { NavigationItem } from '../../shared/models/navigation.model';
 
 @Injectable({
   providedIn: 'root'

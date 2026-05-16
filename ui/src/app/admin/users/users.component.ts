@@ -1,9 +1,9 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { GraphqlService } from '../../services/graphql.service';
-import { AuthService } from '../../services/auth.service';
-import { ToastService } from '../../services/toast.service';
+import { GraphqlService } from '../../services/graphql/graphql.service';
+import { AuthService } from '../../services/auth/auth.service';
+import { ToastService } from '../../services/toast/toast.service';
 import { GET_USERS, CREATE_USER, UPDATE_USER, DELETE_USER } from '../../services/User/user.gql';
 import { User } from '../../services/User/user.types';
 import { CreateUserInput, UpdateUserInput } from '../../services/User/user.input';
