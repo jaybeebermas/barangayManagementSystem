@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { NgxParticlesModule } from '@tsparticles/angular';
 import { Engine } from "@tsparticles/engine";
@@ -78,7 +78,8 @@ export class LoginComponent {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {
     if (this.authService.isAuthenticated()) {
       this.router.navigate(['/admin/dashboard']);
@@ -107,7 +108,8 @@ export class LoginComponent {
     this.authService.login(username, password).subscribe({
       next: (response) => {
         if (response.data?.login?.status === 'SUCCESS') {
-          this.router.navigate(['/admin/dashboard']);
+          const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/admin/dashboard';
+          this.router.navigateByUrl(returnUrl);
         } else {
           this.errorMessage.set(response.data?.login?.message || 'Login failed.');
         }

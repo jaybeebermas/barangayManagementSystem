@@ -106,9 +106,7 @@ export class HeaderComponent {
   }
 
   logout(): void {
-    this.authService.logout().subscribe(() => {
-      this.router.navigate(['/login']);
-    });
+    this.authService.logout(true).subscribe();
   }
 
   async toggleFullscreen(): Promise<void> {
