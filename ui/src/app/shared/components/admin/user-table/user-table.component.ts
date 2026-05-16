@@ -1,11 +1,12 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UserActionMenuComponent } from '../user-action-menu/user-action-menu.component';
+import { NgIconComponent } from '@ng-icons/core';
 
 @Component({
   selector: 'app-user-table',
   standalone: true,
-  imports: [CommonModule, UserActionMenuComponent],
+  imports: [CommonModule, UserActionMenuComponent, NgIconComponent],
   template: `
     <div class="flex-1 flex flex-col min-h-0">
       <div class="overflow-x-auto flex-1">
@@ -53,7 +54,7 @@ import { UserActionMenuComponent } from '../user-action-menu/user-action-menu.co
         <!-- Empty State -->
         <div *ngIf="users.length === 0 && !isLoading" class="p-20 text-center">
           <div class="inline-flex items-center justify-center p-6 bg-zinc-100 rounded-xl mb-6 shadow-inner">
-            <svg class="h-10 w-10 text-zinc-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 00-3-3.87m-4-12a4 4 0 010 7.75"></path></svg>
+            <ng-icon name="heroUsers" class="h-10 w-10 text-zinc-300"></ng-icon>
           </div>
           <h3 class="text-zinc-900 text-xl font-black mb-2 tracking-tight">No records found</h3>
           <p class="text-zinc-500 font-medium max-w-sm mx-auto text-base">It looks like there are no results matching your criteria.</p>

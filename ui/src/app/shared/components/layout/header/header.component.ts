@@ -2,11 +2,12 @@ import { Component, inject, signal, Input, Output, EventEmitter } from '@angular
 import { CommonModule } from '@angular/common';
 import { AuthService, UIConfigService, UIScale } from '../../../../services';
 import { Router } from '@angular/router';
+import { NgIconComponent } from '@ng-icons/core';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, NgIconComponent],
   template: `
     <header class="flex h-16 items-center justify-between border-b border-zinc-100 bg-white/80 backdrop-blur-md px-6 sticky top-0 z-30">
       <div class="flex items-center gap-4">
@@ -14,9 +15,7 @@ import { Router } from '@angular/router';
         <button 
           (click)="toggleSidebar.emit()"
           class="p-2.5 bg-zinc-50 border border-zinc-100 rounded-xl text-zinc-500 hover:text-primary-600 hover:bg-primary-50 hover:border-primary-100 transition-all active:scale-90 shadow-sm group">
-          <svg class="h-5 w-5 transition-all group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
+          <ng-icon name="heroBars3" class="h-5 w-5 transition-all group-hover:scale-110" strokeWidth="2.2"></ng-icon>
         </button>
       </div>
 
@@ -38,9 +37,7 @@ import { Router } from '@angular/router';
         <div class="h-8 w-[1px] bg-zinc-100 mx-2 hidden lg:block"></div>
 
         <button (click)="toggleFullscreen()" class="p-2 text-zinc-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
-          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-          </svg>
+          <ng-icon name="heroArrowsPointingOut" class="h-4 w-4" strokeWidth="2"></ng-icon>
         </button>
 
         <!-- User Menu Dropdown -->
@@ -81,9 +78,7 @@ import { Router } from '@angular/router';
             <button 
               (click)="logout()"
               class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-zinc-400 hover:text-accent-600 hover:bg-accent-50 rounded-xl transition-all group">
-              <svg class="h-4 w-4 text-zinc-300 group-hover:text-accent-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
+              <ng-icon name="heroArrowRightOnRectangle" class="h-4 w-4 text-zinc-300 group-hover:text-accent-500" strokeWidth="2.5"></ng-icon>
               <span>Sign Out</span>
             </button>
           </div>
@@ -111,9 +106,7 @@ export class HeaderComponent {
   }
 
   logout(): void {
-    this.authService.logout().subscribe(() => {
-      this.router.navigate(['/login']);
-    });
+    this.authService.logout(true).subscribe();
   }
 
   async toggleFullscreen(): Promise<void> {

@@ -1,6 +1,7 @@
 import { Component, inject, signal, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { NgIconComponent } from '@ng-icons/core';
 import { NavigationItem } from '../../../../shared/models/navigation.model';
 
 type NavNode = Omit<NavigationItem, 'children'> & {
@@ -11,7 +12,7 @@ type NavNode = Omit<NavigationItem, 'children'> & {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterLink, RouterLinkActive, NgIconComponent],
   template: `
     <aside
       class="relative flex h-full flex-col overflow-hidden border-r border-teal-100 bg-[#f0fdfa] transition-all duration-300 ease-out z-40 select-none"
@@ -22,9 +23,7 @@ type NavNode = Omit<NavigationItem, 'children'> & {
       <div class="px-6 py-8">
         <div class="flex items-center gap-3">
           <div class="h-10 w-10 rounded-2xl bg-gradient-to-br from-primary-600 to-primary-500 flex items-center justify-center shadow-xl shadow-primary-600/20">
-             <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-             </svg>
+             <ng-icon name="heroBuildingLibrary" class="h-6 w-6 text-white"></ng-icon>
           </div>
           <div class="transition-all duration-300" [class.opacity-0]="!isOpen" [class.translate-x-4]="!isOpen">
             <h2 class="text-xl font-black text-zinc-900 tracking-tight leading-none">Brgy<span class="text-primary-600">Sync</span></h2>
@@ -43,7 +42,10 @@ type NavNode = Omit<NavigationItem, 'children'> & {
           class="group relative flex h-12 items-center gap-3 rounded-xl px-4 text-sm font-bold text-zinc-500 hover:bg-white/60 hover:shadow-sm transition-all border border-transparent"
           [routerLinkActiveOptions]="{exact: true}">
           <div *ngIf="rlaDashboard.isActive" class="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-primary-600 rounded-r-full"></div>
-          <img class="h-5 w-5 shrink-0 transition-all" [class.brightness-0]="rlaDashboard.isActive" [src]="getIconPath('home-modern')" />
+          <ng-icon 
+            [name]="rlaDashboard.isActive ? 'heroHomeModernSolid' : 'heroHomeModern'" 
+            class="h-5 w-5 shrink-0 transition-all" 
+            [class.text-primary-600]="rlaDashboard.isActive"></ng-icon>
           <span class="truncate">Dashboard</span>
         </a>
 
@@ -58,7 +60,10 @@ type NavNode = Omit<NavigationItem, 'children'> & {
             class="group relative flex h-12 items-center gap-3 rounded-xl px-4 text-sm font-bold text-zinc-500 hover:bg-white/60 hover:shadow-sm transition-all border border-transparent"
             [routerLinkActiveOptions]="{exact: true}">
             <div *ngIf="rla.isActive" class="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-primary-600 rounded-r-full"></div>
-            <img class="h-5 w-5 shrink-0 transition-all" [class.brightness-0]="rla.isActive" [src]="getIconPath(section.icon)" />
+            <ng-icon 
+              [name]="getIconName(section.icon, rla.isActive)" 
+              class="h-5 w-5 shrink-0 transition-all" 
+              [class.text-primary-600]="rla.isActive"></ng-icon>
             <span class="truncate">{{ section.title }}</span>
           </a>
 
@@ -68,14 +73,14 @@ type NavNode = Omit<NavigationItem, 'children'> & {
               type="button"
               class="flex h-12 w-full items-center gap-3 rounded-xl px-4 text-left text-sm font-bold text-zinc-500 hover:bg-white/60 hover:shadow-sm transition-all group outline-none"
               (click)="toggleSection(section)">
-              <img class="h-5 w-5 shrink-0 transition-all group-hover:scale-110" [src]="getIconPath(section.icon)" />
+              <ng-icon 
+                [name]="getIconName(section.icon)" 
+                class="h-5 w-5 shrink-0 transition-all group-hover:scale-110"></ng-icon>
               <span class="truncate flex-1">{{ section.title }}</span>
-              <svg
+              <ng-icon 
+                name="heroChevronRight" 
                 class="ml-auto h-4 w-4 shrink-0 transition-transform duration-300 text-zinc-300 group-hover:text-zinc-500"
-                [class.rotate-90]="section._open"
-                fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
+                [class.rotate-90]="section._open"></ng-icon>
             </button>
 
             <!-- Children -->
@@ -111,7 +116,9 @@ type NavNode = Omit<NavigationItem, 'children'> & {
           <div 
             *ngIf="section.type === 'item' && !isValidRoute(section.route)"
             class="flex h-12 items-center gap-3 px-4 text-sm font-bold text-zinc-300 cursor-default opacity-60 italic">
-            <img class="h-5 w-5 shrink-0 grayscale opacity-40" [src]="getIconPath(section.icon)" />
+            <ng-icon 
+              [name]="getIconName(section.icon)" 
+              class="h-5 w-5 shrink-0 opacity-40"></ng-icon>
             <span class="truncate">{{ section.title }}</span>
           </div>
         </div>
@@ -122,6 +129,39 @@ type NavNode = Omit<NavigationItem, 'children'> & {
 export class SidebarComponent {
   @Input() isOpen = true;
   @Input() navItems: NavNode[] = [];
+  
+  private router = inject(Router);
+  private validRoutes = new Set<string>();
+
+  constructor() {
+    // We defer the extraction slightly to ensure the router config is fully available
+    setTimeout(() => this.extractValidRoutes(), 0);
+  }
+
+  private extractValidRoutes(): void {
+    const traverse = (config: any[], prefix = '') => {
+      for (const route of config) {
+        if (route.path === '**') continue;
+        
+        let currentPath = prefix;
+        if (route.path) {
+          currentPath = currentPath.endsWith('/') 
+            ? `${currentPath}${route.path}` 
+            : `${currentPath}/${route.path}`;
+        }
+        
+        if (route.component || route.loadComponent) {
+          this.validRoutes.add(currentPath);
+        }
+        
+        if (route.children) {
+          traverse(route.children, currentPath);
+        }
+      }
+    };
+    
+    traverse(this.router.config, '');
+  }
 
   filteredNavItems(): NavNode[] {
     return this.navItems.filter(item => {
@@ -134,20 +174,66 @@ export class SidebarComponent {
   isValidRoute(route?: string | null): boolean {
     if (!route) return false;
     const clean = route.trim();
-    return clean !== '' && clean !== '#' && clean !== '/';
+    if (clean === '' || clean === '#' || clean === '/') return false;
+    
+    // Only return true if the route is actually registered in the Angular Router
+    return this.validRoutes.has(clean);
   }
 
   toggleSection(section: NavNode): void {
     section._open = !section._open;
   }
 
-  getIconPath(name?: string | null): string {
+  getIconName(name?: string | null, isSolid = false): string {
     const raw = (name ?? '').trim();
-    if (!raw) return 'https://api.iconify.design/heroicons/home-modern.svg';
-    if (raw.includes(':')) {
-      const [collection, icon] = raw.split(':');
-      return `https://api.iconify.design/${collection}/${icon}.svg`;
+    if (!raw) return isSolid ? 'heroHomeModernSolid' : 'heroHomeModern';
+    
+    // Map common names to Heroicon names
+    const mapping: Record<string, string> = {
+      'home-modern': 'heroHomeModern',
+      'users': 'heroUsers',
+      'user-group': 'heroUserGroup',
+      'shield-check': 'heroShieldCheck',
+      'document-text': 'heroDocumentText',
+      'presentation-chart-line': 'heroPresentationChartLine',
+      'bell': 'heroBell',
+      'calendar': 'heroCalendar',
+      'map': 'heroMap',
+      'chat-bubble-left-right': 'heroChatBubbleLeftRight',
+      'cog-6-tooth': 'heroCog6Tooth',
+      'building-library': 'heroBuildingLibrary',
+      'finger-print': 'heroFingerPrint',
+      'identification': 'heroIdentification',
+      'briefcase': 'heroBriefcase',
+      'chart-bar': 'heroChartBar',
+      'clipboard-document-check': 'heroClipboardDocumentCheck',
+      'square-3-stack-3d': 'heroSquare3Stack3d',
+      'archive-box': 'heroArchiveBox',
+      'queue-list': 'heroQueueList',
+      'user-circle': 'heroUserCircle'
+    };
+
+    let iconName = mapping[raw];
+    
+    if (!iconName) {
+      if (raw.includes(':')) {
+        const part = raw.split(':')[1];
+        const camel = part.split('-').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join('');
+        iconName = `hero${camel}`;
+      } else {
+        const camel = raw.split('-').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join('');
+        iconName = `hero${camel}`;
+      }
     }
-    return `https://api.iconify.design/heroicons/${raw}.svg`;
+
+    if (isSolid) {
+      // Check if we have a solid version (we only provided a few in app.config.ts)
+      const solids = ['heroHomeModern', 'heroUsers', 'heroUserGroup', 'heroShieldCheck', 'heroDocumentText', 'heroCog6Tooth'];
+      if (solids.includes(iconName)) {
+        return `${iconName}Solid`;
+      }
+    }
+
+    return iconName;
   }
 }

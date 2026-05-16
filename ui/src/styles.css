@@ -61,7 +61,7 @@
   }
   
   body {
-    @apply h-full w-full bg-[#fbfcfd] text-zinc-900;
+    @apply h-full w-full bg-zinc-100 text-zinc-900;
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     line-height: 1.6;
@@ -97,16 +97,52 @@
   .label-classic {
     @apply block text-xs font-black text-zinc-500 uppercase tracking-widest mb-2;
   }
+
+  .subtle-backdrop {
+    @apply bg-slate-950/5 backdrop-blur-[2px];
+  }
 }
 
 /* Animation utilities */
 @keyframes fade-in-up {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; margin-top: 10px; }
+  to { opacity: 1; margin-top: 0; }
 }
 
 .animate-fade-in-up {
   animation: fade-in-up 0.4s ease-out forwards;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.fade-in {
+  animation-name: fade-in;
+}
+
+@keyframes slide-in-from-right {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.slide-in-from-right {
+  animation-name: slide-in-from-right;
+}
+
+.animate-in {
+  animation-duration: 300ms;
+  animation-fill-mode: forwards;
+  animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+}
+
+.duration-300 {
+  animation-duration: 300ms;
+}
+
+.ease-out {
+  animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
 }
 
 /* Scrollbar styling */

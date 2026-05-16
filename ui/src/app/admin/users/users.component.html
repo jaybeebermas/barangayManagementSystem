@@ -1,72 +1,128 @@
-<app-user-management-layout>
-  <!-- 1. Page Header -->
-  <app-page-header title="User Management" subtitle="Manage administrative accounts and system permissions."
-    actionLabel="Add System User" (actionClick)="openAddModal()">
-  </app-page-header>
+<div class="flex h-[calc(100vh-4rem)] -m-6 md:-m-8 overflow-hidden bg-zinc-100">
+  <!-- Main Content Scroll Area -->
+  <div class="flex-1 overflow-y-auto p-6 md:p-8">
+    <app-user-management-layout>
+      <!-- 1. Page Header -->
+      <app-page-header title="User Management" subtitle="Manage administrative accounts and system permissions."
+        actionLabel="Add System User" (actionClick)="openAddModal()">
+      </app-page-header>
 
-  <!-- 2. Search & Filters -->
-  <app-search-filters placeholder="Search by name, username or email..." (search)="handleSearch($event)">
-    <!-- Optional slot for more filters -->
-    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="min-w-[160px]">
-      <mat-label>All Roles</mat-label>
-      <mat-select (selectionChange)="null">
-        <mat-option value="">All Roles</mat-option>
-        <mat-option value="super_admin">Super Admin</mat-option>
-        <mat-option value="admin">Staff Admin</mat-option>
-      </mat-select>
-    </mat-form-field>
-  </app-search-filters>
+      <!-- 2. Search & Filters -->
+      <app-search-filters placeholder="Search by name, username or email..." (search)="handleSearch($event)">
+        <!-- Optional slot for more filters -->
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="min-w-[160px]">
+          <mat-label>All Roles</mat-label>
+          <mat-select (selectionChange)="null">
+            <mat-option value="">All Roles</mat-option>
+            <mat-option value="super_admin">Super Admin</mat-option>
+            <mat-option value="admin">Staff Admin</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </app-search-filters>
 
-  <!-- 3. User Table with 4. Pagination -->
-  <app-user-table [users]="filteredUsers()" [isLoading]="isLoading()" (view)="openViewModal($event)"
-    (edit)="openEditModal($event)" (delete)="deleteUser($event)">
+      <!-- 3. User Table with 4. Pagination -->
+      <app-user-table [users]="filteredUsers()" [isLoading]="isLoading()" (view)="openViewModal($event)"
+        (edit)="openEditModal($event)" (delete)="deleteUser($event)">
 
-    <app-table-pagination [currentPage]="1" [totalItems]="filteredUsers().length" [pageSize]="10"
-      (pageChange)="handlePageSearch($event)">
-    </app-table-pagination>
-  </app-user-table>
+        <app-table-pagination [currentPage]="1" [totalItems]="filteredUsers().length" [pageSize]="10"
+          (pageChange)="handlePageSearch($event)">
+        </app-table-pagination>
+      </app-user-table>
+    </app-user-management-layout>
+  </div>
 
-  <!-- 5. User Action Menu is internal to UserTable -->
-
-  <!-- Modal Section (Kept for form logic) -->
-  <div *ngIf="isModalOpen()"
-    class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-zinc-900/40 backdrop-blur-md animate-in fade-in duration-300">
-    <div
-      class="bg-white w-full max-w-2xl rounded-3xl shadow-elevated overflow-hidden scale-in-center border border-white/20">
-      <div class="px-12 py-10 border-b border-zinc-100 flex items-center justify-between bg-zinc-50/50">
-        <div>
-          <h2 class="text-3xl font-black text-zinc-900 tracking-tight capitalize">
-            {{ modalMode() }} System User
-          </h2>
-          <p class="text-sm font-bold text-zinc-400 uppercase tracking-widest mt-2">Personnel Information</p>
+  <!-- View-Only Side Drawer -->
+  <app-drawer
+    [isOpen]="isDrawerOpen()"
+    title="View User Profile"
+    (close)="closeModal()"
+    class="shrink-0"
+  >
+    <div class="space-y-6" *ngIf="modalMode() === 'view'">
+      <!-- Section: Personal Information -->
+      <div class="bg-white p-6 rounded-2xl border border-zinc-100 shadow-sm space-y-4">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Personnel Details</h3>
+          <ng-icon name="heroUser" class="text-zinc-300 h-5 w-5"></ng-icon>
         </div>
-        <button (click)="closeModal()"
-          class="p-4 text-zinc-400 hover:text-zinc-900 hover:bg-white rounded-xl transition-all shadow-sm">
-          <svg class="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-        </button>
-      </div>
 
-      <form [formGroup]="userForm" (ngSubmit)="handleSubmit()" class="p-12 space-y-4">
-        <div class="grid grid-cols-2 gap-6">
-          <mat-form-field appearance="outline">
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">First Name</p>
+            <p class="text-sm font-bold text-zinc-900">{{ userForm.get('first_name')?.value }}</p>
+          </div>
+          <div class="space-y-1">
+            <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Last Name</p>
+            <p class="text-sm font-bold text-zinc-900">{{ userForm.get('last_name')?.value }}</p>
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Email Address</p>
+          <p class="text-sm font-bold text-zinc-900">{{ userForm.get('email')?.value }}</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Username</p>
+            <p class="text-sm font-bold text-zinc-900">@{{ userForm.get('username')?.value }}</p>
+          </div>
+          <div class="space-y-1">
+            <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Account Role</p>
+            <span class="inline-flex px-2 py-0.5 text-[10px] font-black uppercase tracking-widest rounded-md"
+              [ngClass]="userForm.get('role')?.value === 'super_admin' ? 'bg-primary-50 text-primary-600' : 'bg-zinc-100 text-zinc-600'">
+              {{ userForm.get('role')?.value === 'super_admin' ? 'Super Admin' : 'Staff Admin' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Template for View Mode -->
+    <div drawerFooter class="flex justify-end items-center">
+      <button (click)="closeModal()"
+        class="px-8 py-2.5 bg-zinc-900 text-white rounded-xl font-bold shadow-sm hover:bg-zinc-800 transition-all active:scale-95">
+        Close Profile
+      </button>
+    </div>
+  </app-drawer>
+</div>
+
+<!-- Modal Template for Add/Edit -->
+<ng-template #userModal>
+  <form [formGroup]="userForm" class="py-1">
+    <div class="bg-zinc-50/40 p-6 rounded-3xl border border-zinc-100/80 space-y-6">
+      
+      <!-- Personnel Details Section -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em]">Personnel Details</h3>
+          <ng-icon name="heroUser" class="text-zinc-300 h-4 w-4"></ng-icon>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
             <mat-label>First Name</mat-label>
             <input matInput formControlName="first_name" placeholder="e.g. Maria">
           </mat-form-field>
-          <mat-form-field appearance="outline">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
             <mat-label>Last Name</mat-label>
             <input matInput formControlName="last_name" placeholder="e.g. Santos">
           </mat-form-field>
         </div>
 
-        <div class="grid grid-cols-2 gap-6">
-          <mat-form-field appearance="outline">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+          <mat-label>Email Address</mat-label>
+          <input matInput type="email" formControlName="email" placeholder="maria.santos@example.com">
+        </mat-form-field>
+
+        <div class="grid grid-cols-2 gap-3">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
             <mat-label>Username</mat-label>
-            <span matPrefix class="mr-1">@</span>
+            <span matPrefix class="mr-1 text-zinc-400">@</span>
             <input matInput formControlName="username" placeholder="username">
           </mat-form-field>
-          <mat-form-field appearance="outline">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
             <mat-label>Account Role</mat-label>
             <mat-select formControlName="role">
               <mat-option *ngFor="let role of roles()" [value]="role">
@@ -75,29 +131,32 @@
             </mat-select>
           </mat-form-field>
         </div>
+      </div>
 
-        <mat-form-field appearance="outline" class="w-full">
-          <mat-label>Email Address</mat-label>
-          <input matInput type="email" formControlName="email" placeholder="maria.santos@example.com">
-        </mat-form-field>
-
-        <mat-form-field *ngIf="modalMode() !== 'view'" appearance="outline" class="w-full">
-          <mat-label>{{ modalMode() === 'edit' ? 'New Password (Optional)' : 'Security Password' }}</mat-label>
-          <input matInput type="password" formControlName="password" placeholder="••••••••">
-        </mat-form-field>
-
-        <div class="flex items-center justify-end gap-4 mt-8 pt-6 border-t border-zinc-50">
-          <button mat-button type="button" (click)="closeModal()"
-            class="!px-8 !py-6 !rounded-2xl !font-bold !text-zinc-400">Discard</button>
-          <button *ngIf="modalMode() !== 'view'" mat-flat-button color="primary" type="submit"
-            [disabled]="isLoading() || userForm.invalid"
-            class="!px-8 !py-6 !rounded-2xl !font-bold shadow-lg shadow-primary-600/20">
-            <span *ngIf="!isLoading()">{{ modalMode() === 'add' ? 'Register User' : 'Update Account' }}</span>
-            <div *ngIf="isLoading()" class="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin">
-            </div>
-          </button>
+      <!-- Divider -->
+      <div class="border-t border-zinc-200/50 pt-5">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em]">Security Credentials</h3>
+          <ng-icon name="heroLockClosed" class="text-zinc-300 h-4 w-4"></ng-icon>
         </div>
-      </form>
+
+        <div class="grid grid-cols-2 gap-3">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+            <mat-label>{{ modalMode() === 'edit' ? 'New Password' : 'Security Password' }}</mat-label>
+            <input matInput type="password" formControlName="password" placeholder="••••••••">
+          </mat-form-field>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+            <mat-label>Confirm Password</mat-label>
+            <input matInput type="password" formControlName="confirm_password" placeholder="••••••••">
+          </mat-form-field>
+        </div>
+        <div class="mt-2 px-1">
+          <p *ngIf="userForm.get('confirm_password')?.hasError('passwordMismatch')" class="text-[10px] text-red-500 font-bold">
+            Passwords do not match
+          </p>
+          <p class="text-[10px] text-zinc-400 font-medium" *ngIf="modalMode() === 'edit'">Leave blank to keep current password.</p>
+        </div>
+      </div>
     </div>
-  </div>
-</app-user-management-layout>
+  </form>
+</ng-template>

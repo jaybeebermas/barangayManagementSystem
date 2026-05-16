@@ -1,10 +1,11 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgIconComponent } from '@ng-icons/core';
 
 @Component({
   selector: 'app-page-header',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, NgIconComponent],
   template: `
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6 p-1">
       <div>
@@ -17,7 +18,7 @@ import { CommonModule } from '@angular/common';
         class="btn-primary !py-2.5 !px-6 !text-xs shadow-lg shadow-primary-600/10 whitespace-nowrap">
         <span class="flex items-center gap-2">
           <ng-container *ngIf="!customIcon; else iconTemplate">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <ng-icon name="heroPlus" class="h-4 w-4" strokeWidth="3"></ng-icon>
           </ng-container>
           <ng-template #iconTemplate>
             <span [innerHTML]="customIcon"></span>

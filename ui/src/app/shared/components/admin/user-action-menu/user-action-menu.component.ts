@@ -1,23 +1,23 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { NgIconComponent } from '@ng-icons/core';
 
 @Component({
   selector: 'app-user-action-menu',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule, MatTooltipModule],
+  imports: [CommonModule, MatButtonModule, MatTooltipModule, NgIconComponent],
   template: `
-    <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
-      <button mat-icon-button color="primary" (click)="view.emit()" matTooltip="View details">
-        <mat-icon>visibility</mat-icon>
+    <div class="flex items-center justify-end gap-1.5 transition-all">
+      <button type="button" class="flex items-center justify-center w-8 h-8 rounded-full text-primary-600 hover:bg-primary-50 transition-colors" (click)="view.emit()" matTooltip="View details">
+        <ng-icon name="heroEye" class="text-[17px]"></ng-icon>
       </button>
-      <button mat-icon-button color="accent" (click)="edit.emit()" matTooltip="Edit user">
-        <mat-icon>edit</mat-icon>
+      <button type="button" class="flex items-center justify-center w-8 h-8 rounded-full text-pink-600 hover:bg-pink-50 transition-colors" (click)="edit.emit()" matTooltip="Edit user">
+        <ng-icon name="heroPencil" class="text-[17px]"></ng-icon>
       </button>
-      <button mat-icon-button color="warn" (click)="delete.emit()" matTooltip="Delete user">
-        <mat-icon>delete</mat-icon>
+      <button type="button" class="flex items-center justify-center w-8 h-8 rounded-full text-red-500 hover:bg-red-50 transition-colors" (click)="delete.emit()" matTooltip="Delete user">
+        <ng-icon name="heroTrash" class="text-[17px]"></ng-icon>
       </button>
     </div>
   `

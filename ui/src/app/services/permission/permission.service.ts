@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { GraphqlService } from './graphql.service';
-import { Permission, PermissionInput } from '../shared/models/permission.model';
+import { GraphqlService } from '../graphql/graphql.service';
+import { Permission, PermissionInput } from '../../shared/models/permission.model';
 
 @Injectable({
   providedIn: 'root'
