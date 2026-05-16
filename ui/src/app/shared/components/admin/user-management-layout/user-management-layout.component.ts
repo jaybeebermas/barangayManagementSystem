@@ -6,8 +6,8 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="min-h-full bg-zinc-50 -m-6 md:-m-8 p-4 md:p-8 overflow-y-auto">
-      <div class="w-full bg-zinc-50 rounded-2xl border border-zinc-200/50 p-6 md:p-10 shadow-sm flex flex-col gap-6 animate-fade-in-up min-h-[calc(100vh-10rem)]">
+    <div class="min-h-full bg-transparent -m-6 md:-m-8 p-4 md:p-8 overflow-y-auto">
+      <div class="w-full bg-white rounded-3xl border border-zinc-200/50 p-6 md:p-10 shadow-sm flex flex-col gap-6 animate-fade-in-up min-h-[calc(100vh-10rem)]">
         <ng-content></ng-content>
       </div>
     </div>

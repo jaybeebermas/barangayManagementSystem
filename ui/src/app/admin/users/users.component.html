@@ -1,41 +1,44 @@
-<div class="flex h-full w-full gap-6 overflow-hidden">
-  <app-user-management-layout class="flex-1 min-w-0">
-    <!-- 1. Page Header -->
-    <app-page-header title="User Management" subtitle="Manage administrative accounts and system permissions."
-      actionLabel="Add System User" (actionClick)="openAddModal()">
-    </app-page-header>
+<div class="flex h-[calc(100vh-4rem)] -m-6 md:-m-8 overflow-hidden bg-zinc-100">
+  <!-- Main Content Scroll Area -->
+  <div class="flex-1 overflow-y-auto p-6 md:p-8">
+    <app-user-management-layout>
+      <!-- 1. Page Header -->
+      <app-page-header title="User Management" subtitle="Manage administrative accounts and system permissions."
+        actionLabel="Add System User" (actionClick)="openAddModal()">
+      </app-page-header>
 
-    <!-- 2. Search & Filters -->
-    <app-search-filters placeholder="Search by name, username or email..." (search)="handleSearch($event)">
-      <!-- Optional slot for more filters -->
-      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="min-w-[160px]">
-        <mat-label>All Roles</mat-label>
-        <mat-select (selectionChange)="null">
-          <mat-option value="">All Roles</mat-option>
-          <mat-option value="super_admin">Super Admin</mat-option>
-          <mat-option value="admin">Staff Admin</mat-option>
-        </mat-select>
-      </mat-form-field>
-    </app-search-filters>
+      <!-- 2. Search & Filters -->
+      <app-search-filters placeholder="Search by name, username or email..." (search)="handleSearch($event)">
+        <!-- Optional slot for more filters -->
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="min-w-[160px]">
+          <mat-label>All Roles</mat-label>
+          <mat-select (selectionChange)="null">
+            <mat-option value="">All Roles</mat-option>
+            <mat-option value="super_admin">Super Admin</mat-option>
+            <mat-option value="admin">Staff Admin</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </app-search-filters>
 
-    <!-- 3. User Table with 4. Pagination -->
-    <app-user-table [users]="filteredUsers()" [isLoading]="isLoading()" (view)="openViewModal($event)"
-      (edit)="openEditModal($event)" (delete)="deleteUser($event)">
+      <!-- 3. User Table with 4. Pagination -->
+      <app-user-table [users]="filteredUsers()" [isLoading]="isLoading()" (view)="openViewModal($event)"
+        (edit)="openEditModal($event)" (delete)="deleteUser($event)">
 
-      <app-table-pagination [currentPage]="1" [totalItems]="filteredUsers().length" [pageSize]="10"
-        (pageChange)="handlePageSearch($event)">
-      </app-table-pagination>
-    </app-user-table>
-  </app-user-management-layout>
+        <app-table-pagination [currentPage]="1" [totalItems]="filteredUsers().length" [pageSize]="10"
+          (pageChange)="handlePageSearch($event)">
+        </app-table-pagination>
+      </app-user-table>
+    </app-user-management-layout>
+  </div>
 
-  <!-- Shared Unified User Drawer -->
+  <!-- View-Only Side Drawer -->
   <app-drawer
     [isOpen]="isDrawerOpen()"
-    [title]="modalMode() === 'add' ? 'Add System User' : modalMode() === 'edit' ? 'Edit System User' : 'View User Profile'"
+    title="View User Profile"
     (close)="closeModal()"
+    class="shrink-0"
   >
-    <form [formGroup]="userForm" class="space-y-6">
-      
+    <div class="space-y-6" *ngIf="modalMode() === 'view'">
       <!-- Section: Personal Information -->
       <div class="bg-white p-6 rounded-2xl border border-zinc-100 shadow-sm space-y-4">
         <div class="flex items-center justify-between mb-2">
@@ -44,6 +47,60 @@
         </div>
 
         <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">First Name</p>
+            <p class="text-sm font-bold text-zinc-900">{{ userForm.get('first_name')?.value }}</p>
+          </div>
+          <div class="space-y-1">
+            <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Last Name</p>
+            <p class="text-sm font-bold text-zinc-900">{{ userForm.get('last_name')?.value }}</p>
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Email Address</p>
+          <p class="text-sm font-bold text-zinc-900">{{ userForm.get('email')?.value }}</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Username</p>
+            <p class="text-sm font-bold text-zinc-900">@{{ userForm.get('username')?.value }}</p>
+          </div>
+          <div class="space-y-1">
+            <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Account Role</p>
+            <span class="inline-flex px-2 py-0.5 text-[10px] font-black uppercase tracking-widest rounded-md"
+              [ngClass]="userForm.get('role')?.value === 'super_admin' ? 'bg-primary-50 text-primary-600' : 'bg-zinc-100 text-zinc-600'">
+              {{ userForm.get('role')?.value === 'super_admin' ? 'Super Admin' : 'Staff Admin' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Template for View Mode -->
+    <div drawerFooter class="flex justify-end items-center">
+      <button (click)="closeModal()"
+        class="px-8 py-2.5 bg-zinc-900 text-white rounded-xl font-bold shadow-sm hover:bg-zinc-800 transition-all active:scale-95">
+        Close Profile
+      </button>
+    </div>
+  </app-drawer>
+</div>
+
+<!-- Modal Template for Add/Edit -->
+<ng-template #userModal>
+  <form [formGroup]="userForm" class="py-1">
+    <div class="bg-zinc-50/40 p-6 rounded-3xl border border-zinc-100/80 space-y-6">
+      
+      <!-- Personnel Details Section -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em]">Personnel Details</h3>
+          <ng-icon name="heroUser" class="text-zinc-300 h-4 w-4"></ng-icon>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
             <mat-label>First Name</mat-label>
             <input matInput formControlName="first_name" placeholder="e.g. Maria">
@@ -59,7 +116,7 @@
           <input matInput type="email" formControlName="email" placeholder="maria.santos@example.com">
         </mat-form-field>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-2 gap-3">
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
             <mat-label>Username</mat-label>
             <span matPrefix class="mr-1 text-zinc-400">@</span>
@@ -76,14 +133,14 @@
         </div>
       </div>
 
-      <!-- Section: Security (only for add/edit) -->
-      <div *ngIf="modalMode() !== 'view'" class="bg-white p-6 rounded-2xl border border-zinc-100 shadow-sm space-y-4">
-        <div class="flex items-center justify-between mb-2">
-          <h3 class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Security Credentials</h3>
-          <ng-icon name="heroLockClosed" class="text-zinc-300 h-5 w-5"></ng-icon>
+      <!-- Divider -->
+      <div class="border-t border-zinc-200/50 pt-5">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em]">Security Credentials</h3>
+          <ng-icon name="heroLockClosed" class="text-zinc-300 h-4 w-4"></ng-icon>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-2 gap-3">
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
             <mat-label>{{ modalMode() === 'edit' ? 'New Password' : 'Security Password' }}</mat-label>
             <input matInput type="password" formControlName="password" placeholder="••••••••">
@@ -93,34 +150,13 @@
             <input matInput type="password" formControlName="confirm_password" placeholder="••••••••">
           </mat-form-field>
         </div>
-        <p *ngIf="userForm.get('confirm_password')?.hasError('passwordMismatch')" class="text-[11px] text-red-500 font-bold">
-          Passwords do not match
-        </p>
-        <p class="text-[11px] text-zinc-400 font-medium" *ngIf="modalMode() === 'edit'">Leave blank to keep current password.</p>
+        <div class="mt-2 px-1">
+          <p *ngIf="userForm.get('confirm_password')?.hasError('passwordMismatch')" class="text-[10px] text-red-500 font-bold">
+            Passwords do not match
+          </p>
+          <p class="text-[10px] text-zinc-400 font-medium" *ngIf="modalMode() === 'edit'">Leave blank to keep current password.</p>
+        </div>
       </div>
-    </form>
-
-    <!-- Footer Template -->
-    <div drawerFooter class="flex justify-end items-center gap-3">
-      <button type="button" (click)="closeModal()" 
-        class="px-6 py-2.5 font-bold text-zinc-500 hover:text-zinc-800 transition-colors">
-        Cancel
-      </button>
-      
-      <button *ngIf="modalMode() !== 'view'"
-        type="submit" 
-        (click)="handleSubmit()"
-        [disabled]="userForm.invalid || isLoading()"
-        class="px-8 py-2.5 bg-zinc-900 text-white rounded-xl font-bold shadow-sm hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 flex items-center gap-2">
-        <ng-icon *ngIf="isLoading()" name="heroArrowPath" class="animate-spin h-4 w-4"></ng-icon>
-        {{ modalMode() === 'add' ? 'Register User' : 'Update Account' }}
-      </button>
-
-      <button *ngIf="modalMode() === 'view'"
-        (click)="closeModal()"
-        class="px-8 py-2.5 bg-zinc-900 text-white rounded-xl font-bold shadow-sm hover:bg-zinc-800 transition-all active:scale-95">
-        Close Profile
-      </button>
     </div>
-  </app-drawer>
-</div>
+  </form>
+</ng-template>

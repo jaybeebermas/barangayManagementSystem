@@ -9,7 +9,7 @@
        [ngClass]="maxWidth">
     
     <!-- Header -->
-    <div class="px-8 py-7 flex items-start justify-between">
+    <div class="px-8 pt-7 pb-3 flex items-start justify-between">
       <div class="space-y-1">
         <h2 class="text-2xl font-bold text-zinc-900 tracking-tight">{{ title }}</h2>
         <p *ngIf="subtitle" class="text-sm text-zinc-500 font-medium">{{ subtitle }}</p>
@@ -21,13 +21,13 @@
     </div>
 
     <!-- Body -->
-    <div class="p-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
+    <div class="px-8 py-3 max-h-[70vh] overflow-y-auto custom-scrollbar">
       <ng-content></ng-content>
     </div>
 
     <!-- Footer -->
     <div *ngIf="showFooter" 
-         class="px-8 py-8 flex items-center justify-end gap-4">
+         class="px-8 pt-2 pb-8 flex items-center justify-end gap-4">
       <button type="button" 
               (click)="onClose()"
               class="px-8 py-3 rounded-xl font-bold text-zinc-500 hover:text-zinc-800 transition-colors">

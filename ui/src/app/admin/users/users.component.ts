@@ -15,7 +15,8 @@ import { SearchFiltersComponent } from '../../shared/components/admin/search-fil
 import { UserTableComponent } from '../../shared/components/admin/user-table/user-table.component';
 import { TablePaginationComponent } from '../../shared/components/admin/table-pagination/table-pagination.component';
 import { DrawerComponent } from '../../shared/components/ui/drawer/drawer.component';
-import { computed } from '@angular/core';
+import { ModalService } from '../../services/modal/modal.service';
+import { computed, ViewChild, TemplateRef } from '@angular/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -48,11 +49,13 @@ import { MatMenuModule } from '@angular/material/menu';
   styleUrl: './users.component.css'
 })
 export class UsersComponent implements OnInit {
+  @ViewChild('userModal') userModalTemplate!: TemplateRef<any>;
 
   private readonly fb = inject(FormBuilder);
   private readonly gql = inject(GraphqlService);
   public readonly auth = inject(AuthService);
   private readonly toastService = inject(ToastService);
+  public readonly modalService = inject(ModalService);
 
   users = signal<User[]>([]);
   searchTerm = signal('');
@@ -98,6 +101,11 @@ export class UsersComponent implements OnInit {
     this.userForm.get('password')?.valueChanges.subscribe(() => {
       this.userForm.get('confirm_password')?.updateValueAndValidity();
     });
+
+    // Sync form validity with global modal confirm button
+    this.userForm.statusChanges.subscribe(status => {
+      this.modalService.setConfirmDisabled(status === 'INVALID');
+    });
   }
 
   async loadUsers(): Promise<void> {
@@ -127,7 +135,13 @@ export class UsersComponent implements OnInit {
     this.userForm.get('role')?.setValue('admin');
     this.userForm.get('password')?.setValidators([Validators.required, Validators.minLength(8)]);
     this.userForm.get('password')?.updateValueAndValidity();
-    this.isDrawerOpen.set(true);
+    
+    this.modalService.open(this.userModalTemplate, {
+      title: 'Add New System User',
+      subtitle: 'Personnel Information',
+      confirmLabel: 'Register User'
+    });
+    this.modalService.onConfirm = () => this.handleSubmit();
   }
 
   async openEditModal(user: User): Promise<void> {
@@ -136,7 +150,13 @@ export class UsersComponent implements OnInit {
     this.userForm.patchValue({ ...user, password: '', confirm_password: '' });
     this.userForm.get('password')?.setValidators([Validators.minLength(8)]);
     this.userForm.get('password')?.updateValueAndValidity();
-    this.isDrawerOpen.set(true);
+    
+    this.modalService.open(this.userModalTemplate, {
+      title: 'Edit System User',
+      subtitle: 'Personnel Information',
+      confirmLabel: 'Update Account'
+    });
+    this.modalService.onConfirm = () => this.handleSubmit();
   }
 
   openViewModal(user: User): void {
@@ -148,6 +168,7 @@ export class UsersComponent implements OnInit {
 
   closeModal(): void {
     this.isDrawerOpen.set(false);
+    this.modalService.close();
     this.userForm.enable();
     this.selectedUserId.set(null);
   }
@@ -155,7 +176,7 @@ export class UsersComponent implements OnInit {
   async handleSubmit(): Promise<void> {
     if (this.userForm.invalid) return;
 
-    this.isLoading.set(true);
+    this.modalService.setLoading(true);
     try {
       if (this.modalMode() === 'add') {
         const input: CreateUserInput = this.userForm.value;
@@ -174,7 +195,7 @@ export class UsersComponent implements OnInit {
       console.error('Operation failed', error);
       this.toastService.show('Operation failed. Please try again.', 'error');
     } finally {
-      this.isLoading.set(false);
+      this.modalService.setLoading(false);
     }
   }
 

@@ -61,7 +61,7 @@
   }
   
   body {
-    @apply h-full w-full bg-[#fbfcfd] text-zinc-900;
+    @apply h-full w-full bg-zinc-100 text-zinc-900;
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     line-height: 1.6;

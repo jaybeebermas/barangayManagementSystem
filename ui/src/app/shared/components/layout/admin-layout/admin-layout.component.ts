@@ -8,7 +8,7 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
   standalone: true,
   imports: [CommonModule, HeaderComponent, SidebarComponent],
   template: `
-    <div class="flex h-screen w-screen overflow-hidden bg-[#fbfcfd] text-zinc-900">
+    <div class="flex h-screen w-screen overflow-hidden bg-zinc-100 text-zinc-900">
       <app-sidebar 
         [isOpen]="sidebarOpen" 
         [navItems]="navItems">
