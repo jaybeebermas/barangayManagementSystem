@@ -45,7 +45,9 @@ import {
   heroQueueList,
   heroUserCircle,
   heroBuildingOffice2,
-  heroShieldExclamation
+  heroShieldExclamation,
+  heroCheckCircle,
+  heroExclamationCircle
 } from '@ng-icons/heroicons/outline';
 import {
   heroHomeModernSolid,
@@ -112,6 +114,8 @@ export const appConfig: ApplicationConfig = {
       heroUserCircle,
       heroBuildingOffice2,
       heroShieldExclamation,
+      heroCheckCircle,
+      heroExclamationCircle,
       // Solids
       heroHomeModernSolid,
       heroUsersSolid,

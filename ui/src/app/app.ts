@@ -1,7 +1,8 @@
 import { Component, OnInit, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterOutlet } from '@angular/router';
-import { NavigationService, AuthService, UIConfigService } from './services';
+import { NavigationService, AuthService, UIConfigService, ToastService } from './services';
+import { NgIconComponent } from '@ng-icons/core';
 import { NavigationItem } from './shared/models';
 import { AdminLayoutComponent } from './shared/components/layout/admin-layout/admin-layout.component';
 
@@ -13,7 +14,7 @@ type NavNode = Omit<NavigationItem, 'children'> & {
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, AdminLayoutComponent],
+  imports: [CommonModule, RouterOutlet, AdminLayoutComponent, NgIconComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
@@ -27,6 +28,7 @@ export class App implements OnInit {
 
   private readonly navigationService = inject(NavigationService);
   public readonly authService = inject(AuthService);
+  public readonly toastService = inject(ToastService);
   private readonly router = inject(Router);
   private readonly uiConfig = inject(UIConfigService);
 

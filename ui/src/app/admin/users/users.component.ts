@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { GraphqlService } from '../../services/graphql.service';
 import { AuthService } from '../../services/auth.service';
+import { ToastService } from '../../services/toast.service';
 import { GET_USERS, CREATE_USER, UPDATE_USER, DELETE_USER } from '../../services/User/user.gql';
 import { User } from '../../services/User/user.types';
 import { CreateUserInput, UpdateUserInput } from '../../services/User/user.input';
@@ -48,11 +49,13 @@ export class UsersComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly gql = inject(GraphqlService);
   public readonly auth = inject(AuthService);
+  private readonly toastService = inject(ToastService);
 
   users = signal<User[]>([]);
   searchTerm = signal('');
   isLoading = signal(false);
   isModalOpen = signal(false);
+  isViewDrawerOpen = signal(false);
   modalMode = signal<'add' | 'edit' | 'view'>('add');
   userForm: FormGroup;
   selectedUserId = signal<string | null>(null);
@@ -76,12 +79,23 @@ export class UsersComponent implements OnInit {
       last_name: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.minLength(8)]],
+      confirm_password: ['', [this.confirmPasswordValidator.bind(this)]],
       role: ['admin', [Validators.required]],
     });
   }
 
+  confirmPasswordValidator(control: import('@angular/forms').AbstractControl): import('@angular/forms').ValidationErrors | null {
+    if (!control.parent) return null;
+    const password = control.parent.get('password')?.value;
+    const confirmPassword = control.value;
+    return password === confirmPassword ? null : { passwordMismatch: true };
+  }
+
   ngOnInit(): void {
     this.loadUsers();
+    this.userForm.get('password')?.valueChanges.subscribe(() => {
+      this.userForm.get('confirm_password')?.updateValueAndValidity();
+    });
   }
 
   async loadUsers(): Promise<void> {
@@ -108,15 +122,18 @@ export class UsersComponent implements OnInit {
   openAddModal(): void {
     this.modalMode.set('add');
     this.userForm.reset();
+    this.userForm.get('role')?.setValue('admin');
     this.userForm.get('password')?.setValidators([Validators.required, Validators.minLength(8)]);
+    this.userForm.get('password')?.updateValueAndValidity();
     this.isModalOpen.set(true);
   }
 
   async openEditModal(user: User): Promise<void> {
     this.modalMode.set('edit');
     this.selectedUserId.set(user.id);
-    this.userForm.patchValue(user);
+    this.userForm.patchValue({ ...user, password: '', confirm_password: '' });
     this.userForm.get('password')?.setValidators([Validators.minLength(8)]);
+    this.userForm.get('password')?.updateValueAndValidity();
     this.isModalOpen.set(true);
   }
 
@@ -124,11 +141,12 @@ export class UsersComponent implements OnInit {
     this.modalMode.set('view');
     this.userForm.patchValue(user);
     this.userForm.disable();
-    this.isModalOpen.set(true);
+    this.isViewDrawerOpen.set(true);
   }
 
   closeModal(): void {
     this.isModalOpen.set(false);
+    this.isViewDrawerOpen.set(false);
     this.userForm.enable();
     this.selectedUserId.set(null);
   }
@@ -140,16 +158,20 @@ export class UsersComponent implements OnInit {
     try {
       if (this.modalMode() === 'add') {
         const input: CreateUserInput = this.userForm.value;
+        delete (input as any).confirm_password;
         await this.gql.request(CREATE_USER, { input });
       } else {
         const input: UpdateUserInput = { ...this.userForm.value, id: this.selectedUserId() };
+        delete (input as any).confirm_password;
         if (!input.password) delete input.password;
         await this.gql.request(UPDATE_USER, { input });
       }
       await this.loadUsers();
       this.closeModal();
+      this.toastService.show(this.modalMode() === 'add' ? 'User registered successfully!' : 'Account updated successfully!', 'success');
     } catch (error) {
       console.error('Operation failed', error);
+      this.toastService.show('Operation failed. Please try again.', 'error');
     } finally {
       this.isLoading.set(false);
     }
@@ -162,8 +184,10 @@ export class UsersComponent implements OnInit {
     try {
       await this.gql.request(DELETE_USER, { id });
       await this.loadUsers();
+      this.toastService.show('User deleted successfully!', 'success');
     } catch (error) {
       console.error('Delete failed', error);
+      this.toastService.show('Failed to delete user.', 'error');
     } finally {
       this.isLoading.set(false);
     }

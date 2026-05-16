@@ -12,3 +12,17 @@
     <router-outlet></router-outlet>
   </div>
 </ng-template>
+
+<!-- Global Toaster -->
+<div *ngIf="toastService.toast() as t"
+     class="fixed top-4 right-6 z-[200] p-3 px-5 rounded-xl shadow-elevated border border-white/20 text-white min-w-[280px] flex items-center justify-between animate-in fade-in zoom-in-[0.98] duration-200"
+     [ngClass]="t.type === 'success' ? 'bg-emerald-600' : 'bg-red-600'"
+     style="font-family: 'Google Sans', var(--font-sans);">
+  <div class="flex items-center gap-3">
+    <ng-icon [name]="t.type === 'success' ? 'heroCheckCircle' : 'heroExclamationCircle'" class="h-5 w-5"></ng-icon>
+    <span class="font-bold text-sm">{{ t.message }}</span>
+  </div>
+  <button (click)="toastService.toast.set(null)" class="hover:bg-white/20 p-1 rounded-lg transition-colors flex items-center ml-4">
+    <ng-icon name="heroXMark" class="h-4 w-4"></ng-icon>
+  </button>
+</div>
