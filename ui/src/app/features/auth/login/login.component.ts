@@ -23,7 +23,7 @@ export class LoginComponent {
     private router: Router
   ) {
     if (this.authService.isAuthenticated()) {
-      this.router.navigate(['/admin']);
+      this.router.navigate(['/admin/dashboard']);
     }
     this.loginForm = this.fb.group({
       username: ['', [Validators.required]],
@@ -49,7 +49,7 @@ export class LoginComponent {
     this.authService.login(username, password).subscribe({
       next: (response) => {
         if (response.data?.login?.status === 'SUCCESS') {
-          this.router.navigate(['/admin']);
+          this.router.navigate(['/admin/dashboard']);
         } else {
           this.errorMessage.set(response.data?.login?.message || 'Login failed.');
         }

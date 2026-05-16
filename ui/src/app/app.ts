@@ -1,8 +1,9 @@
 import { Component, OnInit, inject, signal, effect } from '@angular/core';
-import { NgFor, NgIf } from '@angular/common';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { NavigationService, AuthService } from './services';
+import { CommonModule } from '@angular/common';
+import { Router, RouterOutlet } from '@angular/router';
+import { NavigationService, AuthService, UIConfigService } from './services';
 import { NavigationItem } from './shared/models';
+import { AdminLayoutComponent } from './shared/components/layout/admin-layout/admin-layout.component';
 
 type NavNode = Omit<NavigationItem, 'children'> & {
   children: NavNode[];
@@ -12,7 +13,7 @@ type NavNode = Omit<NavigationItem, 'children'> & {
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, NgFor, NgIf],
+  imports: [CommonModule, RouterOutlet, AdminLayoutComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
@@ -27,7 +28,7 @@ export class App implements OnInit {
   private readonly navigationService = inject(NavigationService);
   public readonly authService = inject(AuthService);
   private readonly router = inject(Router);
-  private readonly navigationLoadTimeoutMs = 12000;
+  private readonly uiConfig = inject(UIConfigService);
 
   isSubRoute(path: string): boolean {
     return this.router.url.startsWith(path);
@@ -36,14 +37,11 @@ export class App implements OnInit {
   constructor() {
     effect(() => {
       const isAuth = this.authService.isAuthenticated();
-      // Reload navigation whenever authentication status changes
       this.loadNavigation();
     });
   }
 
-  async ngOnInit(): Promise<void> {
-    // Navigation loading is handled by the effect on authentication status change
-  }
+  async ngOnInit(): Promise<void> {}
 
   private async loadNavigation(): Promise<void> {
     this.loadingNavigation.set(true);
@@ -60,7 +58,6 @@ export class App implements OnInit {
     }
   }
 
-  /** Recursively stamps _open on every node. NavigationItem model is never modified. */
   private stampOpen(items: NavigationItem[]): NavNode[] {
     return items.map(item => ({
       ...item,
@@ -76,39 +73,5 @@ export class App implements OnInit {
   toggleSection(section: NavNode): void {
     section._open = !section._open;
     this.navigation.update(nav => [...nav]);
-  }
-
-  toggleItem(item: NavNode): void {
-    item._open = !item._open;
-    this.navigation.update(nav => [...nav]);
-  }
-
-  async toggleFullscreen(): Promise<void> {
-    if (typeof document === 'undefined') {
-      return;
-    }
-
-    if (document.fullscreenElement) {
-      await document.exitFullscreen();
-      return;
-    }
-
-    await document.documentElement.requestFullscreen();
-  }
-
-  getIconPath(name?: string | null): string {
-    const raw = (name ?? '').trim();
-    if (!raw) {
-      return 'https://api.iconify.design/heroicons/home-modern.svg';
-    }
-
-    if (raw.includes(':')) {
-      const [collection, icon] = raw.split(':');
-      if (collection && icon) {
-        return `https://api.iconify.design/${collection}/${icon}.svg`;
-      }
-    }
-
-    return `https://api.iconify.design/heroicons/${raw}.svg`;
   }
 }

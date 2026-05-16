@@ -22,7 +22,7 @@ export class RegisterComponent {
     private router: Router
   ) {
     if (this.authService.isAuthenticated()) {
-      this.router.navigate(['/admin']);
+      this.router.navigate(['/admin/dashboard']);
     }
     this.registerForm = this.fb.group({
       username: ['', [Validators.required, Validators.minLength(4)]],
@@ -52,7 +52,7 @@ export class RegisterComponent {
     this.authService.register(input).subscribe({
       next: (response) => {
         if (response.data?.register?.status === 'SUCCESS') {
-          this.router.navigate(['/admin']);
+          this.router.navigate(['/admin/dashboard']);
         } else {
           this.errorMessage.set(response.data?.register?.message || 'Registration failed.');
         }

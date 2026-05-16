@@ -136,7 +136,7 @@ export class AuthService {
   checkAuth(): void {
     const token = localStorage.getItem('auth_token');
     const timestampStr = localStorage.getItem('auth_timestamp');
-    
+
     if (!token) {
       this.logout().subscribe();
       return;
@@ -150,7 +150,7 @@ export class AuthService {
 
     const timestamp = parseInt(timestampStr, 10);
     const now = Date.now();
-    const expiry = 5 * 60 * 1000;
+    const expiry = 30 * 60 * 1000;
     const elapsed = now - timestamp;
 
     if (elapsed > expiry) {
