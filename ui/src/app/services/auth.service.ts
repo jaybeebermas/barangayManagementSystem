@@ -25,6 +25,30 @@ export class AuthService {
     this.checkAuth();
     // Monitor session expiration every 30 seconds
     setInterval(() => this.checkAuth(), 30000);
+    this.setupActivityListeners();
+  }
+
+  private setupActivityListeners(): void {
+    if (typeof window !== 'undefined') {
+      let lastUpdate = Date.now();
+      
+      const updateActivity = () => {
+        // Only update if authenticated
+        if (!this.isAuthenticated()) return;
+        
+        const now = Date.now();
+        // Throttle localStorage updates to at most once every 5 seconds
+        if (now - lastUpdate > 5000) {
+          localStorage.setItem('auth_timestamp', now.toString());
+          lastUpdate = now;
+        }
+      };
+
+      const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+      events.forEach(event => {
+        window.addEventListener(event, updateActivity, { passive: true });
+      });
+    }
   }
 
   login(username: string, password: string): Observable<any> {
@@ -150,17 +174,17 @@ export class AuthService {
 
     const timestamp = parseInt(timestampStr, 10);
     const now = Date.now();
-    const expiry = 30 * 60 * 1000;
+    const expiry = 5 * 60 * 1000; // 5 minutes
     const elapsed = now - timestamp;
 
     if (elapsed > expiry) {
-      console.warn('Session expired (5 minute limit).');
+      console.warn('Session expired due to inactivity (5 minute limit).');
       this.logout().subscribe();
       return;
     }
 
-    // Refresh timestamp to extend session (sliding expiration)
-    localStorage.setItem('auth_timestamp', now.toString());
+    // Note: We no longer unconditionally refresh the timestamp here.
+    // The setupActivityListeners method handles updating it based on actual user interaction.
 
     const query = `
       query {

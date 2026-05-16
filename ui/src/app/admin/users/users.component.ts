@@ -19,7 +19,7 @@ import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+import { NgIconComponent } from '@ng-icons/core';
 import { MatMenuModule } from '@angular/material/menu';
 
 @Component({
@@ -38,8 +38,8 @@ import { MatMenuModule } from '@angular/material/menu';
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatIconModule,
-    MatMenuModule
+    MatMenuModule,
+    NgIconComponent
   ],
   templateUrl: './users.component.html',
   styleUrl: './users.component.css'
