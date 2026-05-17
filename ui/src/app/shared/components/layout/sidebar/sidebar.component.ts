@@ -15,9 +15,11 @@ type NavNode = Omit<NavigationItem, 'children'> & {
   imports: [CommonModule, RouterLink, RouterLinkActive, NgIconComponent],
   template: `
     <aside
-      class="relative flex h-full flex-col overflow-hidden border-r border-teal-100 bg-[#f0fdfa] transition-all duration-300 ease-out z-40 select-none"
+      class="fixed inset-y-0 left-0 z-50 flex h-full flex-col overflow-hidden border-r border-teal-100 bg-[#f0fdfa] transition-all duration-300 ease-out select-none lg:relative lg:z-40 lg:translate-x-0"
       [class.w-72]="isOpen"
-      [class.w-0]="!isOpen">
+      [class.w-0]="!isOpen"
+      [class.-translate-x-full]="!isOpen"
+      [class.translate-x-0]="isOpen">
       
       <!-- Brand Area -->
       <div class="px-6 py-8">

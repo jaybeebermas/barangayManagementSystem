@@ -1,0 +1,4 @@
+roles: [Role!]!
+  @field(resolver: "App\\GraphQL\\Queries\\Role\\GetRole@roles")
+role(id: ID! @eq): Role
+  @field(resolver: "App\\GraphQL\\Queries\\Role\\GetRole@role")

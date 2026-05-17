@@ -1,0 +1,10 @@
+input CreateRoleInput {
+  name: String!
+  guard_name: String
+}
+
+input UpdateRoleInput {
+  id: ID!
+  name: String!
+  guard_name: String
+}

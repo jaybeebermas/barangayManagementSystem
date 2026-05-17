@@ -39,10 +39,26 @@ export class App implements OnInit {
   }
 
   constructor() {
+    if (typeof window !== 'undefined') {
+      this.checkScreenSize();
+      window.addEventListener('resize', () => this.checkScreenSize());
+    }
+    
     effect(() => {
       const isAuth = this.authService.isAuthenticated();
       this.loadNavigation();
     });
+  }
+
+  private checkScreenSize(): void {
+    if (typeof window !== 'undefined') {
+      const isMobile = window.innerWidth < 1024;
+      // Only auto-close if it was open, or auto-open if it was closed and we are moving to desktop
+      // Actually, a simpler way is just to set it based on width if it's the first load
+      if (isMobile && this.sidebarOpen()) {
+        this.sidebarOpen.set(false);
+      }
+    }
   }
 
   async ngOnInit(): Promise<void> {}

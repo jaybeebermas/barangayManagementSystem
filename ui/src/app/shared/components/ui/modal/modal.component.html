@@ -1,11 +1,11 @@
 <div *ngIf="isOpen"
-     class="fixed inset-0 z-[150] flex items-center justify-center p-4 sm:p-6 subtle-backdrop animate-in fade-in duration-200">
+     class="fixed inset-0 z-[150] flex items-center justify-center md:p-6 p-0 subtle-backdrop animate-in fade-in duration-200">
   
-  <!-- Backdrop Click Area -->
-  <div class="absolute inset-0" (click)="onClose()"></div>
+  <!-- Backdrop Click Area (Desktop only) -->
+  <div class="absolute inset-0 hidden md:block" (click)="onClose()"></div>
 
   <!-- Modal Card -->
-  <div class="relative bg-white w-full rounded-3xl shadow-elevated overflow-hidden animate-in zoom-in-[0.98] slide-in-from-bottom-4 duration-300 border border-white/20"
+  <div class="relative bg-white w-full h-full md:h-auto md:rounded-3xl shadow-elevated overflow-hidden animate-in duration-300 border-zinc-200/50 md:border md:border-white/20 md:zoom-in-[0.98] md:slide-in-from-bottom-4 flex flex-col"
        [ngClass]="maxWidth">
     
     <!-- Header -->
@@ -21,13 +21,13 @@
     </div>
 
     <!-- Body -->
-    <div class="px-8 py-3 max-h-[70vh] overflow-y-auto custom-scrollbar">
+    <div class="px-8 py-3 flex-1 md:max-h-[70vh] overflow-y-auto custom-scrollbar">
       <ng-content></ng-content>
     </div>
 
     <!-- Footer -->
     <div *ngIf="showFooter" 
-         class="px-8 pt-2 pb-8 flex items-center justify-end gap-4">
+         class="px-8 pt-2 pb-8 md:pb-8 pb-10 flex items-center justify-end gap-4 shrink-0">
       <button type="button" 
               (click)="onClose()"
               class="px-8 py-3 rounded-xl font-bold text-zinc-500 hover:text-zinc-800 transition-colors">

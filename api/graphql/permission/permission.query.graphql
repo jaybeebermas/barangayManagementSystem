@@ -1,10 +1,8 @@
-extend type Query {
-  permissions: [Permission!]!
-    @field(resolver: "App\\GraphQL\\Queries\\PermissionQuery@permissions")
-  permission(id: ID! @eq): Permission
-    @field(resolver: "App\\GraphQL\\Queries\\PermissionQuery@permission")
-  availablePermissions: [String!]!
-    @field(resolver: "App\\GraphQL\\Queries\\PermissionQuery@availablePermissions")
-  basePermissions: [String!]!
-    @field(resolver: "App\\GraphQL\\Queries\\PermissionQuery@basePermissions")
-}
+permissions: [Permission!]!
+  @field(resolver: "App\\GraphQL\\Queries\\Permission\\PermissionQuery@permissions")
+permission(id: ID! @eq): Permission
+  @field(resolver: "App\\GraphQL\\Queries\\Permission\\PermissionQuery@permission")
+availablePermissions: [String!]!
+  @field(resolver: "App\\GraphQL\\Queries\\Permission\\PermissionQuery@availablePermissions")
+basePermissions: [String!]!
+  @field(resolver: "App\\GraphQL\\Queries\\Permission\\PermissionQuery@basePermissions")

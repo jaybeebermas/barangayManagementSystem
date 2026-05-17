@@ -1,6 +1,6 @@
 <?php
 
-namespace App\GraphQL\Queries;
+namespace App\GraphQL\Queries\Navigation;
 
 use App\Models\Navigation;
 use Illuminate\Support\Facades\Auth;
@@ -10,13 +10,14 @@ class NavigationQuery
     public function navigation(): array
     {
         $user = Auth::user() ?: Auth::guard('sanctum')->user() ?: Auth::guard('web')->user();
-        
+
         if (! $user) {
             \Illuminate\Support\Facades\Log::warning('Navigation requested without authentication.');
+
             return [];
         }
 
-        \Illuminate\Support\Facades\Log::info('Navigation requested by User ID: ' . $user->id . ' (Role: ' . $user->role . ')');
+        \Illuminate\Support\Facades\Log::info('Navigation requested by User ID: '.$user->id.' (Role: '.$user->role.')');
 
         $isSuperAdmin = $user->hasRole('super_admin');
 
@@ -28,7 +29,7 @@ class NavigationQuery
                 if ($isSuperAdmin || ! $item->permission) {
                     return true;
                 }
-                // Try checking permission on user regardless of guard.
+
                 return $user->hasPermissionTo($item->permission);
             })
             ->map(fn (Navigation $item) => [
@@ -61,7 +62,6 @@ class NavigationQuery
 
             $id = (string) $item['id'];
 
-            // Prevent infinite recursion if bad data introduces a parent cycle.
             if (in_array($id, $path, true)) {
                 $item['children'] = [];
                 $nodes[] = $item;

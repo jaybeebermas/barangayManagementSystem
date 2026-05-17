@@ -1,8 +1,6 @@
-extend type Mutation {
-  createPermission(input: CreatePermissionInput!): Permission!
-    @field(resolver: "App\\GraphQL\\Mutations\\PermissionMutation@createPermission")
-  updatePermission(input: UpdatePermissionInput!): Permission!
-    @field(resolver: "App\\GraphQL\\Mutations\\PermissionMutation@updatePermission")
-  deletePermission(id: ID!): Permission
-    @field(resolver: "App\\GraphQL\\Mutations\\PermissionMutation@deletePermission")
-}
+createPermission(input: CreatePermissionInput!): Permission!
+  @field(resolver: "App\\GraphQL\\Mutations\\Permission\\CreatePermission")
+updatePermission(input: UpdatePermissionInput!): Permission!
+  @field(resolver: "App\\GraphQL\\Mutations\\Permission\\UpdatePermission")
+deletePermission(id: ID!): Permission
+  @field(resolver: "App\\GraphQL\\Mutations\\Permission\\DeletePermission")

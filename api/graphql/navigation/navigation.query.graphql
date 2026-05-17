@@ -1,5 +1,3 @@
-extend type Query {
-  navigation: [NavigationItem!]!
-    @field(resolver: "App\\GraphQL\\Queries\\NavigationQuery@navigation")
-    @guard
-}
+navigation: [NavigationItem!]!
+  @field(resolver: "App\\GraphQL\\Queries\\Navigation\\NavigationQuery@navigation")
+  @guard

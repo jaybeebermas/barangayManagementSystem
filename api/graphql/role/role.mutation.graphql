@@ -1,0 +1,6 @@
+createRole(input: CreateRoleInput!): Role!
+  @field(resolver: "App\\GraphQL\\Mutations\\Role\\CreateRole")
+updateRole(input: UpdateRoleInput!): Role!
+  @field(resolver: "App\\GraphQL\\Mutations\\Role\\UpdateRole")
+deleteRole(id: ID!): Role
+  @field(resolver: "App\\GraphQL\\Mutations\\Role\\DeleteRole")
