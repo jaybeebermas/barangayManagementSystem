@@ -1,6 +1,6 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, computed, ViewChild, TemplateRef, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { GraphqlService } from '../../services/graphql/graphql.service';
 import { AuthService } from '../../services/auth/auth.service';
 import { ToastService } from '../../services/toast/toast.service';
@@ -9,14 +9,8 @@ import { User } from '../../services/User/user.types';
 import { CreateUserInput, UpdateUserInput } from '../../services/User/user.input';
 
 
-import { UserManagementLayoutComponent } from '../../shared/components/admin/user-management-layout/user-management-layout.component';
-import { PageHeaderComponent } from '../../shared/components/admin/page-header/page-header.component';
-import { SearchFiltersComponent } from '../../shared/components/admin/search-filters/search-filters.component';
-import { UserTableComponent } from '../../shared/components/admin/user-table/user-table.component';
-import { TablePaginationComponent } from '../../shared/components/admin/table-pagination/table-pagination.component';
 import { DrawerComponent } from '../../shared/components/ui/drawer/drawer.component';
 import { ModalService } from '../../services/modal/modal.service';
-import { computed, ViewChild, TemplateRef } from '@angular/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -24,6 +18,285 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { NgIconComponent } from '@ng-icons/core';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+
+@Component({
+  selector: 'app-user-management-layout',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
+    <div class="min-h-full bg-transparent -m-4 md:-m-6 lg:-m-8 p-4 md:p-8 overflow-y-auto">
+      <div class="w-full bg-white rounded-3xl border border-zinc-200/50 p-6 md:p-10 shadow-sm flex flex-col gap-6 animate-fade-in-up min-h-[calc(100vh-10rem)]">
+        <ng-content></ng-content>
+      </div>
+    </div>
+  `,
+  styles: [`
+    :host { display: block; height: 100%; }
+    .shadow-inner-lg { box-shadow: inset 0 2px 15px 0 rgb(0 0 0 / 0.05); }
+    @keyframes fadeInUp {
+      from { opacity: 0; margin-top: 20px; }
+      to { opacity: 1; margin-top: 0; }
+    }
+    .animate-fade-in-up {
+      animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  `]
+})
+export class UserManagementLayoutComponent {}
+
+@Component({
+  selector: 'app-page-header',
+  standalone: true,
+  imports: [CommonModule, NgIconComponent],
+  template: `
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6 p-1">
+      <div>
+        <h2 class="text-2xl font-black text-zinc-900 tracking-tight">{{ title }}</h2>
+        <p class="text-zinc-500 font-medium mt-1 text-sm">{{ subtitle }}</p>
+      </div>
+      <button
+        *ngIf="actionLabel"
+        (click)="actionClick.emit()"
+        class="btn-primary !py-2.5 !px-6 !text-xs shadow-lg shadow-primary-600/10 whitespace-nowrap">
+        <span class="flex items-center gap-2">
+          <ng-container *ngIf="!customIcon; else iconTemplate">
+            <ng-icon name="heroPlus" class="h-4 w-4" strokeWidth="3"></ng-icon>
+          </ng-container>
+          <ng-template #iconTemplate>
+            <span [innerHTML]="customIcon"></span>
+          </ng-template>
+          {{ actionLabel }}
+        </span>
+      </button>
+    </div>
+  `
+})
+export class PageHeaderComponent {
+  @Input() title: string = '';
+  @Input() subtitle: string = '';
+  @Input() actionLabel?: string;
+  @Input() customIcon?: string;
+  @Output() actionClick = new EventEmitter<void>();
+}
+
+@Component({
+  selector: 'app-search-filters',
+  standalone: true,
+  imports: [CommonModule, FormsModule, MatFormFieldModule, MatInputModule, NgIconComponent],
+  template: `
+    <div class="flex flex-col md:flex-row gap-4 p-1 items-center">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1 w-full">
+        <mat-label>{{ placeholder }}</mat-label>
+        <ng-icon name="heroMagnifyingGlass" matPrefix class="ml-5 mr-3 text-zinc-400 text-xl"></ng-icon>
+        <input
+          matInput
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="search.emit($event)"
+        />
+      </mat-form-field>
+      <div class="flex gap-3 w-full md:w-auto items-center">
+        <ng-content></ng-content>
+      </div>
+    </div>
+  `
+})
+export class SearchFiltersComponent {
+  @Input() placeholder: string = 'Search...';
+  @Output() search = new EventEmitter<string>();
+  searchTerm: string = '';
+}
+
+@Component({
+  selector: 'app-user-action-menu',
+  standalone: true,
+  imports: [CommonModule, MatButtonModule, MatTooltipModule, NgIconComponent],
+  template: `
+    <div class="flex items-center justify-end gap-1.5 transition-all">
+      <button type="button" class="flex items-center justify-center w-8 h-8 rounded-full text-primary-600 hover:bg-primary-50 transition-colors" (click)="view.emit()" matTooltip="View details">
+        <ng-icon name="heroEye" class="text-[17px]"></ng-icon>
+      </button>
+      <button type="button" class="flex items-center justify-center w-8 h-8 rounded-full text-pink-600 hover:bg-pink-50 transition-colors" (click)="edit.emit()" matTooltip="Edit user">
+        <ng-icon name="heroPencil" class="text-[17px]"></ng-icon>
+      </button>
+      <button type="button" class="flex items-center justify-center w-8 h-8 rounded-full text-red-500 hover:bg-red-50 transition-colors" (click)="delete.emit()" matTooltip="Delete user">
+        <ng-icon name="heroTrash" class="text-[17px]"></ng-icon>
+      </button>
+    </div>
+  `
+})
+export class UserActionMenuComponent {
+  @Output() view = new EventEmitter<void>();
+  @Output() edit = new EventEmitter<void>();
+  @Output() delete = new EventEmitter<void>();
+}
+
+@Component({
+  selector: 'app-user-table',
+  standalone: true,
+  imports: [CommonModule, UserActionMenuComponent, NgIconComponent],
+  template: `
+    <div class="flex-1 flex flex-col min-h-0">
+      <div class="hidden md:block overflow-x-auto flex-1">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-zinc-100/50 border-b border-zinc-200/60">
+              <th class="px-8 py-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">User Profile</th>
+              <th class="px-8 py-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest text-center">System Role</th>
+              <th class="px-8 py-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Email Address</th>
+              <th class="px-8 py-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-zinc-100/50">
+            <tr *ngFor="let user of users" class="hover:bg-zinc-100/30 transition-all group">
+              <td class="px-8 py-4">
+                <div class="flex items-center gap-4">
+                  <div>
+                    <span class="block text-sm font-bold text-zinc-900 leading-none mb-1.5">{{ user.first_name }} {{ user.last_name }}</span>
+                    <span class="text-[11px] text-zinc-400 font-semibold tracking-tight">@{{ user.username }}</span>
+                  </div>
+                </div>
+              </td>
+              <td class="px-8 py-4 text-center">
+                <span
+                  [class.bg-primary-100]="user.role === 'super_admin'"
+                  [class.text-primary-700]="user.role === 'super_admin'"
+                  [class.bg-zinc-200/50]="user.role !== 'super_admin'"
+                  [class.text-zinc-600]="user.role !== 'super_admin'"
+                  class="inline-flex px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                  {{ user.role === 'super_admin' ? 'Super Admin' : 'Staff Admin' }}
+                </span>
+              </td>
+              <td class="px-8 py-4 text-xs font-medium text-zinc-500">{{ user.email }}</td>
+              <td class="px-8 py-4 text-right whitespace-nowrap">
+                <app-user-action-menu
+                  (view)="view.emit(user)"
+                  (edit)="edit.emit(user)"
+                  (delete)="delete.emit(user.id)">
+                </app-user-action-menu>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="md:hidden flex-1 overflow-y-auto p-4 space-y-4 bg-zinc-50/30">
+        <div *ngFor="let user of users" class="bg-white rounded-2xl border border-zinc-200/60 p-5 shadow-sm hover:shadow-md transition-all active:scale-[0.98]">
+          <div class="flex justify-between items-start mb-5">
+            <div class="flex items-center gap-4">
+              <div class="h-11 w-11 rounded-xl bg-gradient-to-tr from-primary-600 to-teal-400 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-primary-600/10">
+                {{ user.first_name?.[0] }}{{ user.last_name?.[0] }}
+              </div>
+              <div>
+                <h4 class="font-bold text-zinc-900 text-sm leading-tight">{{ user.first_name }} {{ user.last_name }}</h4>
+                <p class="text-[11px] text-zinc-400 font-bold uppercase tracking-tighter mt-0.5">@{{ user.username }}</p>
+              </div>
+            </div>
+            <app-user-action-menu
+              (view)="view.emit(user)"
+              (edit)="edit.emit(user)"
+              (delete)="delete.emit(user.id)">
+            </app-user-action-menu>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+              <span class="text-zinc-400 font-bold uppercase tracking-widest text-[9px]">Account Role</span>
+              <span
+                [class.bg-primary-100]="user.role === 'super_admin'"
+                [class.text-primary-700]="user.role === 'super_admin'"
+                [class.bg-zinc-100]="user.role !== 'super_admin'"
+                [class.text-zinc-600]="user.role !== 'super_admin'"
+                class="inline-block px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest w-fit">
+                {{ user.role === 'super_admin' ? 'Super Admin' : 'Staff Admin' }}
+              </span>
+            </div>
+            <div class="flex flex-col gap-1">
+              <span class="text-zinc-400 font-bold uppercase tracking-widest text-[9px]">Email Address</span>
+              <span class="text-zinc-600 font-bold text-[10px] truncate">{{ user.email }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="users.length === 0 && !isLoading" class="p-20 text-center">
+        <div class="inline-flex items-center justify-center p-6 bg-zinc-100 rounded-xl mb-6 shadow-inner">
+          <ng-icon name="heroUsers" class="h-10 w-10 text-zinc-300"></ng-icon>
+        </div>
+        <h3 class="text-zinc-900 text-xl font-black mb-2 tracking-tight">No records found</h3>
+        <p class="text-zinc-500 font-medium max-w-sm mx-auto text-base">It looks like there are no results matching your criteria.</p>
+      </div>
+
+      <div *ngIf="isLoading" class="flex flex-col items-center justify-center p-24 gap-4">
+        <div class="animate-spin h-10 w-10 border-4 border-primary-600 border-t-transparent rounded-full shadow-lg shadow-primary-600/10"></div>
+        <p class="text-xs font-bold text-zinc-400 uppercase tracking-widest">Loading Records...</p>
+      </div>
+      <ng-content select="app-table-pagination"></ng-content>
+    </div>
+  `
+})
+export class UserTableComponent {
+  @Input() users: any[] = [];
+  @Input() isLoading: boolean = false;
+  @Output() view = new EventEmitter<any>();
+  @Output() edit = new EventEmitter<any>();
+  @Output() delete = new EventEmitter<string>();
+}
+
+@Component({
+  selector: 'app-table-pagination',
+  standalone: true,
+  imports: [CommonModule, MatPaginatorModule],
+  template: `
+    <div class="bg-zinc-50/50 border-t border-zinc-100 rounded-b-2xl px-6">
+      <mat-paginator
+        [length]="totalItems"
+        [pageSize]="pageSize"
+        [pageIndex]="currentPage - 1"
+        [pageSizeOptions]="[5, 10, 25, 100]"
+        (page)="handlePageEvent($event)"
+        aria-label="Select page">
+      </mat-paginator>
+    </div>
+  `,
+  styles: [`
+    :host ::ng-deep .mat-mdc-paginator {
+      background: transparent !important;
+      font-family: inherit;
+      font-size: 11px !important;
+    }
+    :host ::ng-deep .mat-mdc-paginator-container {
+      padding: 0.5rem 0 !important;
+      justify-content: space-between;
+      min-height: 48px !important;
+    }
+    :host ::ng-deep .mat-mdc-paginator-range-label {
+      margin: 0 16px !important;
+      font-weight: 600;
+      color: #71717a;
+    }
+    :host ::ng-deep .mat-mdc-icon-button {
+      width: 32px !important;
+      height: 32px !important;
+      padding: 4px !important;
+    }
+  `]
+})
+export class TablePaginationComponent {
+  @Input() currentPage: number = 1;
+  @Input() totalItems: number = 0;
+  @Input() pageSize: number = 10;
+  @Output() pageChange = new EventEmitter<number>();
+  @Output() pageSizeChange = new EventEmitter<number>();
+
+  handlePageEvent(e: PageEvent) {
+    if (e.pageSize !== this.pageSize) {
+      this.pageSizeChange.emit(e.pageSize);
+    }
+    this.pageChange.emit(e.pageIndex + 1);
+  }
+}
 
 @Component({
   selector: 'app-users',
