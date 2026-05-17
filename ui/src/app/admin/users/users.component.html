@@ -22,11 +22,15 @@
       </app-search-filters>
 
       <!-- 3. User Table with 4. Pagination -->
-      <app-user-table [users]="filteredUsers()" [isLoading]="isLoading()" (view)="openViewModal($event)"
+      <app-user-table [users]="paginatedUsers()" [isLoading]="isLoading()" (view)="openViewModal($event)"
         (edit)="openEditModal($event)" (delete)="deleteUser($event)">
 
-        <app-table-pagination [currentPage]="1" [totalItems]="filteredUsers().length" [pageSize]="10"
-          (pageChange)="handlePageSearch($event)">
+        <app-table-pagination 
+          [currentPage]="currentPage()" 
+          [totalItems]="filteredUsers().length" 
+          [pageSize]="pageSize()"
+          (pageChange)="handlePageSearch($event)"
+          (pageSizeChange)="pageSize.set($event); currentPage.set(1)">
         </app-table-pagination>
       </app-user-table>
     </app-user-management-layout>

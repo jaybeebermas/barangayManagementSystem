@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject, ViewChild, TemplateRef, effect } from '@angular/core';
+import { Component, OnInit, signal, inject, ViewChild, TemplateRef, effect, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { PageHeaderComponent } from '../../shared/components/ui/user-management/page-header.component';
@@ -42,6 +42,14 @@ export class RolesComponent implements OnInit {
   private readonly toastService = inject(ToastService);
 
   roles = signal<Role[]>([]);
+  currentPage = signal(1);
+  pageSize = signal(10);
+
+  paginatedRoles = computed(() => {
+    const start = (this.currentPage() - 1) * this.pageSize();
+    const end = start + this.pageSize();
+    return this.roles().slice(start, end);
+  });
   selectedRole = signal<Role | null>(null);
   isLoading = signal(false);
 

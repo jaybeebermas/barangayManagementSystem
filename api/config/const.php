@@ -19,7 +19,7 @@ return [
         'permission.create',
         'permission.edit',
         'permission.delete',
-        
+
         // USER MODULE
         'user.view',
         'user.create',
@@ -37,5 +37,8 @@ return [
         'disaster.create',
         'disaster.edit',
         'disaster.delete',
+
+        // SETTINGS MODULE
+        'settings.view',
     ],
 ];

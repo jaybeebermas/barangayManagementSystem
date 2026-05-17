@@ -34,7 +34,7 @@
       </div>
 
       <button 
-        *ngFor="let role of roles()"
+        *ngFor="let role of paginatedRoles()"
         matRipple
         (click)="selectRole(role)"
         class="w-full text-left p-4 rounded-2xl transition-all duration-200 border border-transparent"
@@ -57,9 +57,11 @@
     
     <div class="bg-white border-t border-zinc-100 mt-auto">
       <app-table-pagination 
-        [currentPage]="1" 
+        [currentPage]="currentPage()" 
         [totalItems]="roles().length" 
-        [pageSize]="10">
+        [pageSize]="pageSize()"
+        (pageChange)="currentPage.set($event)"
+        (pageSizeChange)="pageSize.set($event); currentPage.set(1)">
       </app-table-pagination>
     </div>
   </div>

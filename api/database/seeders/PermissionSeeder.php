@@ -25,6 +25,9 @@ class PermissionSeeder extends Seeder
                 );
             }
 
+            // Forget cached permissions so Spatie is aware of newly created permissions
+            app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+
             // Create Roles
             $superAdmin = $roleModelClass::query()->updateOrCreate(
                 ['name' => 'super_admin', 'guard_name' => $guardName],

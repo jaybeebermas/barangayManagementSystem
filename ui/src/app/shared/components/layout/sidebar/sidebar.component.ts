@@ -31,7 +31,7 @@ type NavNode = Omit<NavigationItem, 'children'> & {
           </div>
           <div class="transition-all duration-300" [class.opacity-0]="!isOpen" [class.translate-x-4]="!isOpen">
             <h2 class="text-xl font-black text-zinc-900 tracking-tight leading-none">Brgy<span class="text-primary-600">Sync</span></h2>
-            <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-[0.2em] mt-1">Administrator</p>
+            <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-[0.2em] mt-1">{{ getUserRoleName() }}</p>
           </div>
         </div>
       </div>
@@ -132,6 +132,15 @@ type NavNode = Omit<NavigationItem, 'children'> & {
 })
 export class SidebarComponent {
   @Input() isOpen = true;
+
+  getUserRoleName(): string {
+    const role = this.authService.currentUser()?.role;
+    if (!role) return '';
+    return role
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
   private _navItems: NavNode[] = [];
 
   @Input() 

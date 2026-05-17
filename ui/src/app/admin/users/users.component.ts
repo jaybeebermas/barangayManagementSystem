@@ -214,6 +214,14 @@ export class UsersComponent implements OnInit {
 
   users = signal<User[]>([]);
   searchTerm = signal('');
+  currentPage = signal(1);
+  pageSize = signal(10);
+
+  paginatedUsers = computed(() => {
+    const start = (this.currentPage() - 1) * this.pageSize();
+    const end = start + this.pageSize();
+    return this.filteredUsers().slice(start, end);
+  });
   isLoading = signal(false);
   isDrawerOpen = signal(false);
   modalMode = signal<'add' | 'edit' | 'view'>('add');
@@ -320,10 +328,11 @@ export class UsersComponent implements OnInit {
 
   handleSearch(term: string): void {
     this.searchTerm.set(term);
+    this.currentPage.set(1);
   }
 
   handlePageSearch(index: number): void {
-    console.log('Page changed to:', index);
+    this.currentPage.set(index);
   }
 
   openAddModal(): void {
