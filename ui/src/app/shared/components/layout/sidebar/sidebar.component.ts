@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { NgIconComponent } from '@ng-icons/core';
 import { NavigationItem } from '../../../../shared/models/navigation.model';
+import { AuthService } from '../../../../services/auth/auth.service';
 
 type NavNode = Omit<NavigationItem, 'children'> & {
   children: NavNode[];
@@ -94,7 +95,7 @@ type NavNode = Omit<NavigationItem, 'children'> & {
               [class.opacity-0]="!section._open">
               <div *ngFor="let item of section.children">
                 <a
-                  *ngIf="item.type === 'item' && isValidRoute(item.route)"
+                  *ngIf="item.type === 'item' && isValidRoute(item.route) && (!item.permission || authService.hasPermission(item.permission))"
                   [routerLink]="item.route"
                   routerLinkActive="text-primary-600 font-black"
                   #rlaChild="routerLinkActive"
@@ -106,7 +107,7 @@ type NavNode = Omit<NavigationItem, 'children'> & {
                 
                 <!-- Non-link child -->
                 <div 
-                  *ngIf="item.type === 'item' && !isValidRoute(item.route)"
+                  *ngIf="item.type === 'item' && !isValidRoute(item.route) && (!item.permission || authService.hasPermission(item.permission))"
                   class="flex h-10 items-center gap-2 px-4 text-[13px] font-bold text-zinc-300 cursor-default italic">
                   <span class="truncate">{{ item.title }}</span>
                 </div>
@@ -133,6 +134,7 @@ export class SidebarComponent {
   @Input() navItems: NavNode[] = [];
   
   private router = inject(Router);
+  public readonly authService = inject(AuthService);
   private validRoutes = new Set<string>();
 
   constructor() {
@@ -169,7 +171,13 @@ export class SidebarComponent {
     return this.navItems.filter(item => {
       const route = (item.route || '').toLowerCase();
       const title = (item.title || '').toLowerCase();
-      return route !== '/admin/dashboard' && route !== 'dashboard' && title !== 'dashboard';
+      if (route === '/admin/dashboard' || route === 'dashboard' || title === 'dashboard') {
+        return false;
+      }
+      if (item.permission && !this.authService.hasPermission(item.permission)) {
+        return false;
+      }
+      return true;
     });
   }
 
