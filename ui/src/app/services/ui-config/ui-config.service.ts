@@ -9,7 +9,7 @@ export class UIConfigService {
   private readonly STORAGE_KEY = 'brgy_ui_scale';
   
   // Default to large since the user asked for "a little bigger"
-  scale = signal<UIScale>(this.getStoredScale() || 'large');
+  scale = signal<UIScale>('large');
 
   constructor() {
     // Automatically apply the scale to the document whenever it changes

@@ -8,6 +8,7 @@ import { GET_USERS, CREATE_USER, UPDATE_USER, DELETE_USER } from '../../services
 import { User } from '../../services/User/user.types';
 import { CreateUserInput, UpdateUserInput } from '../../services/User/user.input';
 import { RoleService, Role } from '../../services/role/role.service';
+import { ConfirmDeleteComponent } from '../../shared/components/ui/confirm-delete/confirm-delete.component';
 
 
 import { DrawerComponent } from '../../shared/components/ui/drawer/drawer.component';
@@ -193,13 +194,16 @@ import { TablePaginationComponent } from '../../shared/components/ui/user-manage
     MatMenuModule,
     NgIconComponent,
     DrawerComponent,
-    HasPermissionDirective
+    HasPermissionDirective, ConfirmDeleteComponent
   ],
   templateUrl: './users.component.html',
   styleUrl: './users.component.css'
 })
 export class UsersComponent implements OnInit {
   @ViewChild('userModal') userModalTemplate!: TemplateRef<any>;
+  @ViewChild('deleteModal') deleteModalTemplate!: TemplateRef<any>;
+
+  userToDelete = signal<User | null>(null);
 
   private readonly fb = inject(FormBuilder);
   private readonly gql = inject(GraphqlService);
@@ -216,6 +220,7 @@ export class UsersComponent implements OnInit {
   userForm: FormGroup;
   selectedUserId = signal<string | null>(null);
   roles = signal<Role[]>([]);
+  originalUserFormValue: any = null;
 
   filteredUsers = computed(() => {
     const term = this.searchTerm().toLowerCase();
@@ -227,6 +232,29 @@ export class UsersComponent implements OnInit {
       u.email.toLowerCase().includes(term)
     );
   });
+
+  hasChanges(): boolean {
+    if (!this.originalUserFormValue) return false;
+    
+    const current = this.userForm.value;
+    const original = this.originalUserFormValue;
+    
+    for (const key of Object.keys(current)) {
+      if ((key === 'password' || key === 'confirm_password') && !current[key]) {
+        continue;
+      }
+      if (current[key] !== original[key]) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  syncModalConfirmState(): void {
+    const isFormInvalid = this.userForm.invalid;
+    const hasNoChanges = !this.hasChanges();
+    this.modalService.setConfirmDisabled(isFormInvalid || hasNoChanges);
+  }
 
   constructor() {
     this.userForm = this.fb.group({
@@ -263,8 +291,8 @@ export class UsersComponent implements OnInit {
     });
 
     // Sync form validity with global modal confirm button
-    this.userForm.statusChanges.subscribe(status => {
-      this.modalService.setConfirmDisabled(status === 'INVALID');
+    this.userForm.valueChanges.subscribe(() => {
+      this.syncModalConfirmState();
     });
   }
 
@@ -302,13 +330,18 @@ export class UsersComponent implements OnInit {
     this.modalMode.set('add');
     this.userForm.enable();
     this.userForm.reset();
-    if (this.roles().length > 0) {
+    const hasAdmin = this.roles().some(r => r.name === 'admin');
+    if (hasAdmin) {
+      this.userForm.get('role')?.setValue('admin');
+    } else if (this.roles().length > 0) {
       this.userForm.get('role')?.setValue(this.roles()[0].name);
     } else {
       this.userForm.get('role')?.setValue('admin');
     }
     this.userForm.get('password')?.setValidators([Validators.required, Validators.minLength(8)]);
     this.userForm.get('password')?.updateValueAndValidity();
+    // Baseline captured below modal open
+    // State synced below modal open
     
     this.modalService.open(this.userModalTemplate, {
       title: 'Add New System User',
@@ -317,6 +350,8 @@ export class UsersComponent implements OnInit {
     });
     this.isDrawerOpen.set(false);
     this.modalService.onConfirm = () => this.handleSubmit();
+    this.originalUserFormValue = this.userForm.value;
+    this.syncModalConfirmState();
   }
 
   async openEditModal(user: User): Promise<void> {
@@ -326,6 +361,8 @@ export class UsersComponent implements OnInit {
     this.userForm.patchValue({ ...user, password: '', confirm_password: '' });
     this.userForm.get('password')?.setValidators([Validators.minLength(8)]);
     this.userForm.get('password')?.updateValueAndValidity();
+    // Baseline captured below modal open
+    // State synced below modal open
     
     this.modalService.open(this.userModalTemplate, {
       title: 'Edit System User',
@@ -334,6 +371,8 @@ export class UsersComponent implements OnInit {
     });
     this.isDrawerOpen.set(false);
     this.modalService.onConfirm = () => this.handleSubmit();
+    this.originalUserFormValue = this.userForm.value;
+    this.syncModalConfirmState();
   }
 
   openViewModal(user: User): void {
@@ -377,6 +416,39 @@ export class UsersComponent implements OnInit {
   }
 
   async deleteUser(id: string): Promise<void> {
+    const user = this.users().find(u => u.id === id);
+    if (!user) return;
+
+    this.userToDelete.set(user);
+    this.modalService.open(this.deleteModalTemplate, {
+      title: 'Delete User',
+      confirmLabel: 'Delete',
+      cancelLabel: 'Cancel',
+      type: 'danger',
+      maxWidth: 'max-w-md'
+    });
+    this.modalService.onConfirm = () => this.confirmDeleteUser();
+  }
+
+  async confirmDeleteUser(): Promise<void> {
+    const user = this.userToDelete();
+    if (!user) return;
+
+    this.modalService.setLoading(true);
+    try {
+      await this.gql.request(DELETE_USER, { id: user.id });
+      await this.loadUsers();
+      this.toastService.show('User deleted successfully!', 'success');
+      this.modalService.close();
+    } catch (error) {
+      console.error('Delete failed', error);
+      this.toastService.show('Failed to delete user.', 'error');
+    } finally {
+      this.modalService.setLoading(false);
+    }
+  }
+
+  /* old delete method
     if (!confirm('Are you sure you want to delete this user?')) return;
 
     this.isLoading.set(true);
@@ -390,5 +462,5 @@ export class UsersComponent implements OnInit {
     } finally {
       this.isLoading.set(false);
     }
-  }
+  */
 }

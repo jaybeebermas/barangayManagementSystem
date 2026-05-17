@@ -161,3 +161,8 @@
     </div>
   </form>
 </ng-template>
+
+<!-- Confirm Delete Modal Template -->
+<ng-template #deleteModal>
+  <app-confirm-delete [name]="(userToDelete()?.first_name || '') + ' ' + (userToDelete()?.last_name || '')"></app-confirm-delete>
+</ng-template>

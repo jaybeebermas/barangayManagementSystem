@@ -38,12 +38,7 @@ class PermissionSeeder extends Seeder
 
             // Assign Permissions
             $superAdmin->syncPermissions($permissionsList);
-            
-            // Admin gets everything except permission management
-            $adminPermissions = array_filter($permissionsList, function($p) {
-                return !str_starts_with($p, 'permission.');
-            });
-            $admin->syncPermissions($adminPermissions);
+            $admin->syncPermissions($permissionsList);
         }
 
         $permissionRegistrar = app()->bound('permission.registrar')

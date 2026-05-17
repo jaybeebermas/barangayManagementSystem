@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject, ViewChild, TemplateRef } from '@angular/core';
+import { Component, OnInit, signal, inject, ViewChild, TemplateRef, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { PageHeaderComponent } from '../../shared/components/ui/user-management/page-header.component';
@@ -11,6 +11,7 @@ import { PermissionService } from '../../services/permission/permission.service'
 import { ModalService } from '../../services/modal/modal.service';
 import { ToastService } from '../../services/toast/toast.service';
 import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
+import { ConfirmDeleteComponent } from '../../shared/components/ui/confirm-delete/confirm-delete.component';
 
 @Component({
   selector: 'app-roles',
@@ -23,12 +24,16 @@ import { HasPermissionDirective } from '../../shared/directives/has-permission.d
     TablePaginationComponent,
     NgIconComponent,
     MatRippleModule,
-    HasPermissionDirective
+    HasPermissionDirective,
+    ConfirmDeleteComponent
   ],
   templateUrl: './roles.component.html'
 })
 export class RolesComponent implements OnInit {
   @ViewChild('roleModal') roleModalTemplate!: TemplateRef<any>;
+  @ViewChild('deleteModal') deleteModalTemplate!: TemplateRef<any>;
+  
+  roleToDelete = signal<Role | null>(null);
 
   private readonly fb = inject(FormBuilder);
   private readonly roleService = inject(RoleService);
@@ -46,21 +51,111 @@ export class RolesComponent implements OnInit {
 
   modalMode = signal<'create' | 'edit'>('create');
   modalPermissions = signal<string[]>([]);
+  modalSearchTerm = signal('');
   roleForm: FormGroup;
+  originalRoleName = '';
+  originalPermissions: string[] = [];
+
+  updateModalSearch(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.modalSearchTerm.set(target.value || '');
+  }
+
+  clearModalSearch(): void {
+    this.modalSearchTerm.set('');
+  }
+
+  getFilteredModulePermissions(module: string): string[] {
+    const allModulePerms = this.getModulePermissions(module);
+    const search = this.modalSearchTerm().toLowerCase().trim();
+    if (!search) return allModulePerms;
+    return allModulePerms.filter(p => {
+      const action = this.getPermissionAction(p).toLowerCase();
+      const modLabel = this.getModuleLabel(module).toLowerCase();
+      const permName = p.toLowerCase();
+      return action.includes(search) || modLabel.includes(search) || permName.includes(search);
+    });
+  }
+
+  hasVisiblePermissions(module: string): boolean {
+    return this.getFilteredModulePermissions(module).length > 0;
+  }
+
+  getFilteredPermissions(): string[] {
+    const search = this.modalSearchTerm().toLowerCase().trim();
+    if (!search) return this.availablePermissions();
+    return this.availablePermissions().filter(p => {
+      const parts = p.split('.');
+      const module = parts[0] || '';
+      const action = parts[parts.length - 1] || '';
+      const modLabel = this.getModuleLabel(module).toLowerCase();
+      const permName = p.toLowerCase();
+      return action.includes(search) || modLabel.includes(search) || permName.includes(search);
+    });
+  }
+
+  areAllFilteredChecked(): boolean {
+    const visible = this.getFilteredPermissions();
+    if (visible.length === 0) return false;
+    const checked = this.modalPermissions();
+    return visible.every(p => checked.includes(p));
+  }
+
+  toggleSelectAll(): void {
+    const visible = this.getFilteredPermissions();
+    const checked = this.modalPermissions();
+    
+    if (this.areAllFilteredChecked()) {
+      this.modalPermissions.set(checked.filter(p => !visible.includes(p)));
+    } else {
+      const union = new Set([...checked, ...visible]);
+      this.modalPermissions.set(Array.from(union));
+    }
+  }
 
   constructor() {
     this.roleForm = this.fb.group({
       name: ['', [Validators.required]]
     });
+
+    // Auto-sync modal state when permissions signal changes
+    effect(() => {
+      this.modalPermissions();
+      this.syncModalConfirmState();
+    });
+  }
+
+  hasChanges(): boolean {
+    if (this.modalMode() === 'create') {
+      // For create, check if name is not empty or any permissions are checked
+      return !!this.roleForm.value.name?.trim() || this.modalPermissions().length > 0;
+    } else {
+      // For edit, check if name or permissions are different from the original state
+      const nameChanged = (this.roleForm.value.name || '').trim() !== (this.originalRoleName || '').trim();
+      const permsChanged = this.arePermissionsDifferent(this.modalPermissions(), this.originalPermissions);
+      return nameChanged || permsChanged;
+    }
+  }
+
+  private arePermissionsDifferent(arr1: string[], arr2: string[]): boolean {
+    if (arr1.length !== arr2.length) return true;
+    const set2 = new Set(arr2);
+    return arr1.some(p => !set2.has(p));
+  }
+
+  syncModalConfirmState(): void {
+    const isFormInvalid = this.roleForm.invalid;
+    const hasNoChanges = !this.hasChanges();
+    this.modalService.setConfirmDisabled(isFormInvalid || hasNoChanges);
   }
 
   ngOnInit(): void {
     this.loadRoles();
     this.loadPermissions();
 
-    // Sync form validity with the global modal confirm button
-    this.roleForm.statusChanges.subscribe(status => {
-      this.modalService.setConfirmDisabled(status === 'INVALID');
+    // Listen to form value changes to sync modal confirm state
+    this.roleForm.valueChanges.subscribe(() => {
+      this.syncModalConfirmState();
     });
   }
 
@@ -70,13 +165,13 @@ export class RolesComponent implements OnInit {
       const response = await this.roleService.getAll();
       this.roles.set(response || []);
       
-      // Select the first role by default or keep selectedRole
+      // Keep selectedRole if it is already selected, otherwise default to null
       const currentSelected = this.selectedRole();
       if (currentSelected) {
         const updated = response.find(r => r.id === currentSelected.id);
-        this.selectedRole.set(updated || response[0] || null);
+        this.selectedRole.set(updated || null);
       } else {
-        this.selectedRole.set(response[0] || null);
+        this.selectedRole.set(null);
       }
     } catch (error) {
       console.error('Failed to load roles:', error);
@@ -163,6 +258,10 @@ export class RolesComponent implements OnInit {
     this.modalMode.set('create');
     this.roleForm.reset();
     this.modalPermissions.set([]);
+    this.modalSearchTerm.set('');
+    
+    this.originalRoleName = '';
+    this.originalPermissions = [];
 
     this.modalService.open(this.roleModalTemplate, {
       title: 'Create New Role',
@@ -183,6 +282,10 @@ export class RolesComponent implements OnInit {
 
     const currentPermNames = (role.permissions || []).map(p => p.name);
     this.modalPermissions.set(currentPermNames);
+    this.modalSearchTerm.set('');
+
+    this.originalRoleName = role.name;
+    this.originalPermissions = [...currentPermNames];
 
     this.modalService.open(this.roleModalTemplate, {
       title: 'Edit Role Details',
@@ -241,19 +344,38 @@ export class RolesComponent implements OnInit {
   }
 
   async deleteRole(id: string): Promise<void> {
-    if (!confirm('Are you sure you want to delete this role? Any users with this role will lose their privileges.')) return;
+    const role = this.roles().find(r => r.id === id);
+    if (!role) return;
 
-    this.isLoading.set(true);
+    this.roleToDelete.set(role);
+    this.modalService.open(this.deleteModalTemplate, {
+      title: 'Delete Role',
+      confirmLabel: 'Delete',
+      cancelLabel: 'Cancel',
+      type: 'danger',
+      maxWidth: 'max-w-md'
+    });
+    this.modalService.onConfirm = () => this.confirmDeleteRole();
+  }
+
+  async confirmDeleteRole(): Promise<void> {
+    const role = this.roleToDelete();
+    if (!role) return;
+
+    this.modalService.setLoading(true);
     try {
-      await this.roleService.delete(id);
-      this.selectedRole.set(null);
+      await this.roleService.delete(role.id);
+      if (this.selectedRole()?.id === role.id) {
+        this.selectedRole.set(null);
+      }
       await this.loadRoles();
       this.toastService.show('Role deleted successfully!', 'success');
+      this.modalService.close();
     } catch (error) {
       console.error('Delete failed', error);
       this.toastService.show('Failed to delete role.', 'error');
     } finally {
-      this.isLoading.set(false);
+      this.modalService.setLoading(false);
     }
   }
 }

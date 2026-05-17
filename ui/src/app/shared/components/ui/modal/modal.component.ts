@@ -23,6 +23,7 @@ export class ModalComponent {
   @Input() cancelLabel = 'Cancel';
   @Input() isConfirmDisabled = false;
   @Input() isLoading = false;
+  @Input() confirmType: 'primary' | 'danger' = 'primary';
 
   @Output() close = new EventEmitter<void>();
   @Output() confirm = new EventEmitter<void>();

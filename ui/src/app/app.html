@@ -48,6 +48,7 @@
   [confirmLabel]="modalService.options().confirmLabel || 'Confirm'"
   [cancelLabel]="modalService.options().cancelLabel || 'Cancel'"
   [showFooter]="modalService.options().showFooter !== false"
+  [confirmType]="modalService.options().type || 'primary'"
   [isLoading]="modalService.isLoading()"
   [isConfirmDisabled]="modalService.isConfirmDisabled()"
   (close)="modalService.close()"

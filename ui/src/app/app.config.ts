@@ -47,6 +47,7 @@ import {
   heroBuildingOffice2,
   heroShieldExclamation,
   heroCheckCircle,
+  heroMinusCircle,
   heroExclamationCircle,
   heroUser,
   heroLockClosed
@@ -117,6 +118,7 @@ export const appConfig: ApplicationConfig = {
       heroBuildingOffice2,
       heroShieldExclamation,
       heroCheckCircle,
+      heroMinusCircle,
       heroExclamationCircle,
       heroUser,
       heroLockClosed,
