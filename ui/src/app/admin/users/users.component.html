@@ -4,7 +4,7 @@
     <app-user-management-layout>
       <!-- 1. Page Header -->
       <app-page-header title="User Management" subtitle="Manage administrative accounts and system permissions."
-        actionLabel="Add System User" (actionClick)="openAddModal()">
+        actionLabel="Add System User" permission="user.create" (actionClick)="openAddModal()">
       </app-page-header>
 
       <!-- 2. Search & Filters -->
@@ -14,8 +14,9 @@
           <mat-label>All Roles</mat-label>
           <mat-select (selectionChange)="null">
             <mat-option value="">All Roles</mat-option>
-            <mat-option value="super_admin">Super Admin</mat-option>
-            <mat-option value="admin">Staff Admin</mat-option>
+            <mat-option *ngFor="let role of roles()" [value]="role.name">
+              {{ formatRoleName(role.name) }}
+            </mat-option>
           </mat-select>
         </mat-form-field>
       </app-search-filters>
@@ -71,7 +72,7 @@
             <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Account Role</p>
             <span class="inline-flex px-2 py-0.5 text-[10px] font-black uppercase tracking-widest rounded-md"
               [ngClass]="userForm.get('role')?.value === 'super_admin' ? 'bg-primary-50 text-primary-600' : 'bg-zinc-100 text-zinc-600'">
-              {{ userForm.get('role')?.value === 'super_admin' ? 'Super Admin' : 'Staff Admin' }}
+              {{ formatRoleName(userForm.get('role')?.value) }}
             </span>
           </div>
         </div>
@@ -125,8 +126,8 @@
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
             <mat-label>Account Role</mat-label>
             <mat-select formControlName="role">
-              <mat-option *ngFor="let role of roles()" [value]="role">
-                {{ role === 'super_admin' ? 'Super Administrator' : 'Staff Admin' }}
+              <mat-option *ngFor="let role of roles()" [value]="role.name">
+                {{ formatRoleName(role.name) }}
               </mat-option>
             </mat-select>
           </mat-form-field>

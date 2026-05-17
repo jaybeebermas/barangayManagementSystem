@@ -22,6 +22,10 @@ final readonly class UpdateRole
                 'guard_name' => $input['guard_name'] ?? $role->guard_name,
             ]);
 
+            if (isset($input['permissions'])) {
+                $role->syncPermissions($input['permissions']);
+            }
+
             $role = $role->refresh();
             DB::commit();
 

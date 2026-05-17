@@ -7,6 +7,7 @@ import { ToastService } from '../../services/toast/toast.service';
 import { GET_USERS, CREATE_USER, UPDATE_USER, DELETE_USER } from '../../services/User/user.gql';
 import { User } from '../../services/User/user.types';
 import { CreateUserInput, UpdateUserInput } from '../../services/User/user.input';
+import { RoleService, Role } from '../../services/role/role.service';
 
 
 import { DrawerComponent } from '../../shared/components/ui/drawer/drawer.component';
@@ -24,21 +25,22 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { UserManagementLayoutComponent } from '../../shared/components/ui/user-management/user-management-layout.component';
 import { PageHeaderComponent } from '../../shared/components/ui/user-management/page-header.component';
 import { SearchFiltersComponent } from '../../shared/components/ui/user-management/search-filters.component';
+import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
 
 
 @Component({
   selector: 'app-user-action-menu',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatTooltipModule, NgIconComponent],
+  imports: [CommonModule, MatButtonModule, MatTooltipModule, NgIconComponent, HasPermissionDirective],
   template: `
     <div class="flex items-center justify-end gap-1.5 transition-all">
-      <button type="button" class="flex items-center justify-center w-8 h-8 rounded-full text-primary-600 hover:bg-primary-50 transition-colors" (click)="view.emit()" matTooltip="View details">
+      <button *hasPermission="'user.view'" type="button" class="flex items-center justify-center w-8 h-8 rounded-full text-primary-600 hover:bg-primary-50 transition-colors" (click)="view.emit()" matTooltip="View details">
         <ng-icon name="heroEye" class="text-[17px]"></ng-icon>
       </button>
-      <button type="button" class="flex items-center justify-center w-8 h-8 rounded-full text-pink-600 hover:bg-pink-50 transition-colors" (click)="edit.emit()" matTooltip="Edit user">
+      <button *hasPermission="'user.edit'" type="button" class="flex items-center justify-center w-8 h-8 rounded-full text-pink-600 hover:bg-pink-50 transition-colors" (click)="edit.emit()" matTooltip="Edit user">
         <ng-icon name="heroPencil" class="text-[17px]"></ng-icon>
       </button>
-      <button type="button" class="flex items-center justify-center w-8 h-8 rounded-full text-red-500 hover:bg-red-50 transition-colors" (click)="delete.emit()" matTooltip="Delete user">
+      <button *hasPermission="'user.delete'" type="button" class="flex items-center justify-center w-8 h-8 rounded-full text-red-500 hover:bg-red-50 transition-colors" (click)="delete.emit()" matTooltip="Delete user">
         <ng-icon name="heroTrash" class="text-[17px]"></ng-icon>
       </button>
     </div>
@@ -83,7 +85,7 @@ export class UserActionMenuComponent {
                   [class.bg-zinc-200/50]="user.role !== 'super_admin'"
                   [class.text-zinc-600]="user.role !== 'super_admin'"
                   class="inline-flex px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest">
-                  {{ user.role === 'super_admin' ? 'Super Admin' : 'Staff Admin' }}
+                  {{ formatRoleName(user.role) }}
                 </span>
               </td>
               <td class="px-8 py-4 text-xs font-medium text-zinc-500">{{ user.email }}</td>
@@ -127,7 +129,7 @@ export class UserActionMenuComponent {
                 [class.bg-zinc-100]="user.role !== 'super_admin'"
                 [class.text-zinc-600]="user.role !== 'super_admin'"
                 class="inline-block px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest w-fit">
-                {{ user.role === 'super_admin' ? 'Super Admin' : 'Staff Admin' }}
+                {{ formatRoleName(user.role) }}
               </span>
             </div>
             <div class="flex flex-col gap-1">
@@ -160,6 +162,14 @@ export class UserTableComponent {
   @Output() view = new EventEmitter<any>();
   @Output() edit = new EventEmitter<any>();
   @Output() delete = new EventEmitter<string>();
+
+  formatRoleName(name: string): string {
+    if (!name) return '';
+    return name
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
 }
 
 import { TablePaginationComponent } from '../../shared/components/ui/user-management/table-pagination.component';
@@ -182,7 +192,8 @@ import { TablePaginationComponent } from '../../shared/components/ui/user-manage
     MatButtonModule,
     MatMenuModule,
     NgIconComponent,
-    DrawerComponent
+    DrawerComponent,
+    HasPermissionDirective
   ],
   templateUrl: './users.component.html',
   styleUrl: './users.component.css'
@@ -195,6 +206,7 @@ export class UsersComponent implements OnInit {
   public readonly auth = inject(AuthService);
   private readonly toastService = inject(ToastService);
   public readonly modalService = inject(ModalService);
+  private readonly roleService = inject(RoleService);
 
   users = signal<User[]>([]);
   searchTerm = signal('');
@@ -203,7 +215,7 @@ export class UsersComponent implements OnInit {
   modalMode = signal<'add' | 'edit' | 'view'>('add');
   userForm: FormGroup;
   selectedUserId = signal<string | null>(null);
-  roles = signal<string[]>(['admin', 'super_admin']);
+  roles = signal<Role[]>([]);
 
   filteredUsers = computed(() => {
     const term = this.searchTerm().toLowerCase();
@@ -235,8 +247,17 @@ export class UsersComponent implements OnInit {
     return password === confirmPassword ? null : { passwordMismatch: true };
   }
 
+  formatRoleName(name: string): string {
+    if (!name) return '';
+    return name
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
+
   ngOnInit(): void {
     this.loadUsers();
+    this.loadRoles();
     this.userForm.get('password')?.valueChanges.subscribe(() => {
       this.userForm.get('confirm_password')?.updateValueAndValidity();
     });
@@ -245,6 +266,15 @@ export class UsersComponent implements OnInit {
     this.userForm.statusChanges.subscribe(status => {
       this.modalService.setConfirmDisabled(status === 'INVALID');
     });
+  }
+
+  async loadRoles(): Promise<void> {
+    try {
+      const dbRoles = await this.roleService.getAll();
+      this.roles.set(dbRoles || []);
+    } catch (error) {
+      console.error('Failed to load database roles:', error);
+    }
   }
 
   async loadUsers(): Promise<void> {
@@ -272,7 +302,11 @@ export class UsersComponent implements OnInit {
     this.modalMode.set('add');
     this.userForm.enable();
     this.userForm.reset();
-    this.userForm.get('role')?.setValue('admin');
+    if (this.roles().length > 0) {
+      this.userForm.get('role')?.setValue(this.roles()[0].name);
+    } else {
+      this.userForm.get('role')?.setValue('admin');
+    }
     this.userForm.get('password')?.setValidators([Validators.required, Validators.minLength(8)]);
     this.userForm.get('password')?.updateValueAndValidity();
     

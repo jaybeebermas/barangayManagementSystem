@@ -1,6 +1,7 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgIconComponent } from '@ng-icons/core';
+import { AuthService } from '../../../../services/auth/auth.service';
 
 @Component({
   selector: 'app-page-header',
@@ -13,7 +14,7 @@ import { NgIconComponent } from '@ng-icons/core';
         <p class="text-zinc-500 font-medium mt-1 text-sm">{{ subtitle }}</p>
       </div>
       <button
-        *ngIf="actionLabel"
+        *ngIf="actionLabel && hasActionPermission()"
         (click)="actionClick.emit()"
         class="btn-primary !py-2.5 !px-6 !text-xs shadow-lg shadow-primary-600/10 whitespace-nowrap">
         <span class="flex items-center gap-2">
@@ -34,5 +35,13 @@ export class PageHeaderComponent {
   @Input() subtitle: string = '';
   @Input() actionLabel?: string;
   @Input() customIcon?: string;
+  @Input() permission?: string;
   @Output() actionClick = new EventEmitter<void>();
+
+  private readonly authService: AuthService = inject(AuthService);
+
+  hasActionPermission(): boolean {
+    if (!this.permission) return true;
+    return this.authService.hasPermission(this.permission);
+  }
 }

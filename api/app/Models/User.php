@@ -33,4 +33,9 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function getPermissionsListAttribute(): array
+    {
+        return $this->getAllPermissions()->pluck('name')->toArray();
+    }
 }
