@@ -1,6 +1,6 @@
 <?php
 
-namespace App\GraphQL\Mutations;
+namespace App\GraphQL\Mutations\Permission;
 
 use Illuminate\Database\Eloquent\Model;
 

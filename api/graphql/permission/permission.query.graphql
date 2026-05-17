@@ -1,8 +1,8 @@
 permissions: [Permission!]!
-  @field(resolver: "App\\GraphQL\\Queries\\PermissionQuery@permissions")
+  @field(resolver: "App\\GraphQL\\Queries\\Permission\\PermissionQuery@permissions")
 permission(id: ID! @eq): Permission
-  @field(resolver: "App\\GraphQL\\Queries\\PermissionQuery@permission")
+  @field(resolver: "App\\GraphQL\\Queries\\Permission\\PermissionQuery@permission")
 availablePermissions: [String!]!
-  @field(resolver: "App\\GraphQL\\Queries\\PermissionQuery@availablePermissions")
+  @field(resolver: "App\\GraphQL\\Queries\\Permission\\PermissionQuery@availablePermissions")
 basePermissions: [String!]!
-  @field(resolver: "App\\GraphQL\\Queries\\PermissionQuery@basePermissions")
+  @field(resolver: "App\\GraphQL\\Queries\\Permission\\PermissionQuery@basePermissions")

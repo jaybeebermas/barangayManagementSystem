@@ -1,6 +1,6 @@
 createPermission(input: CreatePermissionInput!): Permission!
-  @field(resolver: "App\\GraphQL\\Mutations\\PermissionMutation@createPermission")
+  @field(resolver: "App\\GraphQL\\Mutations\\Permission\\PermissionMutation@createPermission")
 updatePermission(input: UpdatePermissionInput!): Permission!
-  @field(resolver: "App\\GraphQL\\Mutations\\PermissionMutation@updatePermission")
+  @field(resolver: "App\\GraphQL\\Mutations\\Permission\\PermissionMutation@updatePermission")
 deletePermission(id: ID!): Permission
-  @field(resolver: "App\\GraphQL\\Mutations\\PermissionMutation@deletePermission")
+  @field(resolver: "App\\GraphQL\\Mutations\\Permission\\PermissionMutation@deletePermission")

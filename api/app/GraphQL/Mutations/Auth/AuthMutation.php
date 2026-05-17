@@ -1,12 +1,11 @@
 <?php
 
-namespace App\GraphQL\Mutations;
+namespace App\GraphQL\Mutations\Auth;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Validation\ValidationException;
 
 class AuthMutation
 {
@@ -38,10 +37,7 @@ class AuthMutation
 
         RateLimiter::clear($throttleKey);
 
-        // For Sanctum session-based auth (HttpOnly cookies), we use the web guard
         Auth::guard('web')->login($user);
-
-        // Also providing a token for GraphQL clients that prefer headers
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return [
@@ -83,7 +79,6 @@ class AuthMutation
 
         $user->assignRole('admin');
 
-        // Auto login after registration using web guard
         Auth::guard('web')->login($user);
         $token = $user->createToken('auth_token')->plainTextToken;
 
@@ -101,8 +96,7 @@ class AuthMutation
     public function logout(): array
     {
         $user = Auth::user();
-        if ($user) {
-            // Revoke all tokens
+        if ($user instanceof User) {
             $user->tokens()->delete();
         }
 
@@ -117,6 +111,8 @@ class AuthMutation
      */
     public function me(): ?User
     {
-        return Auth::user();
+        $user = Auth::user();
+
+        return $user instanceof User ? $user : null;
     }
 }

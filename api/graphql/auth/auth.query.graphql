@@ -1,1 +1,1 @@
-me: AuthUser @field(resolver: "App\\GraphQL\\Mutations\\AuthMutation@me") @guard
+me: AuthUser @field(resolver: "App\\GraphQL\\Mutations\\Auth\\AuthMutation@me") @guard

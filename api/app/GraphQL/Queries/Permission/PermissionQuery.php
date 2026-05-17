@@ -1,6 +1,6 @@
 <?php
 
-namespace App\GraphQL\Queries;
+namespace App\GraphQL\Queries\Permission;
 
 use Illuminate\Database\Eloquent\Model;
 
