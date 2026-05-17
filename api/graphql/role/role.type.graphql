@@ -2,6 +2,8 @@ type Role {
   id: ID!
   name: String!
   guard_name: String!
+  permissions: [Permission!]! @belongsToMany
+  users_count: Int! @count(relation: "users")
   created_at: DateTime!
   updated_at: DateTime!
 }

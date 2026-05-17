@@ -7,6 +7,7 @@ import { ToastService } from '../../services/toast/toast.service';
 import { GET_USERS, CREATE_USER, UPDATE_USER, DELETE_USER } from '../../services/User/user.gql';
 import { User } from '../../services/User/user.types';
 import { CreateUserInput, UpdateUserInput } from '../../services/User/user.input';
+import { RoleService, Role } from '../../services/role/role.service';
 
 
 import { DrawerComponent } from '../../shared/components/ui/drawer/drawer.component';
@@ -21,106 +22,25 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 
-@Component({
-  selector: 'app-user-management-layout',
-  standalone: true,
-  imports: [CommonModule],
-  template: `
-    <div class="min-h-full bg-transparent -m-4 md:-m-6 lg:-m-8 p-4 md:p-8 overflow-y-auto">
-      <div class="w-full bg-white rounded-3xl border border-zinc-200/50 p-6 md:p-10 shadow-sm flex flex-col gap-6 animate-fade-in-up min-h-[calc(100vh-10rem)]">
-        <ng-content></ng-content>
-      </div>
-    </div>
-  `,
-  styles: [`
-    :host { display: block; height: 100%; }
-    .shadow-inner-lg { box-shadow: inset 0 2px 15px 0 rgb(0 0 0 / 0.05); }
-    @keyframes fadeInUp {
-      from { opacity: 0; margin-top: 20px; }
-      to { opacity: 1; margin-top: 0; }
-    }
-    .animate-fade-in-up {
-      animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-  `]
-})
-export class UserManagementLayoutComponent {}
+import { UserManagementLayoutComponent } from '../../shared/components/ui/user-management/user-management-layout.component';
+import { PageHeaderComponent } from '../../shared/components/ui/user-management/page-header.component';
+import { SearchFiltersComponent } from '../../shared/components/ui/user-management/search-filters.component';
+import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
 
-@Component({
-  selector: 'app-page-header',
-  standalone: true,
-  imports: [CommonModule, NgIconComponent],
-  template: `
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6 p-1">
-      <div>
-        <h2 class="text-2xl font-black text-zinc-900 tracking-tight">{{ title }}</h2>
-        <p class="text-zinc-500 font-medium mt-1 text-sm">{{ subtitle }}</p>
-      </div>
-      <button
-        *ngIf="actionLabel"
-        (click)="actionClick.emit()"
-        class="btn-primary !py-2.5 !px-6 !text-xs shadow-lg shadow-primary-600/10 whitespace-nowrap">
-        <span class="flex items-center gap-2">
-          <ng-container *ngIf="!customIcon; else iconTemplate">
-            <ng-icon name="heroPlus" class="h-4 w-4" strokeWidth="3"></ng-icon>
-          </ng-container>
-          <ng-template #iconTemplate>
-            <span [innerHTML]="customIcon"></span>
-          </ng-template>
-          {{ actionLabel }}
-        </span>
-      </button>
-    </div>
-  `
-})
-export class PageHeaderComponent {
-  @Input() title: string = '';
-  @Input() subtitle: string = '';
-  @Input() actionLabel?: string;
-  @Input() customIcon?: string;
-  @Output() actionClick = new EventEmitter<void>();
-}
-
-@Component({
-  selector: 'app-search-filters',
-  standalone: true,
-  imports: [CommonModule, FormsModule, MatFormFieldModule, MatInputModule, NgIconComponent],
-  template: `
-    <div class="flex flex-col md:flex-row gap-4 p-1 items-center">
-      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1 w-full">
-        <mat-label>{{ placeholder }}</mat-label>
-        <ng-icon name="heroMagnifyingGlass" matPrefix class="ml-5 mr-3 text-zinc-400 text-xl"></ng-icon>
-        <input
-          matInput
-          [(ngModel)]="searchTerm"
-          (ngModelChange)="search.emit($event)"
-        />
-      </mat-form-field>
-      <div class="flex gap-3 w-full md:w-auto items-center">
-        <ng-content></ng-content>
-      </div>
-    </div>
-  `
-})
-export class SearchFiltersComponent {
-  @Input() placeholder: string = 'Search...';
-  @Output() search = new EventEmitter<string>();
-  searchTerm: string = '';
-}
 
 @Component({
   selector: 'app-user-action-menu',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatTooltipModule, NgIconComponent],
+  imports: [CommonModule, MatButtonModule, MatTooltipModule, NgIconComponent, HasPermissionDirective],
   template: `
     <div class="flex items-center justify-end gap-1.5 transition-all">
-      <button type="button" class="flex items-center justify-center w-8 h-8 rounded-full text-primary-600 hover:bg-primary-50 transition-colors" (click)="view.emit()" matTooltip="View details">
+      <button *hasPermission="'user.view'" type="button" class="flex items-center justify-center w-8 h-8 rounded-full text-primary-600 hover:bg-primary-50 transition-colors" (click)="view.emit()" matTooltip="View details">
         <ng-icon name="heroEye" class="text-[17px]"></ng-icon>
       </button>
-      <button type="button" class="flex items-center justify-center w-8 h-8 rounded-full text-pink-600 hover:bg-pink-50 transition-colors" (click)="edit.emit()" matTooltip="Edit user">
+      <button *hasPermission="'user.edit'" type="button" class="flex items-center justify-center w-8 h-8 rounded-full text-pink-600 hover:bg-pink-50 transition-colors" (click)="edit.emit()" matTooltip="Edit user">
         <ng-icon name="heroPencil" class="text-[17px]"></ng-icon>
       </button>
-      <button type="button" class="flex items-center justify-center w-8 h-8 rounded-full text-red-500 hover:bg-red-50 transition-colors" (click)="delete.emit()" matTooltip="Delete user">
+      <button *hasPermission="'user.delete'" type="button" class="flex items-center justify-center w-8 h-8 rounded-full text-red-500 hover:bg-red-50 transition-colors" (click)="delete.emit()" matTooltip="Delete user">
         <ng-icon name="heroTrash" class="text-[17px]"></ng-icon>
       </button>
     </div>
@@ -165,7 +85,7 @@ export class UserActionMenuComponent {
                   [class.bg-zinc-200/50]="user.role !== 'super_admin'"
                   [class.text-zinc-600]="user.role !== 'super_admin'"
                   class="inline-flex px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest">
-                  {{ user.role === 'super_admin' ? 'Super Admin' : 'Staff Admin' }}
+                  {{ formatRoleName(user.role) }}
                 </span>
               </td>
               <td class="px-8 py-4 text-xs font-medium text-zinc-500">{{ user.email }}</td>
@@ -209,7 +129,7 @@ export class UserActionMenuComponent {
                 [class.bg-zinc-100]="user.role !== 'super_admin'"
                 [class.text-zinc-600]="user.role !== 'super_admin'"
                 class="inline-block px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest w-fit">
-                {{ user.role === 'super_admin' ? 'Super Admin' : 'Staff Admin' }}
+                {{ formatRoleName(user.role) }}
               </span>
             </div>
             <div class="flex flex-col gap-1">
@@ -242,61 +162,17 @@ export class UserTableComponent {
   @Output() view = new EventEmitter<any>();
   @Output() edit = new EventEmitter<any>();
   @Output() delete = new EventEmitter<string>();
-}
 
-@Component({
-  selector: 'app-table-pagination',
-  standalone: true,
-  imports: [CommonModule, MatPaginatorModule],
-  template: `
-    <div class="bg-zinc-50/50 border-t border-zinc-100 rounded-b-2xl px-6">
-      <mat-paginator
-        [length]="totalItems"
-        [pageSize]="pageSize"
-        [pageIndex]="currentPage - 1"
-        [pageSizeOptions]="[5, 10, 25, 100]"
-        (page)="handlePageEvent($event)"
-        aria-label="Select page">
-      </mat-paginator>
-    </div>
-  `,
-  styles: [`
-    :host ::ng-deep .mat-mdc-paginator {
-      background: transparent !important;
-      font-family: inherit;
-      font-size: 11px !important;
-    }
-    :host ::ng-deep .mat-mdc-paginator-container {
-      padding: 0.5rem 0 !important;
-      justify-content: space-between;
-      min-height: 48px !important;
-    }
-    :host ::ng-deep .mat-mdc-paginator-range-label {
-      margin: 0 16px !important;
-      font-weight: 600;
-      color: #71717a;
-    }
-    :host ::ng-deep .mat-mdc-icon-button {
-      width: 32px !important;
-      height: 32px !important;
-      padding: 4px !important;
-    }
-  `]
-})
-export class TablePaginationComponent {
-  @Input() currentPage: number = 1;
-  @Input() totalItems: number = 0;
-  @Input() pageSize: number = 10;
-  @Output() pageChange = new EventEmitter<number>();
-  @Output() pageSizeChange = new EventEmitter<number>();
-
-  handlePageEvent(e: PageEvent) {
-    if (e.pageSize !== this.pageSize) {
-      this.pageSizeChange.emit(e.pageSize);
-    }
-    this.pageChange.emit(e.pageIndex + 1);
+  formatRoleName(name: string): string {
+    if (!name) return '';
+    return name
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
   }
 }
+
+import { TablePaginationComponent } from '../../shared/components/ui/user-management/table-pagination.component';
 
 @Component({
   selector: 'app-users',
@@ -316,7 +192,8 @@ export class TablePaginationComponent {
     MatButtonModule,
     MatMenuModule,
     NgIconComponent,
-    DrawerComponent
+    DrawerComponent,
+    HasPermissionDirective
   ],
   templateUrl: './users.component.html',
   styleUrl: './users.component.css'
@@ -329,6 +206,7 @@ export class UsersComponent implements OnInit {
   public readonly auth = inject(AuthService);
   private readonly toastService = inject(ToastService);
   public readonly modalService = inject(ModalService);
+  private readonly roleService = inject(RoleService);
 
   users = signal<User[]>([]);
   searchTerm = signal('');
@@ -337,7 +215,7 @@ export class UsersComponent implements OnInit {
   modalMode = signal<'add' | 'edit' | 'view'>('add');
   userForm: FormGroup;
   selectedUserId = signal<string | null>(null);
-  roles = signal<string[]>(['admin', 'super_admin']);
+  roles = signal<Role[]>([]);
 
   filteredUsers = computed(() => {
     const term = this.searchTerm().toLowerCase();
@@ -369,8 +247,17 @@ export class UsersComponent implements OnInit {
     return password === confirmPassword ? null : { passwordMismatch: true };
   }
 
+  formatRoleName(name: string): string {
+    if (!name) return '';
+    return name
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
+
   ngOnInit(): void {
     this.loadUsers();
+    this.loadRoles();
     this.userForm.get('password')?.valueChanges.subscribe(() => {
       this.userForm.get('confirm_password')?.updateValueAndValidity();
     });
@@ -379,6 +266,15 @@ export class UsersComponent implements OnInit {
     this.userForm.statusChanges.subscribe(status => {
       this.modalService.setConfirmDisabled(status === 'INVALID');
     });
+  }
+
+  async loadRoles(): Promise<void> {
+    try {
+      const dbRoles = await this.roleService.getAll();
+      this.roles.set(dbRoles || []);
+    } catch (error) {
+      console.error('Failed to load database roles:', error);
+    }
   }
 
   async loadUsers(): Promise<void> {
@@ -406,7 +302,11 @@ export class UsersComponent implements OnInit {
     this.modalMode.set('add');
     this.userForm.enable();
     this.userForm.reset();
-    this.userForm.get('role')?.setValue('admin');
+    if (this.roles().length > 0) {
+      this.userForm.get('role')?.setValue(this.roles()[0].name);
+    } else {
+      this.userForm.get('role')?.setValue('admin');
+    }
     this.userForm.get('password')?.setValidators([Validators.required, Validators.minLength(8)]);
     this.userForm.get('password')?.updateValueAndValidity();
     

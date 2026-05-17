@@ -6,3 +6,4 @@ export * from './auth/auth.service';
 export * from './ui-config/ui-config.service';
 export * from './toast/toast.service';
 export * from './modal/modal.service';
+export * from './role/role.service';
