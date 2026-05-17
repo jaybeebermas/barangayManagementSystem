@@ -1,41 +1,40 @@
 <?php declare(strict_types=1);
 
-namespace App\GraphQL\Mutations\Role;
+namespace App\GraphQL\Mutations\Permission;
 
-use App\Models\Role;
+use App\Models\Permission;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-final readonly class DeleteRole
+final readonly class DeletePermission
 {
     /** @param  array{id: string}  $args */
-    public function __invoke(null $_, array $args): ?Role
+    public function __invoke(null $_, array $args): ?Permission
     {
         DB::beginTransaction();
 
         try {
-            $role = Role::query()->find($args['id']);
-            if (! $role) {
+            $permission = Permission::query()->find($args['id']);
+            if (! $permission) {
                 DB::commit();
-                Log::info('DeleteRole mutation skipped. Role not found.', [
+                Log::info('DeletePermission mutation skipped. Permission not found.', [
                     'id' => $args['id'] ?? null,
                 ]);
                 return null;
             }
 
-            $role->delete();
+            $permission->delete();
             DB::commit();
-
-            Log::info('DeleteRole mutation succeeded.', [
-                'role_id' => $role->id,
+            Log::info('DeletePermission mutation succeeded.', [
+                'permission_id' => $permission->id,
             ]);
 
-            return $role;
+            return $permission;
         } catch (Throwable $e) {
             DB::rollBack();
 
-            Log::error('DeleteRole mutation failed.', [
+            Log::error('DeletePermission mutation failed.', [
                 'id' => $args['id'] ?? null,
                 'error' => $e->getMessage(),
             ]);

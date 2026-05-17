@@ -1,39 +1,38 @@
 <?php declare(strict_types=1);
 
-namespace App\GraphQL\Mutations\Role;
+namespace App\GraphQL\Mutations\Permission;
 
-use App\Models\Role;
+use App\Models\Permission;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-final readonly class UpdateRole
+final readonly class UpdatePermission
 {
     /** @param  array{input: array{id: string, name: string, guard_name?: string}}  $args */
-    public function __invoke(null $_, array $args): Role
+    public function __invoke(null $_, array $args): Permission
     {
         DB::beginTransaction();
 
         try {
             $input = $args['input'];
-            $role = Role::query()->findOrFail($input['id']);
-            $role->update([
+            $permission = Permission::query()->findOrFail($input['id']);
+            $permission->update([
                 'name' => $input['name'],
-                'guard_name' => $input['guard_name'] ?? $role->guard_name,
+                'guard_name' => $input['guard_name'] ?? $permission->guard_name,
             ]);
 
-            $role = $role->refresh();
+            $permission = $permission->refresh();
             DB::commit();
-
-            Log::info('UpdateRole mutation succeeded.', [
-                'role_id' => $role->id,
+            Log::info('UpdatePermission mutation succeeded.', [
+                'permission_id' => $permission->id,
             ]);
 
-            return $role;
+            return $permission;
         } catch (Throwable $e) {
             DB::rollBack();
 
-            Log::error('UpdateRole mutation failed.', [
+            Log::error('UpdatePermission mutation failed.', [
                 'input' => $args['input'] ?? null,
                 'error' => $e->getMessage(),
             ]);
