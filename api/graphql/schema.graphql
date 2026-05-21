@@ -1,3 +1,5 @@
+scalar DateTime @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\DateTime")
+
 #import base/root.graphql
 
 extend type Query {
@@ -6,6 +8,7 @@ extend type Query {
   #import role/role.query.graphql
   #import navigation/navigation.query.graphql
   #import user/user.query.graphql
+  #import zone/zone.query.graphql
 }
 
 extend type Mutation {
@@ -13,15 +16,18 @@ extend type Mutation {
   #import permission/permission.mutation.graphql
   #import role/role.mutation.graphql
   #import user/user.mutation.graphql
+  #import zone/zone.mutation.graphql
 }
 
 #import auth/auth.input.graphql
 #import permission/permission.input.graphql
 #import role/role.input.graphql
 #import user/user.input.graphql
+#import zone/zone.input.graphql
 
 #import auth/auth.type.graphql
 #import permission/permission.type.graphql
 #import role/role.type.graphql
 #import navigation/navigation.type.graphql
 #import user/user.types.graphql
+#import zone/zone.type.graphql

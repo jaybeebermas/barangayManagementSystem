@@ -1,0 +1,2 @@
+zones: [Zone!]! @guard @can(ability: "zone.view") @field(resolver: "App\\GraphQL\\Queries\\Zone\\GetZone@zones")
+zone(id: ID! @eq): Zone @guard @can(ability: "zone.view") @field(resolver: "App\\GraphQL\\Queries\\Zone\\GetZone@zone")
