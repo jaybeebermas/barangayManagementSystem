@@ -1,0 +1,3 @@
+createZone(input: CreateZoneInput!): Zone! @guard @can(ability: "zone.create") @field(resolver: "App\\GraphQL\\Mutations\\Zone\\CreateZone")
+updateZone(input: UpdateZoneInput!): Zone! @guard @can(ability: "zone.edit") @field(resolver: "App\\GraphQL\\Mutations\\Zone\\UpdateZone")
+deleteZone(id: ID!): Zone! @guard @can(ability: "zone.delete") @field(resolver: "App\\GraphQL\\Mutations\\Zone\\DeleteZone")

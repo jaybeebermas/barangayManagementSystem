@@ -1,0 +1,7 @@
+mutation DeleteZone($id: ID!) {
+  deleteZone(id: $id) {
+    id
+    zone_code
+    zone_name
+  }
+}
