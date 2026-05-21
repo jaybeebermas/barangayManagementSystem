@@ -10,6 +10,7 @@ export interface User {
   last_name: string;
   email: string;
   role: string;
+  permissions?: string[];
 }
 
 @Injectable({
@@ -20,6 +21,19 @@ export class AuthService {
   private readonly router = inject(Router);
   currentUser = signal<User | null>(null);
   isAuthenticated = signal<boolean>(!!localStorage.getItem('auth_token'));
+
+  hasPermission(permission: string): boolean {
+    const user = this.currentUser();
+    if (!user) return false;
+    if (user.permissions && Array.isArray(user.permissions)) {
+      return user.permissions.includes(permission);
+    }
+    if (user.role === 'super_admin' || user.role === 'superadmin') return true;
+    if (user.role === 'admin') {
+      return true;
+    }
+    return false;
+  }
 
   constructor(private http: HttpClient) {
     this.checkAuth();
@@ -62,6 +76,7 @@ export class AuthService {
             last_name
             email
             role
+            permissions
           }
         }
       }
@@ -103,6 +118,7 @@ export class AuthService {
             last_name
             email
             role
+            permissions
           }
         }
       }
@@ -217,6 +233,7 @@ export class AuthService {
           last_name
           email
           role
+          permissions
         }
       }
     `;

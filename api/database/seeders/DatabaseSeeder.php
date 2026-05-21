@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             NavigationSeeder::class,
             AdminSeeder::class,
+            UserSeeder::class,
         ]);
 
         User::query()->firstOrCreate(

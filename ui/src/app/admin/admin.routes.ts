@@ -8,6 +8,7 @@ export const adminRoutes: Routes = [
     children: [
       { path: 'dashboard', loadComponent: () => import('./dashboard/dashboard.component').then(m => m.DashboardComponent) },
       { path: 'users', loadComponent: () => import('./users/users.component').then(m => m.UsersComponent) },
+      { path: 'roles', loadComponent: () => import('./roles/roles.component').then(m => m.RolesComponent) },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   }

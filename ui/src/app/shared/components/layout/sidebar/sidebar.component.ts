@@ -1,8 +1,10 @@
 import { Component, inject, signal, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { NgIconComponent } from '@ng-icons/core';
 import { NavigationItem } from '../../../../shared/models/navigation.model';
+import { AuthService } from '../../../../services/auth/auth.service';
+import { filter } from 'rxjs';
 
 type NavNode = Omit<NavigationItem, 'children'> & {
   children: NavNode[];
@@ -29,7 +31,7 @@ type NavNode = Omit<NavigationItem, 'children'> & {
           </div>
           <div class="transition-all duration-300" [class.opacity-0]="!isOpen" [class.translate-x-4]="!isOpen">
             <h2 class="text-xl font-black text-zinc-900 tracking-tight leading-none">Brgy<span class="text-primary-600">Sync</span></h2>
-            <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-[0.2em] mt-1">Administrator</p>
+            <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-[0.2em] mt-1">{{ getUserRoleName() }}</p>
           </div>
         </div>
       </div>
@@ -39,9 +41,9 @@ type NavNode = Omit<NavigationItem, 'children'> & {
         <!-- Dashboard Always Top -->
         <a
           routerLink="/admin/dashboard"
-          routerLinkActive="text-primary-600 font-black"
+          routerLinkActive="bg-zinc-200/80 text-primary-600 font-black shadow-sm"
           #rlaDashboard="routerLinkActive"
-          class="group relative flex h-12 items-center gap-3 rounded-xl px-4 text-sm font-bold text-zinc-500 hover:bg-white/60 hover:shadow-sm transition-all border border-transparent"
+          class="group relative flex h-12 items-center gap-3 rounded-xl px-4 text-sm font-bold text-zinc-500 hover:bg-zinc-200/80 hover:shadow-sm transition-all border border-transparent"
           [routerLinkActiveOptions]="{exact: true}">
           <div *ngIf="rlaDashboard.isActive" class="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-primary-600 rounded-r-full"></div>
           <ng-icon 
@@ -57,9 +59,9 @@ type NavNode = Omit<NavigationItem, 'children'> & {
           <a
             *ngIf="section.type === 'item' && isValidRoute(section.route)"
             [routerLink]="section.route"
-            routerLinkActive="text-primary-600 font-black"
+            routerLinkActive="bg-zinc-200/80 text-primary-600 font-black shadow-sm"
             #rla="routerLinkActive"
-            class="group relative flex h-12 items-center gap-3 rounded-xl px-4 text-sm font-bold text-zinc-500 hover:bg-white/60 hover:shadow-sm transition-all border border-transparent"
+            class="group relative flex h-12 items-center gap-3 rounded-xl px-4 text-sm font-bold text-zinc-500 hover:bg-zinc-200/80 hover:shadow-sm transition-all border border-transparent"
             [routerLinkActiveOptions]="{exact: true}">
             <div *ngIf="rla.isActive" class="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-primary-600 rounded-r-full"></div>
             <ng-icon 
@@ -73,7 +75,7 @@ type NavNode = Omit<NavigationItem, 'children'> & {
           <div *ngIf="section.type === 'group' || section.type === 'collapsible'" class="space-y-1">
             <button
               type="button"
-              class="flex h-12 w-full items-center gap-3 rounded-xl px-4 text-left text-sm font-bold text-zinc-500 hover:bg-white/60 hover:shadow-sm transition-all group outline-none"
+              class="flex h-12 w-full items-center gap-3 rounded-xl px-4 text-left text-sm font-bold text-zinc-500 hover:bg-zinc-200/80 hover:shadow-sm transition-all group outline-none"
               (click)="toggleSection(section)">
               <ng-icon 
                 [name]="getIconName(section.icon)" 
@@ -94,19 +96,19 @@ type NavNode = Omit<NavigationItem, 'children'> & {
               [class.opacity-0]="!section._open">
               <div *ngFor="let item of section.children">
                 <a
-                  *ngIf="item.type === 'item' && isValidRoute(item.route)"
+                  *ngIf="item.type === 'item' && isValidRoute(item.route) && (!item.permission || authService.hasPermission(item.permission))"
                   [routerLink]="item.route"
-                  routerLinkActive="text-primary-600 font-black"
+                  routerLinkActive="bg-zinc-200/80 text-primary-600 font-black shadow-sm"
                   #rlaChild="routerLinkActive"
                   [routerLinkActiveOptions]="{exact: true}"
-                  class="relative flex h-10 items-center gap-2 rounded-xl px-4 text-[13px] font-bold text-zinc-400 hover:bg-white/60 hover:shadow-sm transition-all">
+                  class="relative flex h-10 items-center gap-2 rounded-xl px-4 text-[13px] font-bold text-zinc-400 hover:bg-zinc-200/80 hover:shadow-sm transition-all">
                   <div *ngIf="rlaChild.isActive" class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-4 bg-primary-600 rounded-r-full"></div>
                   <span class="truncate">{{ item.title }}</span>
                 </a>
                 
                 <!-- Non-link child -->
                 <div 
-                  *ngIf="item.type === 'item' && !isValidRoute(item.route)"
+                  *ngIf="item.type === 'item' && !isValidRoute(item.route) && (!item.permission || authService.hasPermission(item.permission))"
                   class="flex h-10 items-center gap-2 px-4 text-[13px] font-bold text-zinc-300 cursor-default italic">
                   <span class="truncate">{{ item.title }}</span>
                 </div>
@@ -130,14 +132,61 @@ type NavNode = Omit<NavigationItem, 'children'> & {
 })
 export class SidebarComponent {
   @Input() isOpen = true;
-  @Input() navItems: NavNode[] = [];
+
+  getUserRoleName(): string {
+    const role = this.authService.currentUser()?.role;
+    if (!role) return '';
+    return role
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
+  private _navItems: NavNode[] = [];
+
+  @Input() 
+  set navItems(value: NavNode[]) {
+    this._navItems = value;
+    this.autoExpandActiveSection();
+  }
+
+  get navItems(): NavNode[] {
+    return this._navItems;
+  }
   
   private router = inject(Router);
+  public readonly authService = inject(AuthService);
   private validRoutes = new Set<string>();
 
   constructor() {
     // We defer the extraction slightly to ensure the router config is fully available
     setTimeout(() => this.extractValidRoutes(), 0);
+
+    // Listen to router navigation end events to automatically expand active section and collapse others
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe(() => {
+      this.autoExpandActiveSection();
+    });
+  }
+
+  autoExpandActiveSection(): void {
+    if (!this.navItems) return;
+    const currentUrl = this.router.url.split('?')[0];
+    
+    for (const section of this.navItems) {
+      if (section.type === 'group' || section.type === 'collapsible') {
+        let hasActiveChild = false;
+        if (section.children) {
+          for (const child of section.children) {
+            if (child.route && child.route === currentUrl) {
+              hasActiveChild = true;
+              break;
+            }
+          }
+        }
+        section._open = hasActiveChild;
+      }
+    }
   }
 
   private extractValidRoutes(): void {
@@ -169,7 +218,13 @@ export class SidebarComponent {
     return this.navItems.filter(item => {
       const route = (item.route || '').toLowerCase();
       const title = (item.title || '').toLowerCase();
-      return route !== '/admin/dashboard' && route !== 'dashboard' && title !== 'dashboard';
+      if (route === '/admin/dashboard' || route === 'dashboard' || title === 'dashboard') {
+        return false;
+      }
+      if (item.permission && !this.authService.hasPermission(item.permission)) {
+        return false;
+      }
+      return true;
     });
   }
 

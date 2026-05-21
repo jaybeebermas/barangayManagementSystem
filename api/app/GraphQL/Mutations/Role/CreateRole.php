@@ -21,6 +21,10 @@ final readonly class CreateRole
                 'guard_name' => $input['guard_name'] ?? 'web',
             ]);
 
+            if (isset($input['permissions'])) {
+                $role->syncPermissions($input['permissions']);
+            }
+
             DB::commit();
 
             Log::info('CreateRole mutation succeeded.', [

@@ -10,7 +10,7 @@ final readonly class GetRole
     /** @return Collection<int, Role> */
     public function roles(): Collection
     {
-        return Role::query()->orderBy('id')->get();
+        return Role::query()->where('guard_name', 'web')->orderBy('id')->get();
     }
 
     /** @param  array{id: string}  $args */

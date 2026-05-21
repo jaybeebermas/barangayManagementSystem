@@ -10,6 +10,5 @@ return [
     'children' => [
         ['id' => 'users', 'title' => 'Users', 'type' => 'item', 'route' => '/admin/users', 'permission' => 'user.view'],
         ['id' => 'roles', 'title' => 'Roles', 'type' => 'item', 'route' => '/admin/roles', 'permission' => 'user.view'],
-        ['id' => 'permissions', 'title' => 'Permissions', 'type' => 'item', 'route' => '/admin/permissions', 'permission' => 'user.view'],
     ],
 ];

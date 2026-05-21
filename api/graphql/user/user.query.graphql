@@ -1,2 +1,2 @@
-users: [User!]! @all
-user(id: ID! @eq): User @find
+users: [User!]! @guard @can(ability: "user.view") @all
+user(id: ID! @eq): User @guard @can(ability: "user.view") @find

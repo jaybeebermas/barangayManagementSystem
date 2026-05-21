@@ -14,8 +14,8 @@ import { NgIconComponent } from '@ng-icons/core';
         <!-- Simplified Sidebar Toggle -->
         <button 
           (click)="toggleSidebar.emit()"
-          class="p-2.5 bg-zinc-50 border border-zinc-100 rounded-xl text-zinc-500 hover:text-primary-600 hover:bg-primary-50 hover:border-primary-100 transition-all active:scale-90 shadow-sm group">
-          <ng-icon name="heroBars3" class="h-5 w-5 transition-all group-hover:scale-110" strokeWidth="2.2"></ng-icon>
+          class="text-zinc-500 hover:text-primary-600 transition-all active:scale-90 group outline-none flex items-center justify-center">
+          <ng-icon name="heroBars3" class="h-7 w-7 transition-all group-hover:scale-105" strokeWidth="2.2"></ng-icon>
         </button>
       </div>
 
@@ -60,7 +60,7 @@ import { NgIconComponent } from '@ng-icons/core';
             class="absolute right-0 top-12 w-56 bg-white border border-zinc-100 rounded-2xl shadow-elevated p-2 animate-in fade-in slide-in-from-top-2 duration-200 z-50">
             <div class="px-4 py-3 border-b border-zinc-50 mb-1">
               <p class="text-xs font-black text-zinc-900 truncate">{{ authService.currentUser()?.email }}</p>
-              <p class="text-[10px] text-zinc-400 font-bold uppercase mt-0.5">Administrator</p>
+              <p class="text-[10px] text-zinc-400 font-bold uppercase mt-0.5">{{ getUserRoleName() }}</p>
             </div>
             
             <!-- Mobile Size Toggle -->
@@ -93,6 +93,15 @@ import { NgIconComponent } from '@ng-icons/core';
 export class HeaderComponent {
   @Input() sidebarOpen = true;
   @Output() toggleSidebar = new EventEmitter<void>();
+
+  getUserRoleName(): string {
+    const role = this.authService.currentUser()?.role;
+    if (!role) return '';
+    return role
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
 
   authService = inject(AuthService);
   uiConfig = inject(UIConfigService);
