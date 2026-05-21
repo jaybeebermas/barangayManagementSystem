@@ -9,7 +9,10 @@ import { ModalService } from '../../../services/modal/modal.service';
 import { ToastService } from '../../../services/toast/toast.service';
 import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 import { ConfirmDeleteComponent } from '../../../shared/components/ui/confirm-delete/confirm-delete.component';
-import { ZoneService, Zone } from '../../../services/zone/zone.service';
+import { GraphqlService } from '../../../services/graphql/graphql.service';
+import { GET_ZONES, CREATE_ZONE, UPDATE_ZONE, DELETE_ZONE } from '../../../services/zone/zone.gql';
+import { Zone } from '../../../services/zone/zone.types';
+import { CreateZoneInput, UpdateZoneInput } from '../../../services/zone/zone.input';
 
 @Component({
   selector: 'app-zone',
@@ -34,7 +37,7 @@ export class ZoneComponent implements OnInit {
   zoneToDelete = signal<Zone | null>(null);
 
   private readonly fb = inject(FormBuilder);
-  private readonly zoneService = inject(ZoneService);
+  private readonly gql = inject(GraphqlService);
   public readonly modalService = inject(ModalService);
   private readonly toastService = inject(ToastService);
 
@@ -100,11 +103,12 @@ export class ZoneComponent implements OnInit {
   async loadZones(): Promise<void> {
     this.isLoading.set(true);
     try {
-      const response = await this.zoneService.getAll();
-      this.zones.set(response || []);
+      const response = await this.gql.request<{ zones: Zone[] }>(GET_ZONES);
+      const zonesList = response.zones || [];
+      this.zones.set(zonesList);
       const currentSelected = this.selectedZone();
       if (currentSelected) {
-        const updated = response.find(z => z.id === currentSelected.id);
+        const updated = zonesList.find(z => z.id === currentSelected.id);
         this.selectedZone.set(updated || null);
       }
     } catch (error) {
@@ -175,20 +179,26 @@ export class ZoneComponent implements OnInit {
 
     this.modalService.setLoading(true);
     try {
-      const input = {
-        zone_code: this.zoneForm.value.zone_code,
-        zone_name: this.zoneForm.value.zone_name,
-        leader: this.zoneForm.value.leader || null,
-        status: this.zoneForm.value.status ?? true
-      };
-
       if (this.modalMode() === 'create') {
-        await this.zoneService.create(input);
+        const input: CreateZoneInput = {
+          zone_code: this.zoneForm.value.zone_code,
+          zone_name: this.zoneForm.value.zone_name,
+          leader: this.zoneForm.value.leader || null,
+          status: this.zoneForm.value.status ?? true
+        };
+        await this.gql.request(CREATE_ZONE, { input });
         this.toastService.show('Zone registered successfully!', 'success');
       } else {
         const id = this.selectedZone()?.id;
         if (id) {
-          await this.zoneService.update(id, input);
+          const input: UpdateZoneInput = {
+            id,
+            zone_code: this.zoneForm.value.zone_code,
+            zone_name: this.zoneForm.value.zone_name,
+            leader: this.zoneForm.value.leader || null,
+            status: this.zoneForm.value.status ?? true
+          };
+          await this.gql.request(UPDATE_ZONE, { input });
           this.toastService.show('Zone updated successfully!', 'success');
         }
       }
@@ -223,7 +233,7 @@ export class ZoneComponent implements OnInit {
 
     this.modalService.setLoading(true);
     try {
-      await this.zoneService.delete(zone.id);
+      await this.gql.request(DELETE_ZONE, { id: zone.id });
       if (this.selectedZone()?.id === zone.id) {
         this.selectedZone.set(null);
       }
