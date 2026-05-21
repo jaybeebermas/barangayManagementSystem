@@ -40,5 +40,24 @@ return [
 
         // SETTINGS MODULE
         'settings.view',
+
+        // RESIDENCE MODULE
+        'residence.view',
+        'residence.create',
+        'residence.edit',
+        'residence.delete',
+
+        // CLEARANCE MODULE
+        'clearance.view',
+        'clearance.create',
+        'clearance.edit',
+        'clearance.delete',
+
+        // ZONE MODULE
+        'zone.view',
+        'zone.create',
+        'zone.edit',
+        'zone.delete',
+
     ],
 ];

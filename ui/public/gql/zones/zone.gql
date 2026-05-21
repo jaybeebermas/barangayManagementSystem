@@ -1,0 +1,11 @@
+query Zone($id: ID!) {
+  zone(id: $id) {
+    id
+    zone_code
+    zone_name
+    leader
+    status
+    created_at
+    updated_at
+  }
+}
