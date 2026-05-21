@@ -1,0 +1,14 @@
+input CreateZoneInput {
+    zone_code: String!
+    zone_name: String!
+    leader: String
+    status: Boolean
+}
+
+input UpdateZoneInput {
+    id: ID!
+    zone_code: String
+    zone_name: String
+    leader: String
+    status: Boolean
+}
