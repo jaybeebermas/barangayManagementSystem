@@ -25,6 +25,9 @@ class PermissionSeeder extends Seeder
                 );
             }
 
+            // Forget cached permissions so Spatie is aware of newly created permissions
+            app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+
             // Create Roles
             $superAdmin = $roleModelClass::query()->updateOrCreate(
                 ['name' => 'super_admin', 'guard_name' => $guardName],
@@ -38,12 +41,7 @@ class PermissionSeeder extends Seeder
 
             // Assign Permissions
             $superAdmin->syncPermissions($permissionsList);
-            
-            // Admin gets everything except permission management
-            $adminPermissions = array_filter($permissionsList, function($p) {
-                return !str_starts_with($p, 'permission.');
-            });
-            $admin->syncPermissions($adminPermissions);
+            $admin->syncPermissions($permissionsList);
         }
 
         $permissionRegistrar = app()->bound('permission.registrar')

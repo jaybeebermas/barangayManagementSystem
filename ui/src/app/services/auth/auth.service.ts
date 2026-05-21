@@ -30,8 +30,7 @@ export class AuthService {
     }
     if (user.role === 'super_admin' || user.role === 'superadmin') return true;
     if (user.role === 'admin') {
-      // Admin has all permissions except permission.*
-      return !permission.startsWith('permission.');
+      return true;
     }
     return false;
   }

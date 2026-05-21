@@ -7,6 +7,7 @@ export interface ModalOptions {
   confirmLabel?: string;
   cancelLabel?: string;
   showFooter?: boolean;
+  type?: 'primary' | 'danger';
 }
 
 @Injectable({
