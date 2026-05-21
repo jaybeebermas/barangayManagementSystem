@@ -1,1 +1,270 @@
-<p>zone.component works!</p>
+<div class="flex h-[calc(100vh-4rem)] -m-4 md:-m-6 lg:-m-8 overflow-hidden bg-zinc-100">
+  
+  <!-- Left Side: Zone List Container -->
+  <div class="w-80 bg-white border-r border-zinc-200/60 flex flex-col h-[calc(100vh-4rem)] shadow-sm z-10 shrink-0">
+    <div class="p-6 border-b border-zinc-100 bg-white/50 backdrop-blur sticky top-0 flex flex-col gap-4">
+      <div class="flex items-center gap-2 text-sm font-medium text-zinc-500">
+        <span class="hover:text-zinc-800 cursor-pointer transition-colors">Residence</span>
+        <ng-icon name="heroChevronRight" class="h-4 w-4 text-zinc-400"></ng-icon>
+        <span class="text-primary-600 font-bold">Zones</span>
+      </div>
+      <div>
+        <h2 class="text-lg font-black text-zinc-900 tracking-tight mb-1">Zone Management</h2>
+        <p class="text-xs text-zinc-500 font-medium mb-4">Manage barangay zones and leaders</p>
+        <button *hasPermission="'zone.create'" (click)="openCreateModal()" class="w-full btn-primary !py-2.5 !text-sm shadow-lg shadow-primary-600/10">
+          <span class="flex items-center justify-center gap-2">
+            <ng-icon name="heroPlus" class="h-4 w-4" strokeWidth="3"></ng-icon>
+            Register New Zone
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="px-4 pt-4">
+      <div class="relative">
+        <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-zinc-400">
+          <ng-icon name="heroMagnifyingGlass" class="h-4 w-4"></ng-icon>
+        </span>
+        <input
+          type="text"
+          (input)="handleSearch($event)"
+          [value]="searchTerm()"
+          placeholder="Search zones..."
+          class="w-full pl-9 pr-8 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-xs font-bold text-zinc-700 placeholder-zinc-400 focus:bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-500/10 outline-none transition-all">
+        <button
+          *ngIf="searchTerm()"
+          (click)="clearSearch()"
+          type="button"
+          class="absolute inset-y-0 right-0 flex items-center pr-3 text-zinc-400 hover:text-zinc-600 transition-colors">
+          <ng-icon name="heroXMark" class="h-3.5 w-3.5"></ng-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- Scrollable zones list -->
+    <div class="flex-1 overflow-y-auto p-4 space-y-2">
+      <!-- Loading indicator -->
+      <div *ngIf="isLoading() && zones().length === 0" class="flex flex-col items-center justify-center py-12 gap-3">
+        <div class="animate-spin h-6 w-6 border-2 border-primary-600 border-t-transparent rounded-full"></div>
+        <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Loading zones...</p>
+      </div>
+
+      <!-- No zones found -->
+      <div *ngIf="!isLoading() && filteredZones().length === 0" class="text-center py-12">
+        <div class="inline-flex items-center justify-center p-4 bg-zinc-100 rounded-xl mb-4 shadow-inner">
+          <ng-icon name="heroMapPin" class="h-8 w-8 text-zinc-300"></ng-icon>
+        </div>
+        <p class="text-sm font-bold text-zinc-400">{{ searchTerm() ? 'No zones match your search' : 'No zones registered' }}</p>
+      </div>
+
+      <button
+        *ngFor="let zone of paginatedZones()"
+        matRipple
+        (click)="selectZone(zone)"
+        class="w-full text-left p-4 rounded-2xl transition-all duration-200 border border-transparent"
+        [ngClass]="selectedZone()?.id === zone.id ? 'bg-primary-50 border-primary-100 shadow-sm' : 'hover:bg-zinc-50 active:bg-zinc-100 hover:border-zinc-200/50'">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-sm font-bold leading-none tracking-tight"
+              [ngClass]="selectedZone()?.id === zone.id ? 'text-primary-900' : 'text-zinc-900'">
+            {{ zone.zone_name }}
+          </h3>
+          <span class="inline-flex items-center justify-center text-[10px] font-black rounded-full px-2 py-0.5"
+                [ngClass]="zone.status ? 'bg-emerald-100 text-emerald-700' : 'bg-zinc-200/50 text-zinc-500'">
+            {{ zone.status ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="inline-flex items-center justify-center bg-white border border-zinc-200 text-zinc-500 text-[10px] font-black rounded-full px-2 py-0.5">
+            {{ zone.zone_code }}
+          </span>
+          <span *ngIf="zone.leader" class="text-xs font-medium leading-relaxed truncate"
+                [ngClass]="selectedZone()?.id === zone.id ? 'text-primary-700/80' : 'text-zinc-500'">
+            <ng-icon name="heroUser" class="h-3 w-3 inline-block mr-0.5 -mt-0.5"></ng-icon>
+            {{ zone.leader }}
+          </span>
+        </div>
+      </button>
+    </div>
+    
+    <div class="bg-white border-t border-zinc-100 mt-auto">
+      <app-table-pagination 
+        [currentPage]="currentPage()" 
+        [totalItems]="filteredZones().length" 
+        [pageSize]="pageSize()"
+        (pageChange)="currentPage.set($event)"
+        (pageSizeChange)="pageSize.set($event); currentPage.set(1)">
+      </app-table-pagination>
+    </div>
+  </div>
+
+  <!-- Right Side: Details Container -->
+  <div class="flex-1 h-full overflow-y-auto p-6 md:p-8">
+    <app-user-management-layout *ngIf="selectedZone() as zone">
+      <!-- Zone Header with Edit & Delete Actions -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6 p-1">
+        <div>
+          <div class="flex items-center gap-3 mb-2">
+            <h2 class="text-2xl font-black text-zinc-900 tracking-tight">{{ zone.zone_name }}</h2>
+            <span class="inline-flex items-center justify-center text-[10px] font-black rounded-full px-2.5 py-1"
+                  [ngClass]="zone.status ? 'bg-emerald-100 text-emerald-700' : 'bg-zinc-200 text-zinc-500'">
+              {{ zone.status ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+          <p class="text-zinc-500 font-medium text-sm">View and manage zone details</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <!-- Edit Details Button -->
+          <button
+            *hasPermission="'zone.edit'"
+            (click)="openEditModal()"
+            class="btn-primary !py-2.5 !px-6 !text-xs shadow-lg shadow-primary-600/10 whitespace-nowrap cursor-pointer">
+            <span class="flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" /></svg>
+              Edit Details
+            </span>
+          </button>
+
+          <!-- Delete Zone Button -->
+          <button
+            *hasPermission="'zone.delete'"
+            (click)="deleteZone(zone.id)"
+            type="button"
+            class="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold text-red-600 hover:text-white bg-red-50 hover:bg-red-600 hover:shadow-lg hover:shadow-red-600/10 border border-red-200 hover:border-transparent transition-all whitespace-nowrap cursor-pointer">
+            <ng-icon name="heroTrash" class="h-4 w-4" strokeWidth="2.5"></ng-icon>
+            Delete Zone
+          </button>
+        </div>
+      </div>
+
+      <!-- Zone Details Cards -->
+      <div class="mt-8 border-t border-zinc-100 pt-8">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-sm font-bold text-zinc-900">Zone Information</h3>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Zone Code Card -->
+          <div class="bg-white p-5 rounded-2xl border border-zinc-200/50 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-center gap-3 mb-3 border-b border-zinc-100 pb-3">
+              <div class="h-8 w-8 rounded-lg bg-zinc-50 border border-zinc-100 flex items-center justify-center shadow-sm">
+                <ng-icon name="heroHashtag" class="h-4 w-4 text-primary-500"></ng-icon>
+              </div>
+              <h4 class="text-xs font-bold text-zinc-900 uppercase tracking-widest">Zone Code</h4>
+            </div>
+            <p class="text-lg font-black text-zinc-800 tracking-tight">{{ zone.zone_code }}</p>
+          </div>
+
+          <!-- Zone Name Card -->
+          <div class="bg-white p-5 rounded-2xl border border-zinc-200/50 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-center gap-3 mb-3 border-b border-zinc-100 pb-3">
+              <div class="h-8 w-8 rounded-lg bg-zinc-50 border border-zinc-100 flex items-center justify-center shadow-sm">
+                <ng-icon name="heroMapPin" class="h-4 w-4 text-primary-500"></ng-icon>
+              </div>
+              <h4 class="text-xs font-bold text-zinc-900 uppercase tracking-widest">Zone Name</h4>
+            </div>
+            <p class="text-lg font-black text-zinc-800 tracking-tight">{{ zone.zone_name }}</p>
+          </div>
+
+          <!-- Leader Card -->
+          <div class="bg-white p-5 rounded-2xl border border-zinc-200/50 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-center gap-3 mb-3 border-b border-zinc-100 pb-3">
+              <div class="h-8 w-8 rounded-lg bg-zinc-50 border border-zinc-100 flex items-center justify-center shadow-sm">
+                <ng-icon name="heroUser" class="h-4 w-4 text-primary-500"></ng-icon>
+              </div>
+              <h4 class="text-xs font-bold text-zinc-900 uppercase tracking-widest">Zone Leader</h4>
+            </div>
+            <p class="text-lg font-black tracking-tight" [ngClass]="zone.leader ? 'text-zinc-800' : 'text-zinc-400'">
+              {{ zone.leader || 'Not Assigned' }}
+            </p>
+          </div>
+
+          <!-- Status Card -->
+          <div class="bg-white p-5 rounded-2xl border border-zinc-200/50 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-center gap-3 mb-3 border-b border-zinc-100 pb-3">
+              <div class="h-8 w-8 rounded-lg bg-zinc-50 border border-zinc-100 flex items-center justify-center shadow-sm">
+                <ng-icon name="heroSignal" class="h-4 w-4 text-primary-500"></ng-icon>
+              </div>
+              <h4 class="text-xs font-bold text-zinc-900 uppercase tracking-widest">Status</h4>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="h-2.5 w-2.5 rounded-full" [ngClass]="zone.status ? 'bg-emerald-500' : 'bg-zinc-400'"></span>
+              <p class="text-lg font-black tracking-tight" [ngClass]="zone.status ? 'text-emerald-700' : 'text-zinc-500'">
+                {{ zone.status ? 'Active' : 'Inactive' }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </app-user-management-layout>
+
+    <!-- Empty State -->
+    <div *ngIf="!selectedZone() && !isLoading()" class="h-full flex flex-col items-center justify-center py-20 text-center">
+      <div class="inline-flex items-center justify-center p-6 bg-zinc-100 rounded-xl mb-6 shadow-inner">
+        <ng-icon name="heroMapPin" class="h-10 w-10 text-zinc-300"></ng-icon>
+      </div>
+      <h3 class="text-zinc-900 text-xl font-black mb-2 tracking-tight">No zone selected</h3>
+      <p class="text-zinc-500 font-medium max-w-sm mx-auto text-base">Select a zone from the sidebar list to view or manage its details.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Add / Edit Zone Modal Template -->
+<ng-template #zoneModal>
+  <form [formGroup]="zoneForm" (ngSubmit)="handleSubmit()" class="space-y-6">
+    <!-- Zone Code -->
+    <div>
+      <label class="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">Zone Code</label>
+      <input
+        type="text"
+        formControlName="zone_code"
+        class="w-full px-5 py-4 bg-zinc-50 border border-zinc-200 rounded-2xl text-zinc-900 font-bold focus:bg-white focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all outline-none"
+        placeholder="e.g. Z-001">
+      <div *ngIf="zoneForm.get('zone_code')?.touched && zoneForm.get('zone_code')?.invalid" class="text-red-500 text-xs font-bold mt-1.5 ml-1">
+        Zone code is required.
+      </div>
+    </div>
+
+    <!-- Zone Name -->
+    <div>
+      <label class="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">Zone Name</label>
+      <input
+        type="text"
+        formControlName="zone_name"
+        class="w-full px-5 py-4 bg-zinc-50 border border-zinc-200 rounded-2xl text-zinc-900 font-bold focus:bg-white focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all outline-none"
+        placeholder="e.g. Purok 1 - Sampaguita">
+      <div *ngIf="zoneForm.get('zone_name')?.touched && zoneForm.get('zone_name')?.invalid" class="text-red-500 text-xs font-bold mt-1.5 ml-1">
+        Zone name is required.
+      </div>
+    </div>
+
+    <!-- Leader -->
+    <div>
+      <label class="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">Zone Leader</label>
+      <input
+        type="text"
+        formControlName="leader"
+        class="w-full px-5 py-4 bg-zinc-50 border border-zinc-200 rounded-2xl text-zinc-900 font-bold focus:bg-white focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all outline-none"
+        placeholder="e.g. Juan Dela Cruz">
+    </div>
+
+    <!-- Status Toggle -->
+    <div>
+      <label class="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-3">Status</label>
+      <label class="relative inline-flex items-center cursor-pointer gap-3">
+        <div class="relative">
+          <input type="checkbox" formControlName="status" class="sr-only peer">
+          <div class="w-11 h-6 bg-zinc-200 rounded-full peer peer-checked:bg-primary-600 transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full shadow-inner"></div>
+        </div>
+        <span class="text-sm font-bold" [ngClass]="zoneForm.get('status')?.value ? 'text-emerald-700' : 'text-zinc-500'">
+          {{ zoneForm.get('status')?.value ? 'Active' : 'Inactive' }}
+        </span>
+      </label>
+    </div>
+  </form>
+</ng-template>
+
+<!-- Confirm Delete Modal Template -->
+<ng-template #deleteModal>
+  <app-confirm-delete [name]="zoneToDelete()?.zone_name || ''"></app-confirm-delete>
+</ng-template>
