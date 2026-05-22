@@ -19,6 +19,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Cache Store For Rate Limiting
+    |--------------------------------------------------------------------------
+    |
+    | Some flows (like login throttling) resolve a dedicated limiter store.
+    | Force this to file so rate limiting never depends on database cache.
+    |
+    */
+    'limiter' => env('CACHE_LIMITER', 'file'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Cache Stores
     |--------------------------------------------------------------------------
     |

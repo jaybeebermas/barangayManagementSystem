@@ -1,0 +1,12 @@
+input UpdateBarangaySettingInput {
+    barangay_name: String
+    municipality: String
+    province: String
+    region: String
+    zip_code: String
+    contact_number: String
+    email: String
+    logo_path: String
+    timezone: String
+    date_format: String
+}

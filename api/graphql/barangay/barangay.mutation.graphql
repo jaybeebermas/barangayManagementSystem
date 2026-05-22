@@ -1,0 +1,1 @@
+updateBarangaySetting(input: UpdateBarangaySettingInput!): BarangaySetting @guard @can(ability: "settings.view") @field(resolver: "App\\GraphQL\\Mutations\\Barangay\\UpdateBarangaySetting")

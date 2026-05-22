@@ -31,5 +31,18 @@ class DatabaseSeeder extends Seeder
                 'password' => bcrypt('password')
             ]
         );
+
+        \App\Models\BarangaySetting::query()->firstOrCreate(
+            ['id' => 1],
+            [
+                'barangay_name' => 'Barangay San Antonio',
+                'municipality' => 'City of Manila',
+                'province' => 'Metro Manila',
+                'region' => 'NCR',
+                'zip_code' => '1000',
+                'timezone' => 'Asia/Manila',
+                'date_format' => 'MM/DD/YYYY'
+            ]
+        );
     }
 }
