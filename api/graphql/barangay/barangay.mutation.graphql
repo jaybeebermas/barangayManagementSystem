@@ -1,1 +1,3 @@
+createBarangaySetting(input: CreateBarangaySettingInput!): BarangaySetting @guard @can(ability: "settings.view") @field(resolver: "App\\GraphQL\\Mutations\\Barangay\\CreateBarangaySetting")
 updateBarangaySetting(input: UpdateBarangaySettingInput!): BarangaySetting @guard @can(ability: "settings.view") @field(resolver: "App\\GraphQL\\Mutations\\Barangay\\UpdateBarangaySetting")
+deleteBarangaySetting: Boolean @guard @can(ability: "settings.view", model: "App\\Models\\BarangaySetting") @field(resolver: "App\\GraphQL\\Mutations\\Barangay\\DeleteBarangaySetting")

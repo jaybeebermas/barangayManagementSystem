@@ -19,7 +19,10 @@ export class BarangayComponent implements OnInit {
 
   isLoading = signal(false);
   isSaving = signal(false);
-  isEditMode = signal(false); // Manages read-only vs edit layout state
+  isEditMode = signal(false); // Controls edit view state if settings exist
+  hasSettings = signal(false); // Tracks if settings exist in database
+  isCreating = signal(false); // Tracks if we are in active creation form mode
+
   settingsForm!: FormGroup;
 
   ngOnInit(): void {
@@ -51,6 +54,22 @@ export class BarangayComponent implements OnInit {
     this.isEditMode.set(false);
   }
 
+  setUpProfile(): void {
+    this.isCreating.set(true);
+    this.settingsForm.reset({
+      timezone: 'Asia/Manila',
+      date_format: 'MM/DD/YYYY'
+    });
+  }
+
+  cancelCreate(): void {
+    this.isCreating.set(false);
+    this.settingsForm.reset({
+      timezone: 'Asia/Manila',
+      date_format: 'MM/DD/YYYY'
+    });
+  }
+
   async loadSettings(): Promise<void> {
     this.isLoading.set(true);
     try {
@@ -59,6 +78,7 @@ export class BarangayComponent implements OnInit {
         'barangay-setting.gql'
       );
       if (response && response.barangaySetting) {
+        this.hasSettings.set(true);
         this.settingsForm.patchValue({
           barangay_name: response.barangaySetting.barangay_name || '',
           municipality: response.barangaySetting.municipality || '',
@@ -70,6 +90,12 @@ export class BarangayComponent implements OnInit {
           logo_path: response.barangaySetting.logo_path || '',
           timezone: response.barangaySetting.timezone || 'Asia/Manila',
           date_format: response.barangaySetting.date_format || 'MM/DD/YYYY',
+        });
+      } else {
+        this.hasSettings.set(false);
+        this.settingsForm.reset({
+          timezone: 'Asia/Manila',
+          date_format: 'MM/DD/YYYY'
         });
       }
     } catch (error: any) {
@@ -102,18 +128,58 @@ export class BarangayComponent implements OnInit {
         date_format: this.settingsForm.value.date_format,
       };
 
-      await this.gql.requestFromFile<any>(
-        'settings',
-        'update-barangay-setting.gql',
-        { input }
-      );
-      this.toastService.show('Barangay settings saved successfully!', 'success');
-      this.isEditMode.set(false); // Switch back to read-only view state after saving
+      if (this.hasSettings()) {
+        await this.gql.requestFromFile<any>(
+          'settings',
+          'update-barangay-setting.gql',
+          { input }
+        );
+        this.toastService.show('Barangay settings updated successfully!', 'success');
+        this.isEditMode.set(false);
+      } else {
+        await this.gql.requestFromFile<any>(
+          'settings',
+          'create-barangay-setting.gql',
+          { input }
+        );
+        this.toastService.show('Barangay settings created successfully!', 'success');
+        this.hasSettings.set(true);
+        this.isCreating.set(false);
+      }
+      await this.loadSettings();
     } catch (error: any) {
       console.error('Failed to save settings:', error);
       this.toastService.show(error.message || 'Failed to save settings.', 'error');
     } finally {
       this.isSaving.set(false);
+    }
+  }
+
+  async resetSettings(): Promise<void> {
+    const confirmReset = confirm('Are you sure you want to reset all Barangay settings? This will delete all configuration data.');
+    if (!confirmReset) {
+      return;
+    }
+
+    this.isLoading.set(true);
+    try {
+      await this.gql.requestFromFile<any>(
+        'settings',
+        'delete-barangay-setting.gql'
+      );
+      this.toastService.show('Barangay settings reset successfully!', 'success');
+      this.hasSettings.set(false);
+      this.isCreating.set(false);
+      this.isEditMode.set(false);
+      this.settingsForm.reset({
+        timezone: 'Asia/Manila',
+        date_format: 'MM/DD/YYYY'
+      });
+    } catch (error: any) {
+      console.error('Failed to reset settings:', error);
+      this.toastService.show(error.message || 'Failed to reset settings.', 'error');
+    } finally {
+      this.isLoading.set(false);
     }
   }
 }
