@@ -8,6 +8,6 @@ return [
     'parent' => null,
     'permission' => null,
     'children' => [
-        ['id' => 'general', 'title' => 'General', 'type' => 'item', 'route' => '/settings/general', 'permission' => 'settings.view'],
+        ['id' => 'barangay', 'title' => 'Barangay information', 'type' => 'item', 'route' => '/settings/barangay', 'permission' => 'settings.view'],
     ],
 ];

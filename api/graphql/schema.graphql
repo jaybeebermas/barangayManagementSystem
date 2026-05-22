@@ -9,6 +9,7 @@ extend type Query {
   #import navigation/navigation.query.graphql
   #import user/user.query.graphql
   #import zone/zone.query.graphql
+  #import barangay/barangay.query.graphql
 }
 
 extend type Mutation {
@@ -17,6 +18,7 @@ extend type Mutation {
   #import role/role.mutation.graphql
   #import user/user.mutation.graphql
   #import zone/zone.mutation.graphql
+  #import barangay/barangay.mutation.graphql
 }
 
 #import auth/auth.input.graphql
@@ -24,6 +26,7 @@ extend type Mutation {
 #import role/role.input.graphql
 #import user/user.input.graphql
 #import zone/zone.input.graphql
+#import barangay/barangay.input.graphql
 
 #import auth/auth.type.graphql
 #import permission/permission.type.graphql
@@ -31,3 +34,4 @@ extend type Mutation {
 #import navigation/navigation.type.graphql
 #import user/user.types.graphql
 #import zone/zone.type.graphql
+#import barangay/barangay.type.graphql
