@@ -9,11 +9,23 @@ final readonly class UpdateBarangaySetting
 {
     public function __invoke(null $_, array $args): BarangaySetting
     {
-        return DB::transaction(function () use ($args) {
+        DB::beginTransaction();
+
+        try {
             $input = $args['input'] ?? $args;
             $setting = BarangaySetting::firstOrFail();
             $setting->update($input);
+            
+            DB::commit();
             return $setting;
-        });
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Illuminate\Support\Facades\Log::error('Failed to update Barangay Setting.', [
+                'error' => $e->getMessage(),
+                'args' => $args
+            ]);
+            throw $e;
+        }
     }
 }
