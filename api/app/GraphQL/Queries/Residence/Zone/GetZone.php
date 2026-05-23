@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace App\GraphQL\Queries\Zone;
+namespace App\GraphQL\Queries\Residence\Zone;
 
 use App\Models\Zone;
 

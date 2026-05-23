@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace App\GraphQL\Mutations\Zone;
+namespace App\GraphQL\Mutations\Residence\Zone;
 
 use App\Models\Zone;
 use Illuminate\Support\Facades\DB;
