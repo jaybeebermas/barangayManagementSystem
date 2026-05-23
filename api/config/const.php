@@ -59,5 +59,10 @@ return [
         'zone.edit',
         'zone.delete',
 
+        // BARANGAY INFORMATION MODULE
+        'barangay_information.view',
+        'barangay_information.create',
+        'barangay_information.edit',
+        'barangay_information.delete',
     ],
 ];
