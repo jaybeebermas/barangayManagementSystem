@@ -1,0 +1,13 @@
+type ResidentProfile {
+    id: ID!
+    first_name: String!
+    last_name: String!
+    birthdate: String!
+    age: Int!
+    email: String
+    status: String!
+    zone_id: ID
+    zone: Zone @belongsTo
+    created_at: DateTime!
+    updated_at: DateTime!
+}
