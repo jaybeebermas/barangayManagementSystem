@@ -1,0 +1,2 @@
+    events: [Event!]! @guard @can(ability: "events.view") @paginate(defaultCount: 10)
+    event(id: ID! @eq): Event @guard @can(ability: "events.view") @find

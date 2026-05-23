@@ -64,5 +64,12 @@ return [
         'barangay_information.create',
         'barangay_information.edit',
         'barangay_information.delete',
+
+        // EVENTS MODULE
+        'events.view',
+        'events.create',
+        'events.edit',
+        'events.delete',
+
     ],
 ];

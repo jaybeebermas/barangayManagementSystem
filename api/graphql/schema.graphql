@@ -11,6 +11,7 @@ extend type Query {
   #import zone/zone.query.graphql
   #import resident_profile/resident_profile.query.graphql
   #import barangay/barangay.query.graphql
+   #import event/event.query.graphql
 
 }
 
@@ -22,6 +23,7 @@ extend type Mutation {
   #import zone/zone.mutation.graphql
   #import resident_profile/resident_profile.mutation.graphql
   #import barangay/barangay.mutation.graphql
+  #import event/event.mutation.graphql
 
 }
 
@@ -41,3 +43,5 @@ extend type Mutation {
 #import zone/zone.type.graphql
 #import resident_profile/resident_profile.type.graphql
 #import barangay/barangay.type.graphql
+#import event/event.input.graphql
+#import event/event.type.graphql
