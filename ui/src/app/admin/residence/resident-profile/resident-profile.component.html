@@ -8,8 +8,10 @@
             <p class="text-zinc-500 font-medium mt-1 text-sm">Manage resident records, zones, and profile status.</p>
           </div>
           <button
+            *hasPermission="'residence.create'"
+            (click)="openAddModal()"
             type="button"
-            class="btn-primary !py-2.5 !px-6 !text-xs shadow-lg shadow-primary-600/10 whitespace-nowrap"
+            class="btn-primary !py-2.5 !px-6 !text-xs shadow-lg shadow-primary-600/10 whitespace-nowrap cursor-pointer"
           >
             Add Resident
           </button>
@@ -23,21 +25,31 @@
             ></ng-icon>
             <input
               type="text"
+              [value]="searchTerm()"
+              (input)="handleSearch($event)"
               placeholder="Search by resident name..."
               class="w-full h-14 rounded-xl border border-zinc-300/80 bg-white pl-12 pr-4 text-sm text-zinc-700 outline-none focus:border-primary-400"
             />
           </div>
           <div class="flex gap-3 w-full md:w-auto items-center">
-            <select
-              class="h-14 min-w-[160px] rounded-xl border border-zinc-300/80 bg-white px-4 text-sm text-zinc-700 outline-none focus:border-primary-400"
-            >
-              <option>All Zones</option>
-            </select>
-            <select
-              class="h-14 min-w-[160px] rounded-xl border border-zinc-300/80 bg-white px-4 text-sm text-zinc-700 outline-none focus:border-primary-400"
-            >
-              <option>All Status</option>
-            </select>
+            <!-- Zone Dropdown Filter -->
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="min-w-[180px]">
+              <mat-label>All Zones</mat-label>
+              <mat-select [value]="selectedZoneId()" (selectionChange)="selectedZoneId.set($event.value); currentPage.set(1)">
+                <mat-option value="">All Zones</mat-option>
+                <mat-option *ngFor="let zone of zones()" [value]="zone.id">{{ zone.zone_name }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <!-- Status Dropdown Filter -->
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="min-w-[160px]">
+              <mat-label>All Status</mat-label>
+              <mat-select [value]="selectedStatus()" (selectionChange)="selectedStatus.set($event.value); currentPage.set(1)">
+                <mat-option value="">All Status</mat-option>
+                <mat-option value="Active">Active</mat-option>
+                <option value="Inactive">Inactive</option>
+              </mat-select>
+            </mat-form-field>
           </div>
         </div>
 
@@ -53,46 +65,111 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-zinc-100/50">
-                <tr class="hover:bg-zinc-100/30 transition-all group">
+                <!-- Data Row -->
+                <tr *ngFor="let resident of paginatedResidents()" class="hover:bg-zinc-100/30 transition-all group">
                   <td class="px-8 py-4">
-                    <span class="block text-sm font-bold text-zinc-900 leading-none">Juan Dela Cruz</span>
+                    <span class="block text-sm font-bold text-zinc-900 leading-none">{{ resident.first_name }} {{ resident.last_name }}</span>
+                    <span *ngIf="resident.email" class="text-[11px] text-zinc-400 font-semibold tracking-tight block mt-1.5">{{ resident.email }}</span>
                   </td>
-                  <td class="px-8 py-4 text-xs font-medium text-zinc-500">Zone 1</td>
+                  <td class="px-8 py-4 text-xs font-medium text-zinc-500">{{ resident.zone?.zone_name || 'N/A' }}</td>
                   <td class="px-8 py-4 text-center">
-                    <span class="inline-flex px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest bg-emerald-100 text-emerald-700">
-                      Active
+                    <span
+                      [class.bg-emerald-100]="resident.status.toLowerCase() === 'active'"
+                      [class.text-emerald-700]="resident.status.toLowerCase() === 'active'"
+                      [class.bg-zinc-200/50]="resident.status.toLowerCase() !== 'active'"
+                      [class.text-zinc-500]="resident.status.toLowerCase() !== 'active'"
+                      class="inline-flex px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                      {{ resident.status }}
                     </span>
                   </td>
                   <td class="px-8 py-4 text-right whitespace-nowrap">
-                    <button
-                      type="button"
-                      class="flex items-center justify-center w-8 h-8 rounded-full text-primary-600 hover:bg-primary-50 transition-colors ml-auto"
-                    >
-                      <ng-icon name="heroEye" class="text-[17px]"></ng-icon>
-                    </button>
+                    <div class="flex items-center justify-end gap-1.5 ml-auto">
+                      <button
+                        *hasPermission="'residence.view'"
+                        (click)="openViewModal(resident)"
+                        type="button"
+                        class="flex items-center justify-center w-8 h-8 rounded-full text-primary-600 hover:bg-primary-50 transition-colors cursor-pointer"
+                      >
+                        <ng-icon name="heroEye" class="text-[17px]"></ng-icon>
+                      </button>
+                      <button
+                        *hasPermission="'residence.edit'"
+                        (click)="openEditModal(resident)"
+                        type="button"
+                        class="flex items-center justify-center w-8 h-8 rounded-full text-pink-600 hover:bg-pink-50 transition-colors cursor-pointer"
+                      >
+                        <ng-icon name="heroPencil" class="text-[17px]"></ng-icon>
+                      </button>
+                      <button
+                        *hasPermission="'residence.delete'"
+                        (click)="deleteResident(resident.id)"
+                        type="button"
+                        class="flex items-center justify-center w-8 h-8 rounded-full text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
+                      >
+                        <ng-icon name="heroTrash" class="text-[17px]"></ng-icon>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Empty State -->
+                <tr *ngIf="paginatedResidents().length === 0 && !isLoading()">
+                  <td colspan="4" class="px-8 py-12 text-center text-zinc-500 font-medium text-sm">
+                    No resident records found.
+                  </td>
+                </tr>
+
+                <!-- Loading State -->
+                <tr *ngIf="isLoading()">
+                  <td colspan="4" class="px-8 py-12 text-center">
+                    <div class="flex items-center justify-center gap-3">
+                      <div class="animate-spin h-5 w-5 border-2 border-primary-600 border-t-transparent rounded-full"></div>
+                      <span class="text-xs font-bold text-zinc-400 uppercase tracking-widest">Loading Records...</span>
+                    </div>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
 
+          <!-- Pagination Bar -->
           <div class="bg-zinc-50/50 border-t border-zinc-100 rounded-b-2xl px-6">
             <div class="flex items-center justify-between min-h-[48px] py-2 text-[11px] text-zinc-500 font-medium">
               <div class="flex items-center gap-2">
                 <span>Items per page:</span>
-                <select class="h-8 rounded-md border border-zinc-200 bg-white px-2 text-[11px] text-zinc-600 outline-none">
-                  <option>5</option>
-                  <option selected>10</option>
-                  <option>25</option>
-                  <option>100</option>
+                <select
+                  [value]="pageSize()"
+                  (change)="handlePageSizeChange($event)"
+                  class="h-8 rounded-md border border-zinc-200 bg-white px-2 text-[11px] text-zinc-600 outline-none cursor-pointer"
+                >
+                  <option [value]="5">5</option>
+                  <option [value]="10">10</option>
+                  <option [value]="25">25</option>
+                  <option [value]="100">100</option>
                 </select>
               </div>
               <div class="flex items-center gap-2">
-                <span>1-1 of 1</span>
-                <button type="button" class="w-8 h-8 rounded-full border border-zinc-200 text-zinc-400 cursor-not-allowed" disabled>
+                <span>{{ getPaginationRangeText() }}</span>
+                <button
+                  type="button"
+                  (click)="prevPage()"
+                  [disabled]="currentPage() === 1"
+                  [class.cursor-not-allowed]="currentPage() === 1"
+                  [class.text-zinc-400]="currentPage() === 1"
+                  [class.text-zinc-700]="currentPage() > 1"
+                  class="w-8 h-8 rounded-full border border-zinc-200 flex items-center justify-center font-bold cursor-pointer"
+                >
                   ‹
                 </button>
-                <button type="button" class="w-8 h-8 rounded-full border border-zinc-200 text-zinc-400 cursor-not-allowed" disabled>
+                <button
+                  type="button"
+                  (click)="nextPage()"
+                  [disabled]="currentPage() >= totalPages()"
+                  [class.cursor-not-allowed]="currentPage() >= totalPages()"
+                  [class.text-zinc-400]="currentPage() >= totalPages()"
+                  [class.text-zinc-700]="currentPage() < totalPages()"
+                  class="w-8 h-8 rounded-full border border-zinc-200 flex items-center justify-center font-bold cursor-pointer"
+                >
                   ›
                 </button>
               </div>
@@ -102,4 +179,153 @@
       </div>
     </div>
   </div>
+
+  <!-- View-Only Side Drawer -->
+  <app-drawer
+    [isOpen]="isDrawerOpen()"
+    title="View Resident Profile"
+    (close)="closeModal()"
+    class="shrink-0"
+  >
+    <div class="space-y-6" *ngIf="modalMode() === 'view'">
+      <!-- Section: Resident Details -->
+      <div class="bg-white p-6 rounded-2xl border border-zinc-100 shadow-sm space-y-4">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Resident Details</h3>
+          <ng-icon name="heroUser" class="text-zinc-300 h-5 w-5"></ng-icon>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">First Name</p>
+            <p class="text-sm font-bold text-zinc-900">{{ residentForm.get('first_name')?.value }}</p>
+          </div>
+          <div class="space-y-1">
+            <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Last Name</p>
+            <p class="text-sm font-bold text-zinc-900">{{ residentForm.get('last_name')?.value }}</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Birthdate</p>
+            <p class="text-sm font-bold text-zinc-900">{{ formatDate(residentForm.get('birthdate')?.value) }}</p>
+          </div>
+          <div class="space-y-1">
+            <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Age</p>
+            <p class="text-sm font-bold text-zinc-900">{{ residentForm.get('age')?.value }}</p>
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Email Address</p>
+          <p class="text-sm font-bold text-zinc-900">{{ residentForm.get('email')?.value || 'N/A' }}</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Zone</p>
+            <p class="text-sm font-bold text-zinc-900">
+              {{ getZoneNameById(residentForm.get('zone_id')?.value) }}
+            </p>
+          </div>
+          <div class="space-y-1">
+            <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Status</p>
+            <span class="inline-flex px-2 py-0.5 text-[10px] font-black uppercase tracking-widest rounded-md"
+              [ngClass]="residentForm.get('status')?.value?.toLowerCase() === 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-zinc-100 text-zinc-600'">
+              {{ residentForm.get('status')?.value }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Template for View Mode -->
+    <div drawerFooter class="flex justify-end items-center">
+      <button (click)="closeModal()"
+        class="px-8 py-2.5 bg-zinc-900 text-white rounded-xl font-bold shadow-sm hover:bg-zinc-800 transition-all active:scale-95 cursor-pointer">
+        Close Profile
+      </button>
+    </div>
+  </app-drawer>
 </div>
+
+<!-- Modal Template for Add/Edit -->
+<ng-template #residentModal>
+  <form [formGroup]="residentForm" class="py-1">
+    <div class="bg-zinc-50/40 p-6 rounded-3xl border border-zinc-100/80 space-y-6">
+      
+      <!-- Resident Details Section -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em]">Resident Details</h3>
+          <ng-icon name="heroUser" class="text-zinc-300 h-4 w-4"></ng-icon>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+            <mat-label>First Name</mat-label>
+            <input matInput formControlName="first_name" placeholder="e.g. Maria">
+            <mat-error *ngIf="residentForm.get('first_name')?.hasError('required')">First name is required</mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+            <mat-label>Last Name</mat-label>
+            <input matInput formControlName="last_name" placeholder="e.g. Santos">
+            <mat-error *ngIf="residentForm.get('last_name')?.hasError('required')">Last name is required</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <!-- Birthdate Datepicker -->
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+            <mat-label>Birthdate</mat-label>
+            <input matInput [matDatepicker]="picker" formControlName="birthdate" (dateChange)="calculateAgeFromBirthdate()">
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+            <mat-error *ngIf="residentForm.get('birthdate')?.hasError('required')">Birthdate is required</mat-error>
+          </mat-form-field>
+          
+          <!-- Age (Calculated and Readonly) -->
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+            <mat-label>Age</mat-label>
+            <input matInput type="number" formControlName="age" readonly placeholder="e.g. 25">
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+          <mat-label>Email Address (Optional)</mat-label>
+          <input matInput type="email" formControlName="email" placeholder="maria.santos@example.com">
+        </mat-form-field>
+
+        <div class="grid grid-cols-2 gap-3">
+          <!-- Zone Dropdown -->
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+            <mat-label>Zone</mat-label>
+            <mat-select formControlName="zone_id">
+              <mat-option [value]="null">Select Zone</mat-option>
+              <mat-option *ngFor="let zone of zones()" [value]="zone.id">
+                {{ zone.zone_name }}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="residentForm.get('zone_id')?.hasError('required')">Zone is required</mat-error>
+          </mat-form-field>
+
+          <!-- Status Dropdown -->
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+            <mat-label>Status</mat-label>
+            <mat-select formControlName="status">
+              <mat-option value="Active">Active</mat-option>
+              <mat-option value="Inactive">Inactive</mat-option>
+            </mat-select>
+            <mat-error *ngIf="residentForm.get('status')?.hasError('required')">Status is required</mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+    </div>
+  </form>
+</ng-template>
+
+<!-- Confirm Delete Modal Template -->
+<ng-template #deleteModal>
+  <app-confirm-delete [name]="(residentToDelete()?.first_name || '') + ' ' + (residentToDelete()?.last_name || '')"></app-confirm-delete>
+</ng-template>
