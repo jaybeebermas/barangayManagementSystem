@@ -1,0 +1,20 @@
+input CreateResidentProfileInput {
+    first_name: String!
+    last_name: String!
+    birthdate: String!
+    age: Int!
+    email: String
+    status: String!
+    zone_id: ID
+}
+
+input UpdateResidentProfileInput {
+    id: ID!
+    first_name: String
+    last_name: String
+    birthdate: String
+    age: Int
+    email: String
+    status: String
+    zone_id: ID
+}
