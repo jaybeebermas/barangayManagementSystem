@@ -133,48 +133,13 @@
           </div>
 
           <!-- Pagination Bar -->
-          <div class="bg-zinc-50/50 border-t border-zinc-100 rounded-b-2xl px-6">
-            <div class="flex items-center justify-between min-h-[48px] py-2 text-[11px] text-zinc-500 font-medium">
-              <div class="flex items-center gap-2">
-                <span>Items per page:</span>
-                <select
-                  [value]="pageSize()"
-                  (change)="handlePageSizeChange($event)"
-                  class="h-8 rounded-md border border-zinc-200 bg-white px-2 text-[11px] text-zinc-600 outline-none cursor-pointer"
-                >
-                  <option [value]="5">5</option>
-                  <option [value]="10">10</option>
-                  <option [value]="25">25</option>
-                  <option [value]="100">100</option>
-                </select>
-              </div>
-              <div class="flex items-center gap-2">
-                <span>{{ getPaginationRangeText() }}</span>
-                <button
-                  type="button"
-                  (click)="prevPage()"
-                  [disabled]="currentPage() === 1"
-                  [class.cursor-not-allowed]="currentPage() === 1"
-                  [class.text-zinc-400]="currentPage() === 1"
-                  [class.text-zinc-700]="currentPage() > 1"
-                  class="w-8 h-8 rounded-full border border-zinc-200 flex items-center justify-center font-bold cursor-pointer"
-                >
-                  ‹
-                </button>
-                <button
-                  type="button"
-                  (click)="nextPage()"
-                  [disabled]="currentPage() >= totalPages()"
-                  [class.cursor-not-allowed]="currentPage() >= totalPages()"
-                  [class.text-zinc-400]="currentPage() >= totalPages()"
-                  [class.text-zinc-700]="currentPage() < totalPages()"
-                  class="w-8 h-8 rounded-full border border-zinc-200 flex items-center justify-center font-bold cursor-pointer"
-                >
-                  ›
-                </button>
-              </div>
-            </div>
-          </div>
+          <app-table-pagination
+            [currentPage]="currentPage()"
+            [totalItems]="filteredResidents().length"
+            [pageSize]="pageSize()"
+            (pageChange)="currentPage.set($event)"
+            (pageSizeChange)="pageSize.set($event); currentPage.set(1)">
+          </app-table-pagination>
         </div>
       </div>
     </div>
