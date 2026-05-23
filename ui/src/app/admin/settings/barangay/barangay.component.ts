@@ -1,14 +1,27 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, afterRenderEffect, computed, viewChild, viewChildren } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgIconComponent } from '@ng-icons/core';
 import { GraphqlService } from '../../../services/graphql/graphql.service';
 import { ToastService } from '../../../services/toast/toast.service';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatInputModule } from '@angular/material/input';
+import { Observable, startWith, map, of } from 'rxjs';
+import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
+import { ModalComponent } from '../../../shared/components/ui/modal/modal.component';
 
 @Component({
   selector: 'app-barangay',
   standalone: true,
-  imports: [CommonModule, NgIconComponent, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    NgIconComponent,
+    ReactiveFormsModule,
+    MatAutocompleteModule,
+    MatInputModule,
+    HasPermissionDirective,
+    ModalComponent
+  ],
   templateUrl: './barangay.component.html',
   styleUrl: './barangay.component.css',
 })
@@ -22,12 +35,70 @@ export class BarangayComponent implements OnInit {
   isEditMode = signal(false); // Controls edit view state if settings exist
   hasSettings = signal(false); // Tracks if settings exist in database
   isCreating = signal(false); // Tracks if we are in active creation form mode
+  isResetModalOpen = signal(false);
 
   settingsForm!: FormGroup;
+
+  regions = [
+    { name: 'National Capital Region (NCR)', value: 'NCR' },
+    { name: 'Cordillera Administrative Region (CAR)', value: 'CAR' },
+    { name: 'Ilocos Region (Region I)', value: 'Region I' },
+    { name: 'Cagayan Valley (Region II)', value: 'Region II' },
+    { name: 'Central Luzon (Region III)', value: 'Region III' },
+    { name: 'CALABARZON (Region IV-A)', value: 'Region IV-A' },
+    { name: 'MIMAROPA (Region IV-B)', value: 'Region IV-B' },
+    { name: 'Bicol Region (Region V)', value: 'Region V' },
+    { name: 'Western Visayas (Region VI)', value: 'Region VI' },
+    { name: 'Central Visayas (Region VII)', value: 'Region VII' },
+    { name: 'Eastern Visayas (Region VIII)', value: 'Region VIII' },
+    { name: 'Zamboanga Peninsula (Region IX)', value: 'Region IX' },
+    { name: 'Northern Mindanao (Region X)', value: 'Region X' },
+    { name: 'Davao Region (Region XI)', value: 'Region XI' },
+    { name: 'Soccsksargen (Region XII)', value: 'Region XII' },
+    { name: 'Caraga Region (Region XIII)', value: 'Region XIII' },
+    { name: 'Bangsamoro Autonomous Region in Muslim Mindanao (BARMM)', value: 'BARMM' }
+  ];
+  timezones = [
+    { name: 'Asia/Manila (UTC+8)', value: 'Asia/Manila' },
+    { name: 'Asia/Singapore (UTC+8)', value: 'Asia/Singapore' },
+    { name: 'Asia/Tokyo (UTC+9)', value: 'Asia/Tokyo' },
+    { name: 'UTC (UTC+0)', value: 'UTC' }
+  ];
+
+  constructor() { }
 
   ngOnInit(): void {
     this.initForm();
     this.loadSettings();
+  }
+
+  displayRegionFn = (regionValue: string): string => {
+    if (!regionValue) return '';
+    const matched = this.regions.find(r => r.value === regionValue);
+    return matched ? matched.name : regionValue;
+  };
+  displayTimezoneFn = (tzValue: string): string => {
+    if (!tzValue) return '';
+    const matched = this.timezones.find(t => t.value === tzValue);
+    return matched ? matched.name : tzValue;
+  };
+
+  toggleTimezonePanel(event: Event, trigger: any) {
+    event.stopPropagation();
+    if (trigger.panelOpen) {
+      trigger.closePanel();
+    } else {
+      trigger.openPanel();
+    }
+  }
+
+  toggleRegionPanel(event: Event, trigger: any) {
+    event.stopPropagation();
+    if (trigger.panelOpen) {
+      trigger.closePanel();
+    } else {
+      trigger.openPanel();
+    }
   }
 
   private initForm(): void {
@@ -155,12 +226,11 @@ export class BarangayComponent implements OnInit {
     }
   }
 
-  async resetSettings(): Promise<void> {
-    const confirmReset = confirm('Are you sure you want to reset all Barangay settings? This will delete all configuration data.');
-    if (!confirmReset) {
-      return;
-    }
+  // Rename from resetSettings() to confirmReset()
+  async confirmReset(): Promise<void> {
+    // We removed the native confirm() check here!
 
+    this.isResetModalOpen.set(false); // Close the modal immediately
     this.isLoading.set(true);
     try {
       await this.gql.requestFromFile<any>(
