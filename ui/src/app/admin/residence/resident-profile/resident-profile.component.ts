@@ -13,6 +13,8 @@ import { GraphqlService } from '../../../services/graphql/graphql.service';
 import { GET_ZONES } from '../../../services/zone/zone.gql';
 import { Zone } from '../../../services/zone/zone.types';
 
+import { TablePaginationComponent } from '../../../shared/components/ui/user-management/table-pagination.component';
+
 // Angular Material Imports
 import { MatSelectModule } from '@angular/material/select';
 import { MatOptionModule, provideNativeDateAdapter } from '@angular/material/core';
@@ -34,7 +36,8 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
     MatOptionModule,
     MatFormFieldModule,
     MatInputModule,
-    MatDatepickerModule
+    MatDatepickerModule,
+    TablePaginationComponent
   ],
   providers: [
     provideNativeDateAdapter()
