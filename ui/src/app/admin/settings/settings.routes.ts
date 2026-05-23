@@ -6,8 +6,8 @@ export const settingsRoutes: Routes = [
     path: '',
     component: SettingsComponent,
     children: [
-      { path: 'general', loadComponent: () => import('./general/general.component').then(m => m.GeneralComponent) },
-      { path: '', redirectTo: 'general', pathMatch: 'full' }
+      { path: 'barangay', loadComponent: () => import('./barangay/barangay.component').then(m => m.BarangayComponent) },
+      { path: '', redirectTo: 'barangay', pathMatch: 'full' }
     ]
   }
 ];
