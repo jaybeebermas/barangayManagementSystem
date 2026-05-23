@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace App\GraphQL\Mutations\ResidentProfile;
+namespace App\GraphQL\Mutations\Residence\ResidentProfile;
 
 use App\Models\ResidentProfile;
 use Illuminate\Support\Facades\DB;
