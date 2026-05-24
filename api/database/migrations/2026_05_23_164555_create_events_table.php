@@ -17,7 +17,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->dateTime('start_date');
             $table->dateTime('end_date');
-            $table->foreignId('zone_id')->nullable()->constrained('zone')->nullOnDelete();
+            $table->unsignedBigInteger('zone_id')->nullable();
             $table->string('location')->nullable();
             $table->string('status')->default('DRAFT');
             $table->timestamps();
