@@ -9,13 +9,19 @@ import { ModalComponent } from '../../shared/components/ui/modal/modal.component
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatInputModule } from '@angular/material/input';
 import { ZoneService } from '../../services/zone/zone.service';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatOptionModule } from '@angular/material/core';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { provideNativeDateAdapter } from '@angular/material/core';
 
 @Component({
     selector: 'app-events',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, NgIconComponent, HasPermissionDirective, ModalComponent, MatAutocompleteModule, MatInputModule],
+    imports: [CommonModule, ReactiveFormsModule, NgIconComponent, HasPermissionDirective, ModalComponent, MatAutocompleteModule, MatInputModule, MatFormFieldModule, MatSelectModule, MatOptionModule, MatDatepickerModule],
     templateUrl: './events.component.html',
     styleUrl: './events.component.css',
+    providers: [provideNativeDateAdapter()],
 })
 export class EventsComponent implements OnInit {
     private readonly fb = inject(FormBuilder);
@@ -77,17 +83,27 @@ export class EventsComponent implements OnInit {
         this.loadZones();
     }
 
+    // Add this date formatter inside the class
+    formatDate(dateVal: any): string {
+        if (!dateVal) return '';
+        const date = new Date(dateVal);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day} 00:00:00`;
+    }
+
     private initForm(): void {
         this.eventForm = this.fb.group({
             title: ['', Validators.required],
             description: [''],
-            start_date: ['', Validators.required],
-            end_date: ['', Validators.required],
+            start_date: ['', Validators.required], // Retained as the single Date field
             location: [''],
             zone_id: ['', Validators.required],
             status: ['PUBLISHED', Validators.required]
         });
     }
+
 
     async loadZones() {
         try {
@@ -115,8 +131,8 @@ export class EventsComponent implements OnInit {
         this.eventForm.patchValue({
             title: event.title,
             description: event.description,
-            start_date: event.start_date ? event.start_date.replace(' ', 'T').substring(0, 16) : '',
-            end_date: event.end_date ? event.end_date.replace(' ', 'T').substring(0, 16) : '',
+            // Convert database string to native Date object for the datepicker
+            start_date: event.start_date ? new Date(event.start_date) : null,
             location: event.location,
             zone_id: event.zone_id ? String(event.zone_id) : '',
             status: event.status
@@ -136,8 +152,20 @@ export class EventsComponent implements OnInit {
             return;
         }
 
-        const input = this.eventForm.value;
+        const formVal = this.eventForm.value;
+        const formattedDate = this.formatDate(formVal.start_date);
         const editId = this.eventToEdit()?.id;
+
+        // Construct input payload mapping start_date value to both columns
+        const input = {
+            title: formVal.title,
+            description: formVal.description,
+            start_date: formattedDate,
+            end_date: formattedDate, // Both start and end columns get the same date
+            zone_id: formVal.zone_id,
+            location: formVal.location,
+            status: formVal.status
+        };
 
         this.isSaving.set(true);
         try {
@@ -185,4 +213,5 @@ export class EventsComponent implements OnInit {
             this.eventToDelete.set(null);
         }
     }
+
 }
