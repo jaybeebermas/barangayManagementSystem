@@ -3,19 +3,35 @@
 namespace App\GraphQL\Mutations\Barangay;
 
 use App\Models\BarangaySetting;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 final readonly class CreateBarangaySetting
 {
     public function __invoke(null $_, array $args): BarangaySetting
     {
-        $input = $args['input'] ?? $args;
+        DB::beginTransaction();
         
-        $setting = BarangaySetting::first();
-        if ($setting) {
-            $setting->update($input);
-        } else {
-            $setting = BarangaySetting::create($input);
+        try {
+            $input = $args['input'] ?? $args;
+            
+            $setting = BarangaySetting::first();
+            if ($setting) {
+                $setting->update($input);
+            } else {
+                $setting = BarangaySetting::create($input);
+            }
+            
+            DB::commit();
+            
+            return $setting;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to create or update Barangay Setting.', [
+                'error' => $e->getMessage(),
+                'args' => $args
+            ]);
+            throw $e;
         }
-        return $setting;
     }
 }

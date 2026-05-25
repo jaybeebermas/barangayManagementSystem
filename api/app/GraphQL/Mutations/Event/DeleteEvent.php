@@ -1,30 +1,27 @@
 <?php declare(strict_types=1);
 
-namespace App\GraphQL\Mutations\Barangay;
+namespace App\GraphQL\Mutations\Event;
 
-use App\Models\BarangaySetting;
+use App\Models\Event;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
-final readonly class DeleteBarangaySetting
+final readonly class DeleteEvent
 {
     public function __invoke(null $_, array $args): bool
     {
         DB::beginTransaction();
 
         try {
-            $setting = BarangaySetting::first();
-            if ($setting) {
-                $setting->delete();
-                DB::commit();
-                return true;
-            }
+            $event = Event::findOrFail($args['id']);
+            $event->delete();
             
             DB::commit();
-            return false;
+            return true;
             
         } catch (\Exception $e) {
             DB::rollBack();
-            \Illuminate\Support\Facades\Log::error('Failed to delete Barangay Setting.', [
+            Log::error('Failed to delete Event.', [
                 'error' => $e->getMessage(),
                 'args' => $args
             ]);

@@ -16,9 +16,6 @@ export const adminRoutes: Routes = [
             // ROLE MODULE
             { path: 'roles', loadComponent: () => import('./roles/roles.component').then(m => m.RolesComponent) },
 
-            // DOCUMENT MODULE
-            // { path: 'clearance', loadComponent: () => import('./document-module/barangay-clearance/barangay-clearance.component').then(m => m.BarangayClearanceComponent) },
-
             // RESIDENCE MODULE
             { path: 'resident-profile', loadComponent: () => import('./residence/resident-profile/resident-profile.component').then(m => m.ResidentProfileComponent) },
             { path: 'zone', loadComponent: () => import('./residence/zone/zone.component').then(m => m.ZoneComponent) },
@@ -26,8 +23,11 @@ export const adminRoutes: Routes = [
             //BARANGAY CLEARANCE MODULE
             { path: 'barangay-clearance', loadComponent: () => import('./document-module/barangay-clearance/barangay-clearance.component').then(m => m.BarangayClearanceComponent) },
 
+            // EVENTS MODULE
+            { path: 'events', loadComponent: () => import('./events/events.component').then(m => m.EventsComponent) },
 
-            { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
+            { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+
         ]
     }
 ];
