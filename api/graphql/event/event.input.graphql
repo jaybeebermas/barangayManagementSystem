@@ -1,0 +1,20 @@
+input CreateEventInput {
+    title: String!
+    description: String
+    start_date: DateTime!
+    end_date: DateTime!
+    location: String
+    zone_id: ID
+    status: String
+}
+
+input UpdateEventInput {
+    id: ID!
+    title: String
+    description: String
+    start_date: DateTime
+    end_date: DateTime
+    location: String
+    zone_id: ID
+    status: String
+}

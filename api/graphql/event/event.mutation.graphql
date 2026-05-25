@@ -1,0 +1,14 @@
+    createEvent(input: CreateEventInput!): Event 
+        @guard 
+        @can(ability: "events.create") 
+        @field(resolver: "App\\GraphQL\\Mutations\\Event\\CreateEvent")
+        
+    updateEvent(input: UpdateEventInput!): Event 
+        @guard 
+        @can(ability: "events.edit") 
+        @field(resolver: "App\\GraphQL\\Mutations\\Event\\UpdateEvent")
+        
+    deleteEvent(id: ID!): Boolean 
+        @guard 
+        @can(ability: "events.delete") 
+        @field(resolver: "App\\GraphQL\\Mutations\\Event\\DeleteEvent")
