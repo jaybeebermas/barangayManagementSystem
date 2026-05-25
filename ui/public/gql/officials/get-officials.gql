@@ -1,0 +1,14 @@
+query GetOfficials($type: String!) {
+  officials(type: $type) {
+    id
+    name
+    position
+    type
+    email
+    contact_number
+    term_start
+    term_end
+    photo_path
+    status
+  }
+}

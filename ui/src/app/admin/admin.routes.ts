@@ -23,6 +23,9 @@ export const adminRoutes: Routes = [
             // EVENTS MODULE
             { path: 'events', loadComponent: () => import('./events/events.component').then(m => m.EventsComponent) },
 
+            // OFFICIALS MODULE
+            { path: 'officials', loadComponent: () => import('./officials/officials.component').then(m => m.OfficialsComponent) },
+
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
 
         ]

@@ -12,6 +12,7 @@ extend type Query {
   #import resident_profile/resident_profile.query.graphql
   #import barangay/barangay.query.graphql
   #import event/event.query.graphql
+  #import officials/official.query.graphql
 
 }
 
@@ -24,6 +25,7 @@ extend type Mutation {
   #import resident_profile/resident_profile.mutation.graphql
   #import barangay/barangay.mutation.graphql
   #import event/event.mutation.graphql
+  #import officials/official.mutation.graphql
 
 }
 
@@ -45,3 +47,5 @@ extend type Mutation {
 #import barangay/barangay.type.graphql
 #import event/event.input.graphql
 #import event/event.type.graphql
+#import officials/official.input.graphql
+#import officials/official.type.graphql

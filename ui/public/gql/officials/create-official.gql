@@ -1,0 +1,7 @@
+mutation CreateOfficial($input: CreateOfficialInput!) {
+  createOfficial(input: $input) {
+    id
+    name
+    position
+  }
+}

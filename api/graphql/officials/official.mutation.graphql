@@ -1,0 +1,14 @@
+createOfficial(input: CreateOfficialInput!): Official 
+    @guard 
+    @can(ability: "manage_officials") 
+    @field(resolver: "App\\GraphQL\\Mutations\\Official\\CreateOfficial")
+    
+updateOfficial(input: UpdateOfficialInput!): Official 
+    @guard 
+    @can(ability: "manage_officials") 
+    @field(resolver: "App\\GraphQL\\Mutations\\Official\\UpdateOfficial")
+    
+deleteOfficial(id: ID!): Boolean 
+    @guard 
+    @can(ability: "manage_officials", model: "App\\Models\\Official") 
+    @field(resolver: "App\\GraphQL\\Mutations\\Official\\DeleteOfficial")

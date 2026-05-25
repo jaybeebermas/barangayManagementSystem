@@ -1,0 +1,24 @@
+input CreateOfficialInput {
+    name: String!
+    position: String!
+    type: String!
+    email: String
+    contact_number: String
+    term_start: String
+    term_end: String
+    photo_path: String
+    status: Boolean
+}
+
+input UpdateOfficialInput {
+    id: ID!
+    name: String
+    position: String
+    type: String
+    email: String
+    contact_number: String
+    term_start: String
+    term_end: String
+    photo_path: String
+    status: Boolean
+}

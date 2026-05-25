@@ -1,159 +1,165 @@
-<div class="p-8 max-w-6xl mx-auto">
+<div class="max-w-5xl mx-auto space-y-8">
+    <div class="p-8 max-w-6xl mx-auto">
 
-    <!-- Header Area -->
-    <div class="flex justify-between items-center mb-8">
-        <div>
-            <h2 class="text-3xl font-black text-zinc-900 tracking-tight">Events Management</h2>
-            <p class="text-zinc-400 font-medium mt-1">Create and manage barangay events and schedules.</p>
+        <!-- Header Area -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h2 class="text-3xl font-black text-zinc-900 tracking-tight">Events Management</h2>
+                <p class="text-zinc-400 font-medium mt-1">Create and manage barangay events and schedules.</p>
+            </div>
+            <ng-container *ngIf="!showForm()">
+                <button (click)="showForm.set(true)" *hasPermission="'events.create'"
+                    class="px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl shadow-lg shadow-primary-600/20 transition-all flex items-center gap-2">
+                    <ng-icon name="heroPlus" class="h-5 w-5"></ng-icon>
+                    Create Event
+                </button>
+            </ng-container>
         </div>
-        <ng-container *ngIf="!showForm()">
-            <button (click)="showForm.set(true)" *hasPermission="'events.create'"
-                class="px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl shadow-lg shadow-primary-600/20 transition-all flex items-center gap-2">
-                <ng-icon name="heroPlus" class="h-5 w-5"></ng-icon>
-                Create Event
-            </button>
-        </ng-container>
-    </div>
 
-    <!-- Creation Form -->
-    <div *ngIf="showForm()" class="bg-white border border-zinc-200/50 rounded-3xl p-8 mb-8 animate-fade-in shadow-sm">
-        <!-- Revised Form Title matching Add New Resident Profile style -->
-        <h3 class="text-xl font-bold text-zinc-900 mb-1">{{ eventToEdit() ? 'Edit Event Details' : 'Add New Event' }}
-        </h3>
-        <p class="text-zinc-500 font-medium text-xs mb-6">Event Details & Schedule Information</p>
+        <!-- Creation Form -->
+        <div *ngIf="showForm()"
+            class="bg-white border border-zinc-200/50 rounded-3xl p-8 mb-8 animate-fade-in shadow-sm">
+            <!-- Revised Form Title matching Add New Resident Profile style -->
+            <h3 class="text-xl font-bold text-zinc-900 mb-1">{{ eventToEdit() ? 'Edit Event Details' : 'Add New Event'
+                }}
+            </h3>
+            <p class="text-zinc-500 font-medium text-xs mb-6">Event Details & Schedule Information</p>
 
-        <form [formGroup]="eventForm" (ngSubmit)="saveEvent()" class="space-y-6">
-            <div class="bg-zinc-50/40 p-6 rounded-3xl border border-zinc-100/80 space-y-6">
+            <form [formGroup]="eventForm" (ngSubmit)="saveEvent()" class="space-y-6">
+                <div class="bg-zinc-50/40 p-6 rounded-3xl border border-zinc-100/80 space-y-6">
 
 
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                    <!-- Event Title (Full Width) -->
-                    <mat-form-field appearance="outline" subscriptSizing="dynamic"
-                        class="col-span-1 md:col-span-2 w-full">
-                        <mat-label>Event Title</mat-label>
-                        <input matInput formControlName="title" placeholder="e.g. Barangay General Assembly">
-                        <mat-error *ngIf="eventForm.get('title')?.hasError('required')">Event title is
-                            required</mat-error>
-                    </mat-form-field>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                        <!-- Event Title (Full Width) -->
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic"
+                            class="col-span-1 md:col-span-2 w-full">
+                            <mat-label>Event Title</mat-label>
+                            <input matInput formControlName="title" placeholder="e.g. Barangay General Assembly">
+                            <mat-error *ngIf="eventForm.get('title')?.hasError('required')">Event title is
+                                required</mat-error>
+                        </mat-form-field>
 
-                    <!-- Event Date Picker with calendar icon inside on the right -->
-                    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-                        <mat-label>Event Date</mat-label>
-                        <input matInput [matDatepicker]="datePicker" formControlName="start_date"
-                            placeholder="Choose Event Date">
-                        <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
-                        <mat-datepicker #datePicker></mat-datepicker>
-                        <mat-error *ngIf="eventForm.get('start_date')?.hasError('required')">Event date is
-                            required</mat-error>
-                    </mat-form-field>
+                        <!-- Event Date Picker with calendar icon inside on the right -->
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                            <mat-label>Event Date</mat-label>
+                            <input matInput [matDatepicker]="datePicker" formControlName="start_date"
+                                placeholder="Choose Event Date">
+                            <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
+                            <mat-datepicker #datePicker></mat-datepicker>
+                            <mat-error *ngIf="eventForm.get('start_date')?.hasError('required')">Event date is
+                                required</mat-error>
+                        </mat-form-field>
 
-                    <!-- Location Dropdown (Zone) -->
-                    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-                        <mat-label>Zone</mat-label>
-                        <mat-select formControlName="zone_id">
-                            <mat-option [value]="''">Select Zone</mat-option>
-                            <mat-option *ngFor="let zone of zones()" [value]="zone.id">
-                                {{ zone.zone_name }} ({{ zone.zone_code }})
-                            </mat-option>
-                        </mat-select>
-                        <mat-error *ngIf="eventForm.get('zone_id')?.hasError('required')">Zone is required</mat-error>
-                    </mat-form-field>
+                        <!-- Location Dropdown (Zone) -->
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                            <mat-label>Zone</mat-label>
+                            <mat-select formControlName="zone_id">
+                                <mat-option [value]="''">Select Zone</mat-option>
+                                <mat-option *ngFor="let zone of zones()" [value]="zone.id">
+                                    {{ zone.zone_name }} ({{ zone.zone_code }})
+                                </mat-option>
+                            </mat-select>
+                            <mat-error *ngIf="eventForm.get('zone_id')?.hasError('required')">Zone is
+                                required</mat-error>
+                        </mat-form-field>
 
-                    <!-- Specific Venue (Manual Text Field) -->
-                    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-                        <mat-label>Specific Venue (Optional)</mat-label>
-                        <input matInput formControlName="location" placeholder="e.g. Gymnasium, Zone Hall">
-                    </mat-form-field>
+                        <!-- Specific Venue (Manual Text Field) -->
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                            <mat-label>Specific Venue (Optional)</mat-label>
+                            <input matInput formControlName="location" placeholder="e.g. Gymnasium, Zone Hall">
+                        </mat-form-field>
 
-                    <!-- Status Dropdown -->
-                    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-                        <mat-label>Status</mat-label>
-                        <mat-select formControlName="status">
-                            <mat-option *ngFor="let status of statuses" [value]="status.value">
-                                {{ status.name }}
-                            </mat-option>
-                        </mat-select>
-                        <mat-error *ngIf="eventForm.get('status')?.hasError('required')">Status is required</mat-error>
-                    </mat-form-field>
+                        <!-- Status Dropdown -->
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                            <mat-label>Status</mat-label>
+                            <mat-select formControlName="status">
+                                <mat-option *ngFor="let status of statuses" [value]="status.value">
+                                    {{ status.name }}
+                                </mat-option>
+                            </mat-select>
+                            <mat-error *ngIf="eventForm.get('status')?.hasError('required')">Status is
+                                required</mat-error>
+                        </mat-form-field>
 
-                    <!-- Description (Full Width) -->
-                    <mat-form-field appearance="outline" subscriptSizing="dynamic"
-                        class="col-span-1 md:col-span-2 w-full">
-                        <mat-label>Description (Optional)</mat-label>
-                        <textarea matInput formControlName="description" rows="3"
-                            placeholder="Describe the event..."></textarea>
-                    </mat-form-field>
-                </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="flex justify-end gap-3 pt-4">
-                <button type="button" (click)="cancelForm()"
-                    class="px-6 py-2.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-bold rounded-xl transition-all cursor-pointer">
-                    Cancel
-                </button>
-                <button type="submit" [disabled]="isSaving()"
-                    class="px-8 py-2.5 bg-primary-600 hover:bg-primary-700 text-white text-xs font-bold rounded-xl shadow-lg shadow-primary-600/10 transition-all flex items-center gap-2 cursor-pointer">
-                    <span *ngIf="isSaving()"
-                        class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                    {{ eventToEdit() ? 'Update Event' : 'Save Event' }}
-                </button>
-            </div>
-        </form>
-    </div>
-
-    <!-- Event List Empty State -->
-    <div *ngIf="!isLoading() && events().length === 0"
-        class="text-center py-12 bg-white rounded-3xl border border-zinc-200/50 shadow-sm p-8 mb-8">
-        <ng-icon name="heroCalendarDays" class="h-12 w-12 text-zinc-300 mb-3"></ng-icon>
-        <h3 class="text-lg font-bold text-zinc-900">No Events Found</h3>
-        <p class="text-zinc-400 text-sm">Click "Create Event" to get started.</p>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div *ngFor="let event of events()"
-            class="bg-white p-6 rounded-3xl border border-zinc-100 shadow-sm hover:shadow-md transition-all relative group">
-            <div class="flex justify-between items-start mb-4">
-                <h3 class="text-lg font-bold text-zinc-900">{{ event.title }}</h3>
-                <span class="px-3 py-1 bg-primary-50 text-primary-700 text-xs font-bold rounded-lg">{{ event.status
-                    }}</span>
-            </div>
-            <p class="text-sm text-zinc-500 mb-4">{{ event.description || 'No description provided.' }}</p>
-            <div class="space-y-2 mb-6">
-                <div class="flex items-center gap-2 text-sm text-zinc-600 font-medium">
-                    <ng-icon name="heroCalendarDays" class="h-4 w-4 text-zinc-400"></ng-icon>
-                    {{ event.start_date | date:'mediumDate' }}
-                </div>
-
-                <div class="flex items-start gap-2 text-sm text-zinc-600 font-medium"
-                    *ngIf="event.zone || event.location">
-                    <ng-icon name="heroMapPin" class="h-4 w-4 text-zinc-400 mt-0.5 flex-shrink-0"></ng-icon>
-                    <div>
-                        <span *ngIf="event.zone" class="font-semibold text-zinc-800">{{ event.zone.zone_name }}</span>
-                        <span *ngIf="event.zone && event.location" class="text-zinc-400 mx-1.5">•</span>
-                        <span *ngIf="event.location" class="text-zinc-500 font-normal">{{ event.location }}</span>
+                        <!-- Description (Full Width) -->
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic"
+                            class="col-span-1 md:col-span-2 w-full">
+                            <mat-label>Description (Optional)</mat-label>
+                            <textarea matInput formControlName="description" rows="3"
+                                placeholder="Describe the event..."></textarea>
+                        </mat-form-field>
                     </div>
                 </div>
-            </div>
 
-            <div class="absolute bottom-6 right-6 flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                <button type="button" (click)="editEvent(event)" *hasPermission="'events.edit'"
-                    class="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
-                    <ng-icon name="heroPencil" class="h-5 w-5"></ng-icon>
-                </button>
-                <button type="button" (click)="openDeleteModal(event.id)" *hasPermission="'events.delete'"
-                    class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-all">
-                    <ng-icon name="heroTrash" class="h-5 w-5"></ng-icon>
-                </button>
+                <!-- Action Buttons -->
+                <div class="flex justify-end gap-3 pt-4">
+                    <button type="button" (click)="cancelForm()"
+                        class="px-6 py-2.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-bold rounded-xl transition-all cursor-pointer">
+                        Cancel
+                    </button>
+                    <button type="submit" [disabled]="isSaving()"
+                        class="px-8 py-2.5 bg-primary-600 hover:bg-primary-700 text-white text-xs font-bold rounded-xl shadow-lg shadow-primary-600/10 transition-all flex items-center gap-2 cursor-pointer">
+                        <span *ngIf="isSaving()"
+                            class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                        {{ eventToEdit() ? 'Update Event' : 'Save Event' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Event List Empty State -->
+        <div *ngIf="!isLoading() && events().length === 0"
+            class="text-center py-12 bg-white rounded-3xl border border-zinc-200/50 shadow-sm p-8 mb-8">
+            <ng-icon name="heroCalendarDays" class="h-12 w-12 text-zinc-300 mb-3"></ng-icon>
+            <h3 class="text-lg font-bold text-zinc-900">No Events Found</h3>
+            <p class="text-zinc-400 text-sm">Click "Create Event" to get started.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div *ngFor="let event of events()"
+                class="bg-white p-6 rounded-3xl border border-zinc-100 shadow-sm hover:shadow-md transition-all relative group">
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-lg font-bold text-zinc-900">{{ event.title }}</h3>
+                    <span class="px-3 py-1 bg-primary-50 text-primary-700 text-xs font-bold rounded-lg">{{ event.status
+                        }}</span>
+                </div>
+                <p class="text-sm text-zinc-500 mb-4">{{ event.description || 'No description provided.' }}</p>
+                <div class="space-y-2 mb-6">
+                    <div class="flex items-center gap-2 text-sm text-zinc-600 font-medium">
+                        <ng-icon name="heroCalendarDays" class="h-4 w-4 text-zinc-400"></ng-icon>
+                        {{ event.start_date | date:'mediumDate' }}
+                    </div>
+
+                    <div class="flex items-start gap-2 text-sm text-zinc-600 font-medium"
+                        *ngIf="event.zone || event.location">
+                        <ng-icon name="heroMapPin" class="h-4 w-4 text-zinc-400 mt-0.5 flex-shrink-0"></ng-icon>
+                        <div>
+                            <span *ngIf="event.zone" class="font-semibold text-zinc-800">{{ event.zone.zone_name
+                                }}</span>
+                            <span *ngIf="event.zone && event.location" class="text-zinc-400 mx-1.5">•</span>
+                            <span *ngIf="event.location" class="text-zinc-500 font-normal">{{ event.location }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="absolute bottom-6 right-6 flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                    <button type="button" (click)="editEvent(event)" *hasPermission="'events.edit'"
+                        class="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
+                        <ng-icon name="heroPencil" class="h-5 w-5"></ng-icon>
+                    </button>
+                    <button type="button" (click)="openDeleteModal(event.id)" *hasPermission="'events.delete'"
+                        class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-all">
+                        <ng-icon name="heroTrash" class="h-5 w-5"></ng-icon>
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Delete Confirmation Modal -->
-    <app-modal [isOpen]="isDeleteModalOpen()" title="Delete Event?"
-        subtitle="Are you sure you want to delete this event? This action cannot be undone." confirmLabel="Yes, Delete"
-        confirmType="danger" [isLoading]="isDeleting()" (close)="isDeleteModalOpen.set(false)"
-        (confirm)="confirmDelete()" maxWidth="md:max-w-md">
-    </app-modal>
-</div>
+        <!-- Delete Confirmation Modal -->
+        <app-modal [isOpen]="isDeleteModalOpen()" title="Delete Event?"
+            subtitle="Are you sure you want to delete this event? This action cannot be undone."
+            confirmLabel="Yes, Delete" confirmType="danger" [isLoading]="isDeleting()"
+            (close)="isDeleteModalOpen.set(false)" (confirm)="confirmDelete()" maxWidth="md:max-w-md">
+        </app-modal>
+    </div>
