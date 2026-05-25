@@ -11,7 +11,7 @@ extend type Query {
   #import zone/zone.query.graphql
   #import resident_profile/resident_profile.query.graphql
   #import barangay/barangay.query.graphql
-   #import event/event.query.graphql
+  #import event/event.query.graphql
 
 }
 
