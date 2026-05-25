@@ -1,2 +1,2 @@
-    events: [Event!]! @guard @can(ability: "events.view") @paginate(defaultCount: 10)
-    event(id: ID! @eq): Event @guard @can(ability: "events.view") @find
+events: [Event!]! @guard @can(ability: "events.view", model: "App\\Models\\Event") @paginate(defaultCount: 10, builder: "App\\GraphQL\\Queries\\Event\\GetEvent@events")
+event(id: ID! @eq): Event @guard @can(ability: "events.view") @field(resolver: "App\\GraphQL\\Queries\\Event\\GetEvent@event")
