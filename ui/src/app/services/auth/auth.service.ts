@@ -159,7 +159,7 @@ export class AuthService {
         this.isAuthenticated.set(false);
         
         const currentPath = this.router.url.split('?')[0];
-        if (currentPath === '/login') {
+        if (currentPath === '/login' || currentPath === '/landing') {
           return;
         }
 
@@ -177,7 +177,7 @@ export class AuthService {
         this.isAuthenticated.set(false);
         
         const currentPath = this.router.url.split('?')[0];
-        if (currentPath === '/login') {
+        if (currentPath === '/login' || currentPath === '/landing') {
           return of(null);
         }
 
@@ -199,7 +199,7 @@ export class AuthService {
       this.currentUser.set(null);
       this.isAuthenticated.set(false);
       const currentPath = this.router.url.split('?')[0];
-      if (currentPath !== '/login') {
+      if (currentPath !== '/login' && currentPath !== '/landing' && currentPath !== '/') {
         this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
       }
       return;
