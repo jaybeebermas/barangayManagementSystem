@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace App\GraphQL\Queries\ResidentProfile;
+namespace App\GraphQL\Queries\Residence\ResidentProfile;
 
 use App\Models\ResidentProfile;
 

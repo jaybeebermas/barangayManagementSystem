@@ -1,0 +1,14 @@
+input CreateBarangayClearanceInput {
+    resident_id: ID!
+    purpose: String!
+    issued_on: String!
+    valid_until: String!
+    status: String
+}
+
+input UpdateBarangayClearanceInput {
+    id: ID!
+    purpose: String
+    valid_until: String
+    status: String
+}
