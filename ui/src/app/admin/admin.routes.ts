@@ -24,7 +24,12 @@ export const adminRoutes: Routes = [
             { path: 'zone', loadComponent: () => import('./residence/zone/zone.component').then(m => m.ZoneComponent) },
 
 
-            { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
+            { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+            // EVENTS MODULE
+            { path: 'events', loadComponent: () => import('./events/events.component').then(m => m.EventsComponent) },
+
+            { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+
         ]
     }
 ];

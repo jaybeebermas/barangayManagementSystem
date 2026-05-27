@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth/auth.service';
 import { Router } from '@angular/router';
@@ -9,7 +9,83 @@ import { NgIconComponent } from '@ng-icons/core';
   standalone: true,
   imports: [CommonModule, NgIconComponent],
   template: `
-    <div class="max-w-7xl mx-auto space-y-8">
+    <!-- ========== GUEST PENDING APPROVAL SCREEN ========== -->
+    <div *ngIf="isGuest()" class="min-h-[80vh] flex items-center justify-center p-6">
+      <div class="max-w-lg w-full text-center">
+        <!-- Animated Icon -->
+        <div class="relative mx-auto mb-8 w-28 h-28">
+          <div class="absolute inset-0 rounded-full bg-amber-100 animate-ping opacity-20"></div>
+          <div class="relative w-28 h-28 rounded-full bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 flex items-center justify-center shadow-xl shadow-amber-500/10">
+            <ng-icon name="heroShieldExclamation" class="h-14 w-14 text-amber-500"></ng-icon>
+          </div>
+        </div>
+
+        <!-- Title -->
+        <h2 class="text-3xl font-black text-zinc-900 tracking-tight mb-3">Account Pending Approval</h2>
+        <p class="text-zinc-500 font-medium text-base max-w-sm mx-auto leading-relaxed mb-10">
+          Your account has been created successfully. An administrator needs to assign permissions before you can access the system.
+        </p>
+
+        <!-- Info Card -->
+        <div class="bg-white border border-zinc-200 rounded-2xl p-6 shadow-lg shadow-zinc-500/5 mb-8">
+          <div class="flex items-center gap-4 text-left">
+            <div class="h-12 w-12 shrink-0 rounded-xl bg-blue-50 flex items-center justify-center">
+              <ng-icon name="heroInformationCircle" class="h-6 w-6 text-blue-500"></ng-icon>
+            </div>
+            <div>
+              <h4 class="text-sm font-bold text-zinc-900 mb-0.5">What happens next?</h4>
+              <p class="text-xs text-zinc-500 font-medium leading-relaxed">Contact your barangay administrator and ask them to upgrade your account role. Once approved, refresh your status below.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- User Info Pill -->
+        <div class="inline-flex items-center gap-3 bg-zinc-100 rounded-full px-5 py-2.5 mb-8">
+          <div class="h-8 w-8 rounded-full bg-gradient-to-br from-primary-600 to-teal-400 flex items-center justify-center text-white text-xs font-bold shadow-lg shadow-primary-600/20">
+            {{ authService.currentUser()?.first_name?.[0] }}{{ authService.currentUser()?.last_name?.[0] }}
+          </div>
+          <div class="text-left">
+            <p class="text-xs font-bold text-zinc-900 leading-none">{{ authService.currentUser()?.first_name }} {{ authService.currentUser()?.last_name }}</p>
+            <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-0.5">Guest Account</p>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <button 
+            (click)="checkStatus()"
+            [disabled]="isChecking()"
+            class="group relative overflow-hidden rounded-xl bg-primary-600 px-8 py-3.5 text-sm font-bold text-white shadow-lg shadow-primary-500/10 hover:bg-primary-700 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+            <div class="flex items-center gap-2">
+              <ng-icon *ngIf="!isChecking()" name="heroArrowPath" class="h-4 w-4"></ng-icon>
+              <svg *ngIf="isChecking()" class="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+              <span>{{ isChecking() ? 'Checking...' : 'Check Status' }}</span>
+            </div>
+          </button>
+
+          <button 
+            (click)="logout()"
+            class="rounded-xl bg-zinc-100 hover:bg-zinc-200 px-8 py-3.5 text-sm font-bold text-zinc-600 transition-all active:scale-[0.98]">
+            <div class="flex items-center gap-2">
+              <ng-icon name="heroArrowRightOnRectangle" class="h-4 w-4"></ng-icon>
+              <span>Sign Out</span>
+            </div>
+          </button>
+        </div>
+
+        <!-- Status Message -->
+        <div *ngIf="statusMessage()" class="mt-6 p-3 rounded-xl text-xs font-bold animate-in slide-in-from-bottom-4 duration-300"
+          [ngClass]="statusType() === 'success' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-amber-50 text-amber-600 border border-amber-200'">
+          {{ statusMessage() }}
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== NORMAL DASHBOARD ========== -->
+    <div *ngIf="!isGuest()" class="max-w-7xl mx-auto space-y-8">
       <!-- Welcome Header -->
       <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
@@ -127,6 +203,35 @@ import { NgIconComponent } from '@ng-icons/core';
 export class DashboardComponent {
   authService = inject(AuthService);
   router = inject(Router);
+
+  isGuest = computed(() => this.authService.currentUser()?.role === 'guest');
+  isChecking = signal(false);
+  statusMessage = signal('');
+  statusType = signal<'success' | 'info'>('info');
+
+  checkStatus(): void {
+    this.isChecking.set(true);
+    this.statusMessage.set('');
+
+    // Force re-check auth from server
+    this.authService.checkAuth();
+
+    // Wait for the response to come back
+    setTimeout(() => {
+      this.isChecking.set(false);
+      const user = this.authService.currentUser();
+      if (user && user.role !== 'guest') {
+        this.statusMessage.set('Your account has been approved! Redirecting...');
+        this.statusType.set('success');
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+      } else {
+        this.statusMessage.set('Your account is still pending administrator approval.');
+        this.statusType.set('info');
+      }
+    }, 2000);
+  }
 
   logout(): void {
     this.authService.logout().subscribe(() => {

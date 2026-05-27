@@ -2,6 +2,7 @@ import { Injectable, signal, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap, catchError, of, map } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface User {
   id: string;
@@ -17,7 +18,7 @@ export interface User {
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = '/api/graphql';
+  private apiUrl = environment.graphqlUrl;
   private readonly router = inject(Router);
   currentUser = signal<User | null>(null);
   isAuthenticated = signal<boolean>(!!localStorage.getItem('auth_token'));
