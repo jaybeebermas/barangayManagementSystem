@@ -10,8 +10,7 @@ extend type Query {
   #import user/user.query.graphql
   #import zone/zone.query.graphql
   #import resident_profile/resident_profile.query.graphql
-  #import barangay/barangay.query.graphql
-
+  #import barangay_clearance/barangay_clearance.query.graphql
 }
 
 extend type Mutation {
@@ -21,17 +20,16 @@ extend type Mutation {
   #import user/user.mutation.graphql
   #import zone/zone.mutation.graphql
   #import resident_profile/resident_profile.mutation.graphql
-  #import barangay/barangay.mutation.graphql
-
+  #import barangay_clearance/barangay_clearance.mutation.graphql
 }
 
 #import auth/auth.input.graphql
 #import permission/permission.input.graphql
 #import role/role.input.graphql
-#import barangay/barangay.input.graphql
 #import user/user.input.graphql
 #import zone/zone.input.graphql
 #import resident_profile/resident_profile.input.graphql
+#import barangay_clearance/barangay_clearance.input.graphql
 
 #import auth/auth.type.graphql
 #import permission/permission.type.graphql
@@ -40,4 +38,4 @@ extend type Mutation {
 #import user/user.types.graphql
 #import zone/zone.type.graphql
 #import resident_profile/resident_profile.type.graphql
-#import barangay/barangay.type.graphql
+#import barangay_clearance/barangay_clearance.type.graphql

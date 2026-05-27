@@ -1,0 +1,4 @@
+createBarangayClearance(input: CreateBarangayClearanceInput!): BarangayClearance! @guard @can(ability: "clearance.create") @field(resolver: "App\\GraphQL\\Mutations\\DocumentModule\\BarangayClearance\\CreateClearance")
+updateBarangayClearance(input: UpdateBarangayClearanceInput!): BarangayClearance! @guard @can(ability: "clearance.edit") @field(resolver: "App\\GraphQL\\Mutations\\DocumentModule\\BarangayClearance\\UpdateClearance")
+deleteBarangayClearance(id: ID!): BarangayClearance! @guard @can(ability: "clearance.delete") @field(resolver: "App\\GraphQL\\Mutations\\DocumentModule\\BarangayClearance\\DeleteClearance")
+generateBarangayClearancePdf(id: ID!): String! @guard @can(ability: "clearance.view", model: "App\\Models\\BarangayClearance") @field(resolver: "App\\GraphQL\\Mutations\\DocumentModule\\BarangayClearance\\GenerateClearancePdf")

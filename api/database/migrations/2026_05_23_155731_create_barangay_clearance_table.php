@@ -11,9 +11,24 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('barangay_clearance', function (Blueprint $table) {
+        Schema::create('barangay_clearances', function (Blueprint $table) {
             $table->id();
+            $table->string('clearance_number')->unique();
+            $table->unsignedBigInteger('resident_id');
+            $table->text('purpose');
+            $table->unsignedBigInteger('issued_by');
+            $table->date('issued_on');
+            $table->date('valid_until');
+            $table->string('status')->default('pending'); // pending, approved, released, expired
             $table->timestamps();
+
+            // Indexes for search performance (no foreign key constraints)
+            $table->index('clearance_number');
+            $table->index('resident_id');
+            $table->index('issued_by');
+            $table->index('status');
+            $table->index('issued_on');
+            $table->index('valid_until');
         });
     }
 
@@ -22,6 +37,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('barangay_clearance');
+        Schema::dropIfExists('barangay_clearances');
     }
 };

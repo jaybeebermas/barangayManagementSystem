@@ -2,11 +2,17 @@
 
 namespace App\GraphQL\Queries\DocumentModule\BarangayClearance;
 
+use App\Models\BarangayClearance;
+
 final readonly class GetClearance
 {
-    /** @param  array{}  $args */
-    public function __invoke(null $_, array $args)
+    public function barangayClearances(null $_, array $args)
     {
-        // TODO implement the resolver
+        return BarangayClearance::with(['resident', 'issuer'])->orderByDesc('created_at')->get();
+    }
+
+    public function barangayClearance(null $_, array $args)
+    {
+        return BarangayClearance::with(['resident', 'issuer'])->find($args['id']);
     }
 }
