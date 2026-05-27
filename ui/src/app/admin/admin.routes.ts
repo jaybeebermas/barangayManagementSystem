@@ -23,7 +23,7 @@ export const adminRoutes: Routes = [
             // DOCUMENT MODULE
             { path: 'barangay-clearance', loadComponent: () => import('./document-module/barangay-clearance/barangay-clearance.component').then(m => m.BarangayClearanceComponent) },
 
-            { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
+            { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
             // EVENTS MODULE
             { path: 'events', loadComponent: () => import('./events/events.component').then(m => m.EventsComponent) },
 
