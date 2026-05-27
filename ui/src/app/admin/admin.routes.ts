@@ -20,6 +20,9 @@ export const adminRoutes: Routes = [
             { path: 'resident-profile', loadComponent: () => import('./residence/resident-profile/resident-profile.component').then(m => m.ResidentProfileComponent) },
             { path: 'zone', loadComponent: () => import('./residence/zone/zone.component').then(m => m.ZoneComponent) },
 
+            //BARANGAY CLEARANCE MODULE
+            { path: 'barangay-clearance', loadComponent: () => import('./document-module/barangay-clearance/barangay-clearance.component').then(m => m.BarangayClearanceComponent) },
+
             // EVENTS MODULE
             { path: 'events', loadComponent: () => import('./events/events.component').then(m => m.EventsComponent) },
 
