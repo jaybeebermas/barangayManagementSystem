@@ -13,8 +13,6 @@ import { ConfirmDeleteComponent } from '../../shared/components/ui/confirm-delet
 
 import { DrawerComponent } from '../../shared/components/ui/drawer/drawer.component';
 import { ModalService } from '../../services/modal/modal.service';
-import { MatSelectModule } from '@angular/material/select';
-import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -22,6 +20,7 @@ import { NgIconComponent } from '@ng-icons/core';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { SelectComponent } from '../../shared/components/ui/select/select.component';
 
 import { UserManagementLayoutComponent } from '../../shared/components/ui/user-management/user-management-layout.component';
 import { PageHeaderComponent } from '../../shared/components/ui/user-management/page-header.component';
@@ -181,20 +180,20 @@ import { TablePaginationComponent } from '../../shared/components/ui/user-manage
   imports: [
     CommonModule, 
     ReactiveFormsModule,
+    FormsModule,
     UserManagementLayoutComponent,
     PageHeaderComponent,
     SearchFiltersComponent,
     UserTableComponent,
     TablePaginationComponent,
-    MatSelectModule,
-    MatOptionModule,
+    SelectComponent,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
     MatMenuModule,
     NgIconComponent,
     DrawerComponent,
-    HasPermissionDirective, ConfirmDeleteComponent
+    ConfirmDeleteComponent
   ],
   templateUrl: './users.component.html',
   styleUrl: './users.component.css'
@@ -230,10 +229,37 @@ export class UsersComponent implements OnInit {
   roles = signal<Role[]>([]);
   originalUserFormValue: any = null;
 
+  selectedRole = signal<string>('');
+
+  roleFilterOptions = computed(() => {
+    const list = this.roles().map(r => ({
+      name: this.formatRoleName(r.name),
+      value: r.name
+    }));
+    return [
+      { name: 'All Roles', value: '' },
+      ...list
+    ];
+  });
+
+  modalRoleOptions = computed(() => {
+    return this.roles().map(r => ({
+      name: this.formatRoleName(r.name),
+      value: r.name
+    }));
+  });
+
   filteredUsers = computed(() => {
     const term = this.searchTerm().toLowerCase();
-    if (!term) return this.users();
-    return this.users().filter(u => 
+    const roleFilter = this.selectedRole();
+    let list = this.users();
+
+    if (roleFilter) {
+      list = list.filter(u => u.role === roleFilter);
+    }
+
+    if (!term) return list;
+    return list.filter(u => 
       u.first_name.toLowerCase().includes(term) || 
       u.last_name.toLowerCase().includes(term) || 
       u.username.toLowerCase().includes(term) ||

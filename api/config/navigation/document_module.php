@@ -8,6 +8,6 @@ return [
     'parent' => null,
     'permission' => null,
     'children' => [
-        ['id' => 'brgy-clearance', 'title' => 'Barangay Clearance', 'type' => 'item', 'route' => '/admin/clearance', 'permission' => 'clearance.view'],
+        ['id' => 'brgy-clearance', 'title' => 'Barangay Clearance', 'type' => 'item', 'route' => '/admin/barangay-clearance', 'permission' => 'clearance.view'],
     ],
 ];

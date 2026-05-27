@@ -1,0 +1,2 @@
+barangayClearances: [BarangayClearance!]! @guard @can(ability: "clearance.view") @field(resolver: "App\\GraphQL\\Queries\\DocumentModule\\BarangayClearance\\GetClearance@barangayClearances")
+barangayClearance(id: ID! @eq): BarangayClearance @guard @can(ability: "clearance.view") @field(resolver: "App\\GraphQL\\Queries\\DocumentModule\\BarangayClearance\\GetClearance@barangayClearance")

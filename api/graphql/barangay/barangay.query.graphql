@@ -1,0 +1,1 @@
+barangaySetting: BarangaySetting @guard @can(ability: "barangay_information.view") @field(resolver: "App\\GraphQL\\Queries\\Barangay\\GetBarangaySetting")

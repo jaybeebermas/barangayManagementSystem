@@ -1,0 +1,15 @@
+mutation CreateBarangaySetting($input: CreateBarangaySettingInput!) {
+  createBarangaySetting(input: $input) {
+    id
+    barangay_name
+    municipality
+    province
+    region
+    zip_code
+    contact_number
+    email
+    logo_path
+    timezone
+    date_format
+  }
+}

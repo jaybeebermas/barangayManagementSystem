@@ -1,1 +1,424 @@
-<p>barangay-clearance.component works!</p>
+<div class="flex h-[calc(100vh-4rem)] -m-4 md:-m-6 lg:-m-8 overflow-hidden bg-zinc-100">
+  <div class="flex-1 overflow-y-auto p-6 md:p-8">
+    <div class="min-h-full bg-transparent -m-4 md:-m-6 lg:-m-8 p-4 md:p-8 overflow-y-auto">
+      <div class="w-full bg-white rounded-3xl border border-zinc-200/50 p-6 md:p-10 shadow-sm flex flex-col gap-6 min-h-[calc(100vh-10rem)]">
+
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6 p-1">
+          <div>
+            <h2 class="text-2xl font-black text-zinc-900 tracking-tight">Barangay Clearance</h2>
+            <p class="text-zinc-500 font-medium mt-1 text-sm">Manage barangay clearance records, issuance, and document generation.</p>
+          </div>
+          <button
+            *hasPermission="'clearance.create'"
+            (click)="openAddModal()"
+            type="button"
+            class="btn-primary !py-2.5 !px-6 !text-xs shadow-lg shadow-primary-600/10 whitespace-nowrap cursor-pointer"
+          >
+            Issue Clearance
+          </button>
+        </div>
+
+        <!-- Search & Filters -->
+        <div class="flex flex-col md:flex-row gap-4 p-1 items-center">
+          <div class="relative flex-1 w-full">
+            <ng-icon
+              name="heroMagnifyingGlass"
+              class="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 text-xl"
+            ></ng-icon>
+            <input
+              type="text"
+              [value]="searchTerm()"
+              (input)="handleSearch($event)"
+              placeholder="Search by clearance number, name, or purpose..."
+              class="w-full h-14 rounded-xl border border-zinc-300/80 bg-white pl-12 pr-4 text-sm text-zinc-700 outline-none focus:border-primary-400"
+            />
+          </div>
+          <div class="flex gap-3 w-full md:w-auto items-center">
+            <!-- Status Filter -->
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="min-w-[180px]">
+              <mat-label>All Status</mat-label>
+              <mat-select [value]="selectedStatus()" (selectionChange)="selectedStatus.set($event.value); currentPage.set(1)">
+                <mat-option value="">All Status</mat-option>
+                <mat-option value="pending">Pending</mat-option>
+                <mat-option value="approved">Approved</mat-option>
+                <mat-option value="released">Released</mat-option>
+                <mat-option value="expired">Expired</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="flex-1 flex flex-col min-h-0">
+          <div class="hidden md:block overflow-x-auto flex-1">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr>
+                  <th class="px-6 py-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest bg-zinc-100/50 border-b border-zinc-200/60">Clearance No.</th>
+                  <th class="px-6 py-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest bg-zinc-100/50 border-b border-zinc-200/60">Resident</th>
+                  <th class="px-6 py-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest bg-zinc-100/50 border-b border-zinc-200/60">Purpose</th>
+                  <th class="px-6 py-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest bg-zinc-100/50 border-b border-zinc-200/60">Issued On</th>
+                  <th class="px-6 py-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest bg-zinc-100/50 border-b border-zinc-200/60">Valid Until</th>
+                  <th class="px-6 py-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest bg-zinc-100/50 border-b border-zinc-200/60 text-center">Status</th>
+                  <th class="px-6 py-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest bg-zinc-100/50 border-b border-zinc-200/60">Issued By</th>
+                  <th class="px-6 py-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest bg-zinc-100/50 border-b border-zinc-200/60 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-zinc-100/50">
+                <!-- Data Rows -->
+                <tr *ngFor="let clearance of paginatedClearances()" class="hover:bg-zinc-100/30 transition-all group">
+                  <td class="px-6 py-4">
+                    <span class="text-xs font-bold text-zinc-900 font-mono tracking-tight">{{ clearance.clearance_number }}</span>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span class="block text-sm font-bold text-zinc-900 leading-none">{{ getResidentFullName(clearance) }}</span>
+                    <span *ngIf="clearance.resident?.email" class="text-[11px] text-zinc-400 font-semibold tracking-tight block mt-1.5">{{ clearance.resident?.email }}</span>
+                  </td>
+                  <td class="px-6 py-4 text-xs font-medium text-zinc-500 max-w-[180px] truncate">{{ clearance.purpose }}</td>
+                  <td class="px-6 py-4 text-xs font-medium text-zinc-500">{{ formatDisplayDate(clearance.issued_on) }}</td>
+                  <td class="px-6 py-4 text-xs font-medium text-zinc-500">{{ formatDisplayDate(clearance.valid_until) }}</td>
+                  <td class="px-6 py-4 text-center">
+                    <span
+                      [ngClass]="getStatusBadgeClass(clearance.status)"
+                      class="inline-flex px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                      {{ clearance.status }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 text-xs font-medium text-zinc-500">{{ getIssuerName(clearance) }}</td>
+                  <td class="px-6 py-4 text-right whitespace-nowrap">
+                    <div class="flex items-center justify-end gap-1 ml-auto">
+                      <!-- View -->
+                      <button
+                        *hasPermission="'clearance.view'"
+                        (click)="openViewDrawer(clearance)"
+                        type="button"
+                        class="flex items-center justify-center w-8 h-8 rounded-full text-primary-600 hover:bg-primary-50 transition-colors cursor-pointer"
+                        title="View"
+                      >
+                        <ng-icon name="heroEye" class="text-[17px]"></ng-icon>
+                      </button>
+                      <!-- Edit -->
+                      <button
+                        *hasPermission="'clearance.edit'"
+                        (click)="openEditModal(clearance)"
+                        type="button"
+                        class="flex items-center justify-center w-8 h-8 rounded-full text-pink-600 hover:bg-pink-50 transition-colors cursor-pointer"
+                        title="Edit"
+                      >
+                        <ng-icon name="heroPencil" class="text-[17px]"></ng-icon>
+                      </button>
+                      <!-- Generate PDF -->
+                      <button
+                        *hasPermission="'clearance.view'"
+                        (click)="generatePdf(clearance)"
+                        [disabled]="isPdfLoading() === clearance.id"
+                        type="button"
+                        class="flex items-center justify-center w-8 h-8 rounded-full text-indigo-600 hover:bg-indigo-50 transition-colors cursor-pointer disabled:opacity-40"
+                        title="Generate PDF"
+                      >
+                        <ng-icon *ngIf="isPdfLoading() !== clearance.id" name="heroDocument" class="text-[17px]"></ng-icon>
+                        <div *ngIf="isPdfLoading() === clearance.id" class="animate-spin h-4 w-4 border-2 border-indigo-600 border-t-transparent rounded-full"></div>
+                      </button>
+                      <!-- Print -->
+                      <button
+                        *hasPermission="'clearance.view'"
+                        (click)="printClearance(clearance)"
+                        [disabled]="isPdfLoading() === clearance.id"
+                        type="button"
+                        class="flex items-center justify-center w-8 h-8 rounded-full text-teal-600 hover:bg-teal-50 transition-colors cursor-pointer disabled:opacity-40"
+                        title="Print"
+                      >
+                        <ng-icon name="heroPrinter" class="text-[17px]"></ng-icon>
+                      </button>
+                      <!-- Delete -->
+                      <button
+                        *hasPermission="'clearance.delete'"
+                        (click)="deleteClearance(clearance.id)"
+                        type="button"
+                        class="flex items-center justify-center w-8 h-8 rounded-full text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
+                        title="Delete"
+                      >
+                        <ng-icon name="heroTrash" class="text-[17px]"></ng-icon>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Empty State -->
+                <tr *ngIf="paginatedClearances().length === 0 && !isLoading()">
+                  <td colspan="8" class="px-8 py-12 text-center text-zinc-500 font-medium text-sm">
+                    No barangay clearance records found.
+                  </td>
+                </tr>
+
+                <!-- Loading State -->
+                <tr *ngIf="isLoading()">
+                  <td colspan="8" class="px-8 py-12 text-center">
+                    <div class="flex items-center justify-center gap-3">
+                      <div class="animate-spin h-5 w-5 border-2 border-primary-600 border-t-transparent rounded-full"></div>
+                      <span class="text-xs font-bold text-zinc-400 uppercase tracking-widest">Loading Records...</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Mobile Card View -->
+          <div class="md:hidden space-y-3">
+            <div *ngFor="let clearance of paginatedClearances()"
+              class="bg-white rounded-2xl border border-zinc-200/50 p-4 shadow-sm">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-bold text-zinc-900 font-mono">{{ clearance.clearance_number }}</span>
+                <span [ngClass]="getStatusBadgeClass(clearance.status)"
+                  class="inline-flex px-2.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest">
+                  {{ clearance.status }}
+                </span>
+              </div>
+              <p class="text-sm font-bold text-zinc-900">{{ getResidentFullName(clearance) }}</p>
+              <p class="text-xs text-zinc-500 mt-1">{{ clearance.purpose }}</p>
+              <div class="flex items-center justify-between mt-3 pt-3 border-t border-zinc-100">
+                <span class="text-[10px] text-zinc-400">{{ formatDisplayDate(clearance.issued_on) }}</span>
+                <div class="flex gap-1">
+                  <button *hasPermission="'clearance.view'" (click)="openViewDrawer(clearance)"
+                    class="w-7 h-7 rounded-full text-primary-600 hover:bg-primary-50 flex items-center justify-center cursor-pointer">
+                    <ng-icon name="heroEye" class="text-[15px]"></ng-icon>
+                  </button>
+                  <button *hasPermission="'clearance.edit'" (click)="openEditModal(clearance)"
+                    class="w-7 h-7 rounded-full text-pink-600 hover:bg-pink-50 flex items-center justify-center cursor-pointer">
+                    <ng-icon name="heroPencil" class="text-[15px]"></ng-icon>
+                  </button>
+                  <button *hasPermission="'clearance.delete'" (click)="deleteClearance(clearance.id)"
+                    class="w-7 h-7 rounded-full text-red-500 hover:bg-red-50 flex items-center justify-center cursor-pointer">
+                    <ng-icon name="heroTrash" class="text-[15px]"></ng-icon>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pagination -->
+          <app-table-pagination
+            [currentPage]="currentPage()"
+            [totalItems]="filteredClearances().length"
+            [pageSize]="pageSize()"
+            (pageChange)="currentPage.set($event)"
+            (pageSizeChange)="pageSize.set($event); currentPage.set(1)">
+          </app-table-pagination>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Drawer -->
+  <app-drawer
+    [isOpen]="isDrawerOpen()"
+    title="Barangay Clearance Details"
+    (close)="closeDrawer()"
+    class="shrink-0"
+  >
+    <div class="space-y-6" *ngIf="selectedViewClearance()">
+      <!-- Clearance Info -->
+      <div class="bg-white p-6 rounded-2xl border border-zinc-100 shadow-sm space-y-4">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Clearance Information</h3>
+          <ng-icon name="heroDocument" class="text-zinc-300 h-5 w-5"></ng-icon>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Clearance No.</p>
+            <p class="text-sm font-bold text-zinc-900 font-mono">{{ selectedViewClearance()!.clearance_number }}</p>
+          </div>
+          <div class="space-y-1">
+            <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Status</p>
+            <span [ngClass]="getStatusBadgeClass(selectedViewClearance()!.status)"
+              class="inline-flex px-2 py-0.5 text-[10px] font-black uppercase tracking-widest rounded-md">
+              {{ selectedViewClearance()!.status }}
+            </span>
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Purpose</p>
+          <p class="text-sm font-bold text-zinc-900">{{ selectedViewClearance()!.purpose }}</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Issued On</p>
+            <p class="text-sm font-bold text-zinc-900">{{ formatDisplayDate(selectedViewClearance()!.issued_on) }}</p>
+          </div>
+          <div class="space-y-1">
+            <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Valid Until</p>
+            <p class="text-sm font-bold text-zinc-900">{{ formatDisplayDate(selectedViewClearance()!.valid_until) }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resident Info -->
+      <div class="bg-white p-6 rounded-2xl border border-zinc-100 shadow-sm space-y-4" *ngIf="selectedViewClearance()!.resident">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Resident Information</h3>
+          <ng-icon name="heroUser" class="text-zinc-300 h-5 w-5"></ng-icon>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Full Name</p>
+            <p class="text-sm font-bold text-zinc-900">{{ selectedViewClearance()!.resident!.first_name }} {{ selectedViewClearance()!.resident!.last_name }}</p>
+          </div>
+          <div class="space-y-1">
+            <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Birthdate</p>
+            <p class="text-sm font-bold text-zinc-900">{{ formatDisplayDate(selectedViewClearance()!.resident!.birthdate) }}</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Age</p>
+            <p class="text-sm font-bold text-zinc-900">{{ selectedViewClearance()!.resident!.age }}</p>
+          </div>
+          <div class="space-y-1">
+            <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Email</p>
+            <p class="text-sm font-bold text-zinc-900">{{ selectedViewClearance()!.resident!.email || 'N/A' }}</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Zone</p>
+            <p class="text-sm font-bold text-zinc-900">{{ selectedViewClearance()!.resident!.zone?.zone_name || 'N/A' }}</p>
+          </div>
+          <div class="space-y-1">
+            <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Resident Status</p>
+            <span class="inline-flex px-2 py-0.5 text-[10px] font-black uppercase tracking-widest rounded-md"
+              [ngClass]="selectedViewClearance()!.resident!.status?.toLowerCase() === 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-zinc-100 text-zinc-600'">
+              {{ selectedViewClearance()!.resident!.status }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Issuer Info -->
+      <div class="bg-white p-6 rounded-2xl border border-zinc-100 shadow-sm space-y-4" *ngIf="selectedViewClearance()!.issuer">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Issuing Officer</h3>
+          <ng-icon name="heroShieldCheck" class="text-zinc-300 h-5 w-5"></ng-icon>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Name</p>
+            <p class="text-sm font-bold text-zinc-900">{{ selectedViewClearance()!.issuer!.first_name }} {{ selectedViewClearance()!.issuer!.last_name }}</p>
+          </div>
+          <div class="space-y-1">
+            <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Role</p>
+            <p class="text-sm font-bold text-zinc-900">{{ selectedViewClearance()!.issuer!.role || 'N/A' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Drawer Footer -->
+    <div drawerFooter class="flex justify-between items-center gap-3">
+      <div class="flex gap-2">
+        <button *ngIf="selectedViewClearance()" (click)="generatePdf(selectedViewClearance()!)"
+          [disabled]="isPdfLoading() === selectedViewClearance()!.id"
+          class="px-5 py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-xs shadow-sm hover:bg-indigo-700 transition-all active:scale-95 cursor-pointer disabled:opacity-50 flex items-center gap-2">
+          <div *ngIf="isPdfLoading() === selectedViewClearance()!.id" class="animate-spin h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full"></div>
+          Generate PDF
+        </button>
+        <button *ngIf="selectedViewClearance()" (click)="printClearance(selectedViewClearance()!)"
+          [disabled]="isPdfLoading() === selectedViewClearance()!.id"
+          class="px-5 py-2.5 bg-teal-600 text-white rounded-xl font-bold text-xs shadow-sm hover:bg-teal-700 transition-all active:scale-95 cursor-pointer disabled:opacity-50 flex items-center gap-2">
+          Print
+        </button>
+      </div>
+      <button (click)="closeDrawer()"
+        class="px-8 py-2.5 bg-zinc-900 text-white rounded-xl font-bold shadow-sm hover:bg-zinc-800 transition-all active:scale-95 cursor-pointer">
+        Close
+      </button>
+    </div>
+  </app-drawer>
+</div>
+
+<!-- Add/Edit Modal Template -->
+<ng-template #clearanceModal>
+  <form [formGroup]="clearanceForm" class="py-1">
+    <div class="bg-zinc-50/40 p-6 rounded-3xl border border-zinc-100/80 space-y-6">
+
+      <!-- Resident Selection -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em]">Resident Selection</h3>
+          <ng-icon name="heroUser" class="text-zinc-300 h-4 w-4"></ng-icon>
+        </div>
+
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+          <mat-label>Select Resident</mat-label>
+          <mat-select formControlName="resident_id">
+            <mat-option [value]="null">Select a Resident</mat-option>
+            <mat-option *ngFor="let resident of residents()" [value]="resident.id">
+              {{ resident.first_name }} {{ resident.last_name }}
+              <span *ngIf="resident.zone?.zone_name"> — {{ resident.zone?.zone_name }}</span>
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="clearanceForm.get('resident_id')?.hasError('required')">Resident is required</mat-error>
+        </mat-form-field>
+      </div>
+
+      <!-- Clearance Details -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em]">Clearance Details</h3>
+          <ng-icon name="heroDocument" class="text-zinc-300 h-4 w-4"></ng-icon>
+        </div>
+
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+          <mat-label>Purpose</mat-label>
+          <input matInput formControlName="purpose" placeholder="e.g. Employment, Business, Travel">
+          <mat-error *ngIf="clearanceForm.get('purpose')?.hasError('required')">Purpose is required</mat-error>
+        </mat-form-field>
+
+        <div class="grid grid-cols-2 gap-3">
+          <!-- Issued On -->
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+            <mat-label>Issued On</mat-label>
+            <input matInput [matDatepicker]="issuedPicker" formControlName="issued_on">
+            <mat-datepicker-toggle matSuffix [for]="issuedPicker"></mat-datepicker-toggle>
+            <mat-datepicker #issuedPicker></mat-datepicker>
+            <mat-error *ngIf="clearanceForm.get('issued_on')?.hasError('required')">Issue date is required</mat-error>
+          </mat-form-field>
+
+          <!-- Valid Until -->
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+            <mat-label>Valid Until</mat-label>
+            <input matInput [matDatepicker]="validPicker" formControlName="valid_until">
+            <mat-datepicker-toggle matSuffix [for]="validPicker"></mat-datepicker-toggle>
+            <mat-datepicker #validPicker></mat-datepicker>
+            <mat-error *ngIf="clearanceForm.get('valid_until')?.hasError('required')">Validity date is required</mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Status -->
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+          <mat-label>Status</mat-label>
+          <mat-select formControlName="status">
+            <mat-option value="pending">Pending</mat-option>
+            <mat-option value="approved">Approved</mat-option>
+            <mat-option value="released">Released</mat-option>
+            <mat-option value="expired">Expired</mat-option>
+          </mat-select>
+          <mat-error *ngIf="clearanceForm.get('status')?.hasError('required')">Status is required</mat-error>
+        </mat-form-field>
+      </div>
+    </div>
+  </form>
+</ng-template>
+
+<!-- Delete Confirmation Modal -->
+<ng-template #deleteModal>
+  <app-confirm-delete [name]="clearanceToDelete()?.clearance_number || ''"></app-confirm-delete>
+</ng-template>

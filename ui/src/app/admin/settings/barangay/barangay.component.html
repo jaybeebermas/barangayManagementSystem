@@ -1,0 +1,446 @@
+<!-- Loading Overlay -->
+<div *ngIf="isLoading()" class="fixed inset-0 bg-white/50 backdrop-blur-sm z-50 flex items-center justify-center">
+    <div class="flex flex-col items-center gap-3">
+        <div class="w-10 h-10 border-4 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
+        <p class="text-zinc-500 font-bold text-sm">Loading settings...</p>
+    </div>
+</div>
+
+<!-- ================= 1. SETUP / EMPTY STATE ================= -->
+<div *ngIf="!hasSettings() && !isCreating() && !isLoading()" class="max-w-3xl mx-auto my-12 text-center">
+    <div class="bg-white border border-zinc-100 rounded-3xl shadow-premium p-12 flex flex-col items-center">
+        <!-- Premium Icon Shield -->
+        <div
+            class="h-20 w-20 rounded-3xl bg-primary-50/50 border border-primary-100 flex items-center justify-center shadow-sm mb-6">
+            <ng-icon name="heroAdjustmentsHorizontal" class="h-10 w-10 text-primary-600 animate-pulse"></ng-icon>
+        </div>
+        <h2 class="text-2xl font-black text-zinc-900 tracking-tight mb-2">Initialize Barangay Profile</h2>
+        <p class="text-zinc-400 font-medium max-w-md mx-auto mb-8 leading-relaxed">
+            Your Barangay Management System settings are currently unconfigured. Initialize your profile now to
+            configure regional, localized details and preference patterns.
+        </p>
+        <button (click)="setUpProfile()" type="button"
+            class="px-8 py-3.5 bg-gradient-to-r from-primary-600 to-indigo-600 hover:from-primary-700 hover:to-indigo-700 text-white text-sm font-bold rounded-2xl shadow-lg shadow-primary-600/25 transition-all transform active:scale-95 flex items-center gap-2">
+            <ng-icon name="heroSparkles" class="h-4 w-4"></ng-icon>
+            Set Up Profile Now
+        </button>
+    </div>
+</div>
+
+<!-- ================= 2. ACTIVE VIEWPORT (READ-ONLY OR CREATE/EDIT FORMS) ================= -->
+<div *ngIf="hasSettings() || isCreating()" class="max-w-5xl mx-auto space-y-8">
+
+    <!-- Page Header -->
+    <div class="flex justify-between items-center">
+        <div>
+            <h2 class="text-3xl font-black text-zinc-900 tracking-tight">Barangay Settings</h2>
+            <p class="text-zinc-400 font-medium mt-1">Manage your barangay information and system preferences.</p>
+        </div>
+
+        <!-- Header Actions: Active only when settings exist and we are in Read-Only state -->
+        <ng-container *hasPermission="'barangay_information.edit'">
+            <div *ngIf="hasSettings() && !isEditMode() && !isLoading()" class="flex items-center gap-3 animate-fade-in">
+                <button (click)="isResetModalOpen.set(true)" type="button"
+                    class="px-5 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 text-sm font-bold rounded-2xl transition-all flex items-center gap-2">
+                    <ng-icon name="heroTrash" class="h-4 w-4"></ng-icon>
+                    Reset Settings
+                </button>
+
+                <button (click)="toggleEditMode()" type="button"
+                    class="px-5 py-2.5 bg-primary-50 hover:bg-primary-100 text-primary-600 text-sm font-bold rounded-2xl transition-all flex items-center gap-2">
+                    <ng-icon name="heroPencil" class="h-4 w-4"></ng-icon>
+                    Edit Settings
+                </button>
+            </div>
+        </ng-container>
+    </div>
+
+    <!-- MAIN FORM WRAPPER (Used for Create form OR Edit form) -->
+    <form [formGroup]="settingsForm" (ngSubmit)="saveSettings()" class="space-y-8">
+
+        <!-- Barangay Information Card -->
+        <div class="bg-white border border-zinc-100 rounded-3xl shadow-premium p-8">
+            <h3 class="text-lg font-bold text-zinc-900 mb-6 flex items-center gap-2">
+                <span class="h-6 w-1 bg-primary-600 rounded-full"></span>
+                Barangay Information
+            </h3>
+
+            <!-- A. READ-ONLY VIEW (Only shown when settings exist and not editing) -->
+            <div *ngIf="hasSettings() && !isEditMode()" class="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
+                <!-- Barangay Name Card -->
+                <div
+                    class="bg-white p-5 rounded-2xl border border-zinc-200/50 shadow-sm hover:shadow-md hover:border-zinc-200 transition-all duration-200">
+                    <div class="flex items-center gap-3 mb-3 border-b border-zinc-100 pb-3">
+                        <div
+                            class="h-8 w-8 rounded-lg bg-zinc-50 border border-zinc-100 flex items-center justify-center shadow-sm">
+                            <ng-icon name="heroHome" class="h-4 w-4 text-primary-500"></ng-icon>
+                        </div>
+                        <h4 class="text-xs font-bold text-zinc-400 uppercase tracking-widest">Barangay Name</h4>
+                    </div>
+                    <p class="text-lg font-black text-zinc-800 tracking-tight">{{
+                        settingsForm.get('barangay_name')?.value || '—' }}</p>
+                </div>
+
+                <!-- Municipality / City Card -->
+                <div
+                    class="bg-white p-5 rounded-2xl border border-zinc-200/50 shadow-sm hover:shadow-md hover:border-zinc-200 transition-all duration-200">
+                    <div class="flex items-center gap-3 mb-3 border-b border-zinc-100 pb-3">
+                        <div
+                            class="h-8 w-8 rounded-lg bg-zinc-50 border border-zinc-100 flex items-center justify-center shadow-sm">
+                            <ng-icon name="heroBuildingOffice" class="h-4 w-4 text-primary-500"></ng-icon>
+                        </div>
+                        <h4 class="text-xs font-bold text-zinc-400 uppercase tracking-widest">Municipality / City</h4>
+                    </div>
+                    <p class="text-lg font-black text-zinc-800 tracking-tight">{{
+                        settingsForm.get('municipality')?.value || '—' }}</p>
+                </div>
+
+                <!-- Province Card -->
+                <div
+                    class="bg-white p-5 rounded-2xl border border-zinc-200/50 shadow-sm hover:shadow-md hover:border-zinc-200 transition-all duration-200">
+                    <div class="flex items-center gap-3 mb-3 border-b border-zinc-100 pb-3">
+                        <div
+                            class="h-8 w-8 rounded-lg bg-zinc-50 border border-zinc-100 flex items-center justify-center shadow-sm">
+                            <ng-icon name="heroMap" class="h-4 w-4 text-primary-500"></ng-icon>
+                        </div>
+                        <h4 class="text-xs font-bold text-zinc-400 uppercase tracking-widest">Province</h4>
+                    </div>
+                    <p class="text-lg font-black text-zinc-800 tracking-tight">{{ settingsForm.get('province')?.value ||
+                        '—' }}</p>
+                </div>
+
+                <!-- Region Card -->
+                <div
+                    class="bg-white p-5 rounded-2xl border border-zinc-200/50 shadow-sm hover:shadow-md hover:border-zinc-200 transition-all duration-200">
+                    <div class="flex items-center gap-3 mb-3 border-b border-zinc-100 pb-3">
+                        <div
+                            class="h-8 w-8 rounded-lg bg-zinc-50 border border-zinc-100 flex items-center justify-center shadow-sm">
+                            <ng-icon name="heroGlobeAlt" class="h-4 w-4 text-primary-500"></ng-icon>
+                        </div>
+                        <h4 class="text-xs font-bold text-zinc-400 uppercase tracking-widest">Region</h4>
+                    </div>
+                    <p class="text-lg font-black text-zinc-800 tracking-tight">{{ settingsForm.get('region')?.value ||
+                        '—' }}</p>
+                </div>
+
+                <!-- ZIP Code Card -->
+                <div
+                    class="bg-white p-5 rounded-2xl border border-zinc-200/50 shadow-sm hover:shadow-md hover:border-zinc-200 transition-all duration-200">
+                    <div class="flex items-center gap-3 mb-3 border-b border-zinc-100 pb-3">
+                        <div
+                            class="h-8 w-8 rounded-lg bg-zinc-50 border border-zinc-100 flex items-center justify-center shadow-sm">
+                            <ng-icon name="heroMapPin" class="h-4 w-4 text-primary-500"></ng-icon>
+                        </div>
+                        <h4 class="text-xs font-bold text-zinc-400 uppercase tracking-widest">ZIP Code</h4>
+                    </div>
+                    <p class="text-lg font-black text-zinc-800 tracking-tight">{{ settingsForm.get('zip_code')?.value ||
+                        '—' }}</p>
+                </div>
+
+                <!-- Contact Number Card -->
+                <div
+                    class="bg-white p-5 rounded-2xl border border-zinc-200/50 shadow-sm hover:shadow-md hover:border-zinc-200 transition-all duration-200">
+                    <div class="flex items-center gap-3 mb-3 border-b border-zinc-100 pb-3">
+                        <div
+                            class="h-8 w-8 rounded-lg bg-zinc-50 border border-zinc-100 flex items-center justify-center shadow-sm">
+                            <ng-icon name="heroPhone" class="h-4 w-4 text-primary-500"></ng-icon>
+                        </div>
+                        <h4 class="text-xs font-bold text-zinc-400 uppercase tracking-widest">Contact Number</h4>
+                    </div>
+                    <p class="text-lg font-black tracking-tight"
+                        [ngClass]="settingsForm.get('contact_number')?.value ? 'text-zinc-800' : 'text-zinc-400'">
+                        {{ settingsForm.get('contact_number')?.value || 'Not Configured' }}
+                    </p>
+                </div>
+
+                <!-- Email Address Card (Full width) -->
+                <div
+                    class="md:col-span-2 bg-white p-5 rounded-2xl border border-zinc-200/50 shadow-sm hover:shadow-md hover:border-zinc-200 transition-all duration-200">
+                    <div class="flex items-center gap-3 mb-3 border-b border-zinc-100 pb-3">
+                        <div
+                            class="h-8 w-8 rounded-lg bg-zinc-50 border border-zinc-100 flex items-center justify-center shadow-sm">
+                            <ng-icon name="heroEnvelope" class="h-4 w-4 text-primary-500"></ng-icon>
+                        </div>
+                        <h4 class="text-xs font-bold text-zinc-400 uppercase tracking-widest">Email Address</h4>
+                    </div>
+                    <p class="text-lg font-black tracking-tight"
+                        [ngClass]="settingsForm.get('email')?.value ? 'text-zinc-800' : 'text-zinc-400'">
+                        {{ settingsForm.get('email')?.value || 'Not Configured' }}
+                    </p>
+                </div>
+
+                <!-- Logo Preview Card -->
+                <div
+                    class="md:col-span-2 bg-white p-5 rounded-2xl border border-zinc-200/50 shadow-sm hover:shadow-md hover:border-zinc-200 transition-all duration-200">
+                    <div class="flex items-center gap-3 mb-3 border-b border-zinc-100 pb-3">
+                        <div
+                            class="h-8 w-8 rounded-lg bg-zinc-50 border border-zinc-100 flex items-center justify-center shadow-sm">
+                            <ng-icon name="heroPhoto" class="h-4 w-4 text-primary-500"></ng-icon>
+                        </div>
+                        <h4 class="text-xs font-bold text-zinc-400 uppercase tracking-widest">Barangay Logo</h4>
+                    </div>
+                    <div class="flex items-center gap-4 mt-2">
+                        <div
+                            class="h-16 w-16 rounded-2xl bg-zinc-50 border border-zinc-200 flex items-center justify-center shadow-inner">
+                            <ng-icon name="heroPhoto" class="h-6 w-6 text-zinc-400"></ng-icon>
+                        </div>
+                        <div>
+                            <span class="text-zinc-500 font-bold text-xs uppercase tracking-wider block">Standard
+                                Digital Logo</span>
+                            <span class="text-zinc-400 font-medium text-xs">Standard asset visualization mapping is
+                                active</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- B. EDIT / CREATE FORM LAYOUT (Shown in edit state or creation/setup state) -->
+            <div *ngIf="isCreating() || isEditMode()" class="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
+                <!-- Barangay Name -->
+                <div>
+                    <label class="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Barangay Name
+                        *</label>
+                    <input type="text" formControlName="barangay_name" placeholder="e.g. Barangay San Antonio"
+                        class="w-full px-4 py-3 bg-white border border-zinc-200 rounded-xl text-sm text-zinc-900 font-medium placeholder:text-zinc-300 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all" />
+                    <div *ngIf="settingsForm.get('barangay_name')?.touched && settingsForm.get('barangay_name')?.invalid"
+                        class="text-red-500 text-xs mt-1 font-semibold">
+                        Barangay name is required.
+                    </div>
+                </div>
+
+                <!-- Municipality / City -->
+                <div>
+                    <label class="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Municipality /
+                        City *</label>
+                    <input type="text" formControlName="municipality" placeholder="e.g. City of Manila"
+                        class="w-full px-4 py-3 bg-white border border-zinc-200 rounded-xl text-sm text-zinc-900 font-medium placeholder:text-zinc-300 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all" />
+                    <div *ngIf="settingsForm.get('municipality')?.touched && settingsForm.get('municipality')?.invalid"
+                        class="text-red-500 text-xs mt-1 font-semibold">
+                        Municipality/City is required.
+                    </div>
+                </div>
+
+                <!-- Province -->
+                <div>
+                    <label class="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Province
+                        *</label>
+                    <input type="text" formControlName="province" placeholder="e.g. Metro Manila"
+                        class="w-full px-4 py-3 bg-white border border-zinc-200 rounded-xl text-sm text-zinc-900 font-medium placeholder:text-zinc-300 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all" />
+                    <div *ngIf="settingsForm.get('province')?.touched && settingsForm.get('province')?.invalid"
+                        class="text-red-500 text-xs mt-1 font-semibold">
+                        Province is required.
+                    </div>
+                </div>
+
+                <!-- Region -->
+                <div>
+                    <label class="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Region *</label>
+                    <div class="relative w-full">
+                        <div matAutocompleteOrigin #originRegion="matAutocompleteOrigin"
+                            (click)="toggleRegionPanel($event, autoRegionTrigger)"
+                            class="relative w-full cursor-pointer">
+                            <input type="text" formControlName="region" [matAutocomplete]="autoRegion"
+                                [matAutocompleteConnectedTo]="originRegion" #autoRegionTrigger="matAutocompleteTrigger"
+                                readonly placeholder="Select Region"
+                                class="w-full py-3 pl-4 pr-10 bg-white border border-zinc-200 rounded-xl text-sm text-zinc-900 font-medium placeholder:text-zinc-300 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all cursor-pointer" />
+                            <div
+                                class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-zinc-400">
+                                <ng-icon name="heroChevronDown" class="h-4 w-4 transition-transform duration-200"
+                                    [class.rotate-180]="autoRegionTrigger.panelOpen"></ng-icon>
+                            </div>
+                        </div>
+
+                        <mat-autocomplete #autoRegion="matAutocomplete" [displayWith]="displayRegionFn"
+                            panelClass="bg-white border border-zinc-100 rounded-xl shadow-premium py-1 max-h-60 overflow-y-auto scrollbar-thin">
+                            <mat-option *ngFor="let option of regions" [value]="option.value"
+                                class="!px-4 !py-2.5 !text-sm !font-semibold !cursor-pointer !transition-colors !duration-150 !text-zinc-700 hover:!bg-zinc-50 focus:!bg-primary-50 focus:!text-primary-700">
+                                {{ option.name }}
+                            </mat-option>
+                        </mat-autocomplete>
+                    </div>
+                    <div *ngIf="settingsForm.get('region')?.touched && settingsForm.get('region')?.invalid"
+                        class="text-red-500 text-xs mt-1 font-semibold">
+                        Region is required.
+                    </div>
+                </div>
+
+                <!-- ZIP Code -->
+                <div>
+                    <label class="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">ZIP Code
+                        *</label>
+                    <input type="text" formControlName="zip_code" placeholder="e.g. 1000"
+                        class="w-full px-4 py-3 bg-white border border-zinc-200 rounded-xl text-sm text-zinc-900 font-medium placeholder:text-zinc-300 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all" />
+                    <div *ngIf="settingsForm.get('zip_code')?.touched && settingsForm.get('zip_code')?.invalid"
+                        class="text-red-500 text-xs mt-1 font-semibold">
+                        ZIP Code is required.
+                    </div>
+                </div>
+
+                <!-- Contact Number -->
+                <div>
+                    <label class="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Contact
+                        Number</label>
+                    <input type="text" formControlName="contact_number" placeholder="e.g. +63 912 345 6789"
+                        class="w-full px-4 py-3 bg-white border border-zinc-200 rounded-xl text-sm text-zinc-900 font-medium placeholder:text-zinc-300 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all" />
+                </div>
+
+                <!-- Email Address (Full width) -->
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Email
+                        Address</label>
+                    <input type="email" formControlName="email" placeholder="e.g. brgy.sanantonio@gmail.com"
+                        class="w-full px-4 py-3 bg-white border border-zinc-200 rounded-xl text-sm text-zinc-900 font-medium placeholder:text-zinc-300 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all" />
+                    <div *ngIf="settingsForm.get('email')?.touched && settingsForm.get('email')?.invalid"
+                        class="text-red-500 text-xs mt-1 font-semibold">
+                        Please enter a valid email address.
+                    </div>
+                </div>
+
+                <!-- Logo Configuration Placeholder (Full width) -->
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Barangay
+                        Logo</label>
+                    <div class="flex items-center gap-6 mt-1">
+                        <div
+                            class="h-20 w-20 rounded-2xl bg-zinc-50 border-2 border-dashed border-zinc-200 flex items-center justify-center shrink-0">
+                            <ng-icon name="heroPhoto" class="h-8 w-8 text-zinc-300"></ng-icon>
+                        </div>
+                        <div>
+                            <button type="button"
+                                class="px-5 py-2.5 bg-zinc-50 border border-zinc-200 hover:bg-zinc-100 text-zinc-700 text-sm font-bold rounded-xl transition-all">
+                                Upload Logo
+                            </button>
+                            <p class="text-[11px] text-zinc-400 mt-1.5 font-medium">PNG, JPG up to 2MB. Recommended
+                                dimensions: 200×200px.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Preferences Card -->
+        <div class="bg-white border border-zinc-100 rounded-3xl shadow-premium p-8">
+            <h3 class="text-lg font-bold text-zinc-900 mb-6 flex items-center gap-2">
+                <span class="h-6 w-1 bg-primary-600 rounded-full"></span>
+                System Preferences
+            </h3>
+
+            <!-- A. READ-ONLY VIEW -->
+            <div *ngIf="hasSettings() && !isEditMode()" class="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
+                <!-- Timezone -->
+                <div
+                    class="bg-white p-5 rounded-2xl border border-zinc-200/50 shadow-sm hover:shadow-md hover:border-zinc-200 transition-all duration-200">
+                    <div class="flex items-center gap-3 mb-3 border-b border-zinc-100 pb-3">
+                        <div
+                            class="h-8 w-8 rounded-lg bg-zinc-50 border border-zinc-100 flex items-center justify-center shadow-sm">
+                            <ng-icon name="heroClock" class="h-4 w-4 text-primary-500"></ng-icon>
+                        </div>
+                        <h4 class="text-xs font-bold text-zinc-400 uppercase tracking-widest">Timezone</h4>
+                    </div>
+                    <p class="text-lg font-black text-zinc-800 tracking-tight">{{ settingsForm.get('timezone')?.value ||
+                        '—' }}</p>
+                </div>
+
+                <!-- Date Format -->
+                <div
+                    class="bg-white p-5 rounded-2xl border border-zinc-200/50 shadow-sm hover:shadow-md hover:border-zinc-200 transition-all duration-200">
+                    <div class="flex items-center gap-3 mb-3 border-b border-zinc-100 pb-3">
+                        <div
+                            class="h-8 w-8 rounded-lg bg-zinc-50 border border-zinc-100 flex items-center justify-center shadow-sm">
+                            <ng-icon name="heroCalendar" class="h-4 w-4 text-primary-500"></ng-icon>
+                        </div>
+                        <h4 class="text-xs font-bold text-zinc-400 uppercase tracking-widest">Date Format</h4>
+                    </div>
+                    <p class="text-lg font-black text-zinc-800 tracking-tight">{{ settingsForm.get('date_format')?.value
+                        || '—' }}</p>
+                </div>
+            </div>
+
+            <!-- B. EDIT / CREATE FORM LAYOUT -->
+            <div *ngIf="isCreating() || isEditMode()" class="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
+                <!-- Timezone -->
+                <div>
+                    <label class="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Timezone
+                        *</label>
+                    <div class="relative w-full">
+                        <div matAutocompleteOrigin #originTimezone="matAutocompleteOrigin"
+                            (click)="toggleTimezonePanel($event, autoTzTrigger)" class="relative w-full cursor-pointer">
+                            <div
+                                class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-zinc-400">
+                                <ng-icon name="heroClock" class="h-5 w-5 text-primary-500"></ng-icon>
+                            </div>
+                            <input type="text" formControlName="timezone" [matAutocomplete]="autoTimezone"
+                                [matAutocompleteConnectedTo]="originTimezone" #autoTzTrigger="matAutocompleteTrigger"
+                                readonly placeholder="Select Timezone"
+                                class="w-full py-3 pl-11 pr-10 bg-white border border-zinc-200 rounded-xl text-sm text-zinc-900 font-medium placeholder:text-zinc-300 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all cursor-pointer" />
+                            <div
+                                class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-zinc-400">
+                                <ng-icon name="heroChevronDown" class="h-4 w-4 transition-transform duration-200"
+                                    [class.rotate-180]="autoTzTrigger.panelOpen"></ng-icon>
+                            </div>
+                        </div>
+
+                        <mat-autocomplete #autoTimezone="matAutocomplete" [displayWith]="displayTimezoneFn"
+                            panelClass="bg-white border border-zinc-100 rounded-xl shadow-premium py-1 max-h-60 overflow-y-auto scrollbar-thin">
+                            <mat-option *ngFor="let option of timezones" [value]="option.value"
+                                class="!px-4 !py-2.5 !text-sm !font-semibold !cursor-pointer !transition-colors !duration-150 !text-zinc-700 hover:!bg-zinc-50 focus:!bg-primary-50 focus:!text-primary-700">
+                                {{ option.name }}
+                            </mat-option>
+                        </mat-autocomplete>
+                    </div>
+
+                    <div *ngIf="settingsForm.get('timezone')?.touched && settingsForm.get('timezone')?.invalid"
+                        class="text-red-500 text-xs mt-1 font-semibold">
+                        Timezone is required.
+                    </div>
+                </div>
+
+                <!-- Date Format -->
+                <div>
+                    <label class="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Date Format
+                        *</label>
+                    <div class="relative">
+                        <!-- Manual Date Input with calendar icon on the left -->
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-zinc-400">
+                            <ng-icon name="heroCalendar" class="h-5 w-5 text-primary-500"></ng-icon>
+                        </div>
+                        <input type="text" formControlName="date_format" placeholder="e.g. MM/DD/YYYY"
+                            class="w-full pl-11 pr-4 py-3 bg-white border border-zinc-200 rounded-xl text-sm text-zinc-900 font-medium placeholder:text-zinc-300 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all" />
+                    </div>
+                    <div *ngIf="settingsForm.get('date_format')?.touched && settingsForm.get('date_format')?.invalid"
+                        class="text-red-500 text-xs mt-1 font-semibold">
+                        Date format is required.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FORM ACTION BUTTONS (Only active when editing or setting up) -->
+        <ng-container *hasPermission="'barangay_information.edit'">
+            <div *ngIf="isCreating() || isEditMode()" class="flex justify-end gap-3 animate-fade-in pb-12">
+                <!-- Cancel Button behavior varies by flow (Create vs Edit) -->
+                <button *ngIf="isCreating()" type="button" (click)="cancelCreate()" [disabled]="isSaving()"
+                    class="px-6 py-3 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-sm font-bold rounded-2xl transition-all">
+                    Cancel Setup
+                </button>
+                <button *ngIf="isEditMode()" type="button" (click)="cancelEdit()" [disabled]="isSaving()"
+                    class="px-6 py-3 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-sm font-bold rounded-2xl transition-all">
+                    Cancel
+                </button>
+
+                <button type="submit" [disabled]="isLoading() || isSaving() || settingsForm.invalid"
+                    class="px-8 py-3 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold rounded-2xl shadow-lg shadow-primary-600/20 transition-all active:scale-[0.98] flex items-center gap-2">
+                    <span *ngIf="isSaving()"
+                        class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    {{ isSaving() ? 'Saving Profile...' : (isCreating() ? 'Initialize Profile' : 'Save Changes') }}
+                </button>
+            </div>
+        </ng-container>
+    </form>
+</div>
+<!-- Reset Confirmation Modal -->
+<app-modal [isOpen]="isResetModalOpen()" title="Reset Settings?"
+    subtitle="Are you sure you want to reset all Barangay settings? This will permanently delete all configuration data."
+    confirmLabel="Yes, Reset" confirmType="danger" [isLoading]="isLoading()"
+    (close)="isResetModalOpen.set(false)" (confirm)="confirmReset()" maxWidth="md:max-w-md">
+</app-modal>
