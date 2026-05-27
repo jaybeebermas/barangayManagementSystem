@@ -1,5 +1,0 @@
-events: [Event!]! @guard @can(ability: "events.view", model: "App\\Models\\Event") @paginate(defaultCount: 10, builder: "App\\GraphQL\\Queries\\Event\\GetEvent@events")
-event(id: ID! @eq): Event @guard @can(ability: "events.view") @field(resolver: "App\\GraphQL\\Queries\\Event\\GetEvent@event")
-
-officials(type: String! @eq): [Official!]! @guard @can(ability: "manage_officials", model: "App\\Models\\Official") @field(resolver: "App\\GraphQL\\Queries\\Official\\GetOfficial@officials")
-official(id: ID! @eq): Official @guard @can(ability: "manage_officials", model: "App\\Models\\Official") @find

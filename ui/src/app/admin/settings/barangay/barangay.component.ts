@@ -9,8 +9,6 @@ import { MatInputModule } from '@angular/material/input';
 import { Observable, startWith, map, of } from 'rxjs';
 import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 import { ModalComponent } from '../../../shared/components/ui/modal/modal.component';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
 
 @Component({
   selector: 'app-barangay',
@@ -21,8 +19,6 @@ import { MatSelectModule } from '@angular/material/select';
     ReactiveFormsModule,
     MatAutocompleteModule,
     MatInputModule,
-    MatFormFieldModule,
-    MatSelectModule,
     HasPermissionDirective,
     ModalComponent
   ],

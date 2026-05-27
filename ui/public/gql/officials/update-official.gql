@@ -1,7 +1,0 @@
-mutation UpdateOfficial($input: UpdateOfficialInput!) {
-  updateOfficial(input: $input) {
-    id
-    name
-    position
-  }
-}

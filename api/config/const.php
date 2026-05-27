@@ -71,8 +71,5 @@ return [
         'events.edit',
         'events.delete',
 
-        // OFFICIALS MODULE
-        'manage_officials',
-
     ],
 ];
