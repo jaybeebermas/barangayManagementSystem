@@ -5,6 +5,7 @@ import { NgIconComponent } from '@ng-icons/core';
 import { NavigationItem } from '../../../../shared/models/navigation.model';
 import { AuthService } from '../../../../services/auth/auth.service';
 import { filter } from 'rxjs';
+import { BarangayConfigService } from '../../../../services/ui-config/barangay-config.service';
 
 type NavNode = Omit<NavigationItem, 'children'> & {
   children: NavNode[];
@@ -26,8 +27,12 @@ type NavNode = Omit<NavigationItem, 'children'> & {
       <!-- Brand Area -->
       <div class="px-6 py-8">
         <div class="flex items-center gap-3">
-          <div class="h-10 w-10 rounded-2xl bg-gradient-to-br from-primary-600 to-primary-500 flex items-center justify-center shadow-xl shadow-primary-600/20">
-             <ng-icon name="heroBuildingLibrary" class="h-6 w-6 text-white"></ng-icon>
+          <div class="h-10 w-10 rounded-2xl flex items-center justify-center overflow-hidden transition-all shadow-xl"
+               [ngClass]="configService.logoUrl() ? 'bg-transparent' : 'bg-gradient-to-br from-primary-600 to-primary-500 shadow-primary-600/20'">
+             <!-- Uploaded Logo -->
+             <img *ngIf="configService.logoUrl()" [src]="configService.logoUrl()" class="h-full w-full object-cover">
+             <!-- Default Icon -->
+             <ng-icon *ngIf="!configService.logoUrl()" name="heroBuildingLibrary" class="h-6 w-6 text-white"></ng-icon>
           </div>
           <div class="transition-all duration-300" [class.opacity-0]="!isOpen" [class.translate-x-4]="!isOpen">
             <h2 class="text-xl font-black text-zinc-900 tracking-tight leading-none">Brgy<span class="text-primary-600">Sync</span></h2>
@@ -133,6 +138,8 @@ type NavNode = Omit<NavigationItem, 'children'> & {
 export class SidebarComponent {
   @Input() isOpen = true;
 
+  public readonly configService = inject(BarangayConfigService);
+
   getUserRoleName(): string {
     const role = this.authService.currentUser()?.role;
     if (!role) return '';
@@ -143,7 +150,7 @@ export class SidebarComponent {
   }
   private _navItems: NavNode[] = [];
 
-  @Input() 
+  @Input()
   set navItems(value: NavNode[]) {
     this._navItems = value;
     this.autoExpandActiveSection();
@@ -152,7 +159,7 @@ export class SidebarComponent {
   get navItems(): NavNode[] {
     return this._navItems;
   }
-  
+
   private router = inject(Router);
   public readonly authService = inject(AuthService);
   private validRoutes = new Set<string>();
@@ -172,7 +179,7 @@ export class SidebarComponent {
   autoExpandActiveSection(): void {
     if (!this.navItems) return;
     const currentUrl = this.router.url.split('?')[0];
-    
+
     for (const section of this.navItems) {
       if (section.type === 'group' || section.type === 'collapsible') {
         let hasActiveChild = false;
@@ -193,24 +200,24 @@ export class SidebarComponent {
     const traverse = (config: any[], prefix = '') => {
       for (const route of config) {
         if (route.path === '**') continue;
-        
+
         let currentPath = prefix;
         if (route.path) {
-          currentPath = currentPath.endsWith('/') 
-            ? `${currentPath}${route.path}` 
+          currentPath = currentPath.endsWith('/')
+            ? `${currentPath}${route.path}`
             : `${currentPath}/${route.path}`;
         }
-        
+
         if (route.component || route.loadComponent) {
           this.validRoutes.add(currentPath);
         }
-        
+
         if (route.children) {
           traverse(route.children, currentPath);
         }
       }
     };
-    
+
     traverse(this.router.config, '');
   }
 
@@ -232,7 +239,7 @@ export class SidebarComponent {
     if (!route) return false;
     const clean = route.trim();
     if (clean === '' || clean === '#' || clean === '/') return false;
-    
+
     // Only return true if the route is actually registered in the Angular Router
     return this.validRoutes.has(clean);
   }
@@ -244,7 +251,7 @@ export class SidebarComponent {
   getIconName(name?: string | null, isSolid = false): string {
     const raw = (name ?? '').trim();
     if (!raw) return isSolid ? 'heroHomeModernSolid' : 'heroHomeModern';
-    
+
     // Map common names to Heroicon names
     const mapping: Record<string, string> = {
       'home-modern': 'heroHomeModern',
@@ -271,7 +278,7 @@ export class SidebarComponent {
     };
 
     let iconName = mapping[raw];
-    
+
     if (!iconName) {
       if (raw.includes(':')) {
         const part = raw.split(':')[1];

@@ -1,0 +1,165 @@
+<div class="p-6 h-full flex flex-col gap-6 relative">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-black text-zinc-900 tracking-tight">IPA BLOTTER MO GAGO</h1>
+            <p class="text-sm font-medium text-zinc-500 mt-1">Record complaints and track resolutions.</p>
+        </div>
+        <button (click)="openNewIncident()"
+            class="h-10 px-4 bg-primary-600 hover:bg-primary-700 text-white text-sm font-bold rounded-xl transition-all shadow-sm flex items-center gap-2">
+            <ng-icon name="heroPlus"></ng-icon> New Incident
+        </button>
+
+    </div>
+
+    <!-- Table View -->
+    <div class="flex-1 overflow-auto bg-white rounded-2xl border border-zinc-200 shadow-sm"
+        *ngIf="blotters().length > 0">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-zinc-50 border-b border-zinc-200 text-xs uppercase font-bold text-zinc-500">
+                    <th class="p-4">Case #</th>
+                    <th class="p-4">Complainant</th>
+                    <th class="p-4">Respondent</th>
+                    <th class="p-4">Date</th>
+                    <th class="p-4">Status</th>
+                    <th class="p-4">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let b of blotters()" class="border-b border-zinc-100 hover:bg-zinc-50 transition-colors">
+                    <td class="p-4 font-bold text-primary-700">{{ b.case_number }}</td>
+                    <td class="p-4 text-zinc-800">{{ b.complainant_name }}</td>
+                    <td class="p-4 text-zinc-800">{{ b.respondent_name }}</td>
+                    <td class="p-4 text-zinc-500 text-sm">{{ b.incident_date | date:'shortDate' }}</td>
+                    <td class="p-4">
+                        <span class="px-2 py-1 rounded-lg text-xs font-bold" [ngClass]="{
+                       'bg-green-100 text-green-700': b.status === 'Settled',
+                       'bg-orange-100 text-orange-700': b.status === 'Active',
+                       'bg-red-100 text-red-700': b.status === 'Elevated',
+                       'bg-zinc-100 text-zinc-700': b.status === 'Unsettled'
+                     }">
+                            {{ b.status }}
+                        </span>
+                    </td>
+                    <td class="p-4">
+                        <button (click)="viewBlotter(b)"
+                            class="text-zinc-400 hover:text-primary-600 font-bold text-sm underline">
+                            View
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="blotters().length === 0 && !isLoading()"
+        class="flex-1 bg-white rounded-2xl border border-zinc-200 shadow-sm flex flex-col items-center justify-center p-12">
+        <div class="w-16 h-16 bg-zinc-100 text-zinc-400 rounded-full flex items-center justify-center mb-4">
+            <ng-icon name="heroDocumentText" class="w-8 h-8"></ng-icon>
+        </div>
+        <h3 class="text-lg font-bold text-zinc-900">No blotter records found</h3>
+        <p class="text-sm text-zinc-500 mt-1 text-center max-w-sm">Click "New Incident" to log a complaint.</p>
+    </div>
+
+    <!-- Create / Edit Modal with Material Inputs -->
+    <app-modal [isOpen]="showForm()" (close)="cancelForm()" [title]="blotterToEdit() ? 'Update Case' : 'New Incident'"
+        [maxWidth]="'max-w-3xl'" [showFooter]="false">
+        <form [formGroup]="blotterForm" (ngSubmit)="saveBlotter()" class="space-y-2 mt-4" [class.view-mode]="isViewMode()">
+
+            <div class="grid grid-cols-2 gap-4">
+                <!-- Case Number -->
+                <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                    <mat-label>Case Number</mat-label>
+                    <input matInput formControlName="case_number" readonly class="text-zinc-500 font-bold bg-zinc-50">
+                </mat-form-field>
+
+                <!-- Incident Date Picker -->
+                <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                    <mat-label>Incident Date</mat-label>
+                    <input matInput [matDatepicker]="datePicker" formControlName="incident_date"
+                        placeholder="Choose Date">
+                    <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
+                    <mat-datepicker #datePicker></mat-datepicker>
+                </mat-form-field>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <!-- Complainant -->
+                <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                    <mat-label>Complainant Name</mat-label>
+                    <input matInput formControlName="complainant_name">
+                </mat-form-field>
+
+                <!-- Respondent -->
+                <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                    <mat-label>Respondent Name</mat-label>
+                    <input matInput formControlName="respondent_name">
+                </mat-form-field>
+            </div>
+
+            <!-- Location -->
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full block">
+                <mat-label>Incident Location</mat-label>
+                <input matInput formControlName="incident_location">
+            </mat-form-field>
+
+            <!-- Description -->
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full block">
+                <mat-label>Complaint Description</mat-label>
+                <textarea matInput formControlName="complaint_description" rows="3"></textarea>
+            </mat-form-field>
+
+            <!-- Update fields (only visible when editing) -->
+            <ng-container *ngIf="blotterToEdit()">
+                <div class="grid grid-cols-2 gap-4 pt-4 border-t border-zinc-100">
+                    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                        <mat-label>Status</mat-label>
+                        <mat-select formControlName="status">
+                            <mat-option value="Active">Active</mat-option>
+                            <mat-option value="Settled">Settled</mat-option>
+                            <mat-option value="Unsettled">Unsettled</mat-option>
+                            <mat-option value="Elevated">Elevated (Police/Courts)</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+
+                <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full block">
+                    <mat-label>Resolution Details</mat-label>
+                    <textarea matInput formControlName="resolution_details" rows="2"
+                        placeholder="Write how it was resolved..."></textarea>
+                </mat-form-field>
+            </ng-container>
+
+            <!-- Modal Actions -->
+            <div class="flex justify-end gap-3 pt-6">
+                <!-- If View Mode -->
+                <ng-container *ngIf="isViewMode()">
+                    <button type="button" (click)="cancelForm()"
+                        class="px-5 py-2.5 rounded-xl font-bold text-sm text-zinc-600 hover:bg-zinc-100 transition-colors">
+                        Close
+                    </button>
+                    <button type="button" (click)="enableEditMode()"
+                        class="px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold text-sm shadow-sm transition-all flex items-center gap-2">
+                        <ng-icon name="heroPencil"></ng-icon> Edit Incident
+                    </button>
+                </ng-container>
+
+                <!-- If Edit / Create Mode -->
+                <ng-container *ngIf="!isViewMode()">
+                    <button type="button" (click)="cancelForm()"
+                        class="px-5 py-2.5 rounded-xl font-bold text-sm text-zinc-600 hover:bg-zinc-100 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" [disabled]="blotterForm.invalid || isSaving()"
+                        class="px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold text-sm shadow-sm transition-all disabled:opacity-50 flex items-center gap-2">
+                        <ng-icon *ngIf="isSaving()" name="heroArrowPath" class="animate-spin"></ng-icon>
+                        {{ isSaving() ? 'Saving...' : 'Save Incident' }}
+                    </button>
+                </ng-container>
+            </div>
+        </form>
+    </app-modal>
+</div>

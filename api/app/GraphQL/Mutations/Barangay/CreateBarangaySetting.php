@@ -15,6 +15,25 @@ final readonly class CreateBarangaySetting
         try {
             $input = $args['input'] ?? $args;
             
+            if (isset($input['base64_logo']) && !empty($input['base64_logo'])) {
+                // Decode the base64 string
+                $imageParts = explode(";base64,", $input['base64_logo']);
+                $imageTypeAux = explode("image/", $imageParts[0]);
+                $imageType = $imageTypeAux[1];
+                $imageBase64 = base64_decode($imageParts[1]);
+
+                // Generate unique filename
+                $fileName = 'logo_' . time() . '_' . \Illuminate\Support\Str::random(5) . '.' . $imageType;
+                $filePath = 'logos/' . $fileName;
+                \Illuminate\Support\Facades\Storage::disk('public')->put($filePath, $imageBase64);
+
+                // Save the path to the database
+                $input['logo_path'] = $filePath;
+            }
+            
+            // Remove base64_logo so it doesn't crash the database update
+            unset($input['base64_logo']);
+
             $setting = BarangaySetting::first();
             if ($setting) {
                 $setting->update($input);

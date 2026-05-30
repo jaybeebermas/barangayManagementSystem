@@ -1,0 +1,6 @@
+blotters(
+    case_number: String @where(operator: "like")
+    status: String @eq
+): [Blotter!]! @paginate(defaultCount: 10) @guard
+
+blotter(id: ID! @eq): Blotter @find @guard

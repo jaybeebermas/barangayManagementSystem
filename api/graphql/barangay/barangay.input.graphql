@@ -9,6 +9,7 @@ input CreateBarangaySettingInput {
     logo_path: String
     timezone: String
     date_format: String
+    base64_logo: String
 }
 
 input UpdateBarangaySettingInput {
@@ -22,4 +23,5 @@ input UpdateBarangaySettingInput {
     logo_path: String
     timezone: String
     date_format: String
+    base64_logo: String
 }
