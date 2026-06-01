@@ -1,0 +1,3 @@
+createBlotter(input: CreateBlotterInput! @spread): Blotter @create @guard
+updateBlotter(input: UpdateBlotterInput! @spread): Blotter @update @guard
+deleteBlotter(id: ID!): Blotter @delete @guard
