@@ -22,12 +22,10 @@ export const adminRoutes: Routes = [
 
             // DOCUMENT MODULE
             { path: 'barangay-clearance', loadComponent: () => import('./document-module/barangay-clearance/barangay-clearance.component').then(m => m.BarangayClearanceComponent) },
+            { path: 'blotter', loadComponent: () => import('./document-module/blotter/blotter.component').then(m => m.BlotterComponent) },
 
             // EVENTS MODULE
             { path: 'events', loadComponent: () => import('./events/events.component').then(m => m.EventsComponent) },
-
-            // BLOTTER MODULE
-            { path: 'blotter', loadComponent: () => import('./blotter/blotter.component').then(m => m.BlotterComponent) },
 
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
         ]
