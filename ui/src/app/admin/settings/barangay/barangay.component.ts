@@ -9,6 +9,11 @@ import { MatInputModule } from '@angular/material/input';
 import { Observable, startWith, map, of } from 'rxjs';
 import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 import { ModalComponent } from '../../../shared/components/ui/modal/modal.component';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { provideNativeDateAdapter } from '@angular/material/core';
+import { BarangayConfigService } from '../../../services/ui-config/barangay-config.service';
 
 @Component({
   selector: 'app-barangay',
@@ -19,9 +24,13 @@ import { ModalComponent } from '../../../shared/components/ui/modal/modal.compon
     ReactiveFormsModule,
     MatAutocompleteModule,
     MatInputModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatDatepickerModule,
     HasPermissionDirective,
     ModalComponent
   ],
+  providers: [provideNativeDateAdapter()],
   templateUrl: './barangay.component.html',
   styleUrl: './barangay.component.css',
 })
@@ -29,6 +38,7 @@ export class BarangayComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly gql = inject(GraphqlService);
   private readonly toastService = inject(ToastService);
+  private readonly configService = inject(BarangayConfigService);
 
   isLoading = signal(false);
   isSaving = signal(false);
@@ -38,6 +48,7 @@ export class BarangayComponent implements OnInit {
   isResetModalOpen = signal(false);
 
   settingsForm!: FormGroup;
+  base64Logo = signal<string | null>(null);
 
   regions = [
     { name: 'National Capital Region (NCR)', value: 'NCR' },
@@ -98,6 +109,17 @@ export class BarangayComponent implements OnInit {
       trigger.closePanel();
     } else {
       trigger.openPanel();
+    }
+  }
+
+  onLogoSelected(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.base64Logo.set(e.target.result);
+      };
+      reader.readAsDataURL(file);
     }
   }
 
@@ -162,6 +184,7 @@ export class BarangayComponent implements OnInit {
           timezone: response.barangaySetting.timezone || 'Asia/Manila',
           date_format: response.barangaySetting.date_format || 'MM/DD/YYYY',
         });
+        this.configService.updateLogo(response.barangaySetting.logo_path || null);
       } else {
         this.hasSettings.set(false);
         this.settingsForm.reset({
@@ -195,8 +218,11 @@ export class BarangayComponent implements OnInit {
         contact_number: this.settingsForm.value.contact_number || null,
         email: this.settingsForm.value.email || null,
         logo_path: this.settingsForm.value.logo_path || null,
+        base64_logo: this.base64Logo(),
         timezone: this.settingsForm.value.timezone,
-        date_format: this.settingsForm.value.date_format,
+        date_format: this.settingsForm.value.date_format instanceof Date 
+            ? this.settingsForm.value.date_format.toISOString().split('T')[0] 
+            : this.settingsForm.value.date_format,
       };
 
       if (this.hasSettings()) {

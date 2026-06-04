@@ -1,0 +1,17 @@
+type Blotter {
+    id: ID!
+    case_number: String!
+    complainant_name: String!
+    respondent_name: String!
+    incident_date: DateTime!
+    incident_location: String!
+    complaint_description: String!
+    status: String!
+    
+    event_id: Int
+    event: Event @belongsTo
+    
+    resolution_details: String
+    created_at: DateTime!
+    updated_at: DateTime!
+}
