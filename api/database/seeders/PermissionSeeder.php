@@ -39,9 +39,16 @@ class PermissionSeeder extends Seeder
                 []
             );
 
+            // Create Guest Role (no permissions)
+            $roleModelClass::query()->updateOrCreate(
+                ['name' => 'guest', 'guard_name' => $guardName],
+                []
+            );
+
             // Assign Permissions
             $superAdmin->syncPermissions($permissionsList);
             $admin->syncPermissions($permissionsList);
+            // Guest role intentionally has NO permissions
         }
 
         $permissionRegistrar = app()->bound('permission.registrar')

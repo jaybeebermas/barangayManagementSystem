@@ -1,0 +1,284 @@
+<!-- ======================================
+     LANDING PAGE — Barangay Connect
+     ====================================== -->
+<div class="landing-root">
+
+  <!-- ── NAVIGATION ── -->
+  <nav class="landing-nav" [class.scrolled]="isNavScrolled()">
+    <div class="nav-inner">
+      <!-- Logo / Brand -->
+      <div class="nav-brand">
+        <div class="brand-icon">
+          <ng-icon name="heroMapPin" class="h-5 w-5 text-white"></ng-icon>
+        </div>
+        <div>
+          <span class="brand-name">Barangay</span>
+          <span class="brand-sub">Connect</span>
+        </div>
+      </div>
+
+      <!-- Nav Links -->
+      <div class="nav-links">
+        <button class="nav-link" [class.active]="activeSection() === 'hero'"
+          (click)="scrollToSection('hero')">Home</button>
+        <button class="nav-link" [class.active]="activeSection() === 'services'"
+          (click)="scrollToSection('services')">Services</button>
+        <button class="nav-link" [class.active]="activeSection() === 'events'"
+          (click)="scrollToSection('events')">Events</button>
+      </div>
+
+      <!-- CTA -->
+      <button class="nav-cta" (click)="navigateToPortal()">
+        <ng-icon name="heroLockClosed" class="h-4 w-4"></ng-icon>
+        Portal Access
+      </button>
+    </div>
+  </nav>
+
+  <!-- ── HERO SECTION ── -->
+  <section id="hero" class="hero-section">
+    <!-- Particle canvas background -->
+    <canvas #heroCanvas class="hero-canvas"></canvas>
+
+    <!-- Gradient orbs -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="badge-dot"></span>
+        Official Barangay Management System
+      </div>
+
+      <h1 class="hero-title">
+        Your Community,<br>
+        <span class="hero-title-accent">Digitally Empowered</span>
+      </h1>
+
+      <p class="hero-subtitle">
+        A modern platform for barangay residents — access clearances, stay informed
+        about events, and connect with your local community services.
+      </p>
+
+      <div class="hero-actions">
+        <button class="btn-hero-primary" (click)="navigateToPortal()">
+          <ng-icon name="heroArrowRightCircle" class="h-5 w-5"></ng-icon>
+          Access Portal
+        </button>
+        <button class="btn-hero-ghost" (click)="scrollToSection('events')">
+          <ng-icon name="heroCalendarDays" class="h-5 w-5"></ng-icon>
+          View Events
+        </button>
+      </div>
+
+      <!-- Scroll indicator -->
+      <div class="scroll-indicator" (click)="scrollToSection('services')">
+        <div class="scroll-dot"></div>
+      </div>
+    </div>
+
+    <!-- Hero stats row -->
+    <div class="hero-stats">
+      <div class="stat-item">
+        <span class="stat-num">24/7</span>
+        <span class="stat-label">Portal Access</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-num">Fast</span>
+        <span class="stat-label">Document Processing</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-num">Secure</span>
+        <span class="stat-label">Data Management</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SERVICES SECTION ── -->
+  <section id="services" class="services-section">
+    <div class="section-inner">
+      <div class="section-header">
+        <p class="section-eyebrow">What We Offer</p>
+        <h2 class="section-title">Barangay Services</h2>
+        <p class="section-desc">
+          Everything your barangay needs in one unified digital platform.
+        </p>
+      </div>
+
+      <div class="services-grid">
+        @for (service of services; track service.title) {
+          <div class="service-card service-card--{{ service.color }}">
+            <div class="service-icon-wrap service-icon-wrap--{{ service.color }}">
+              <ng-icon [name]="service.icon" class="h-7 w-7"></ng-icon>
+            </div>
+            <h3 class="service-title">{{ service.title }}</h3>
+            <p class="service-desc">{{ service.description }}</p>
+            <div class="service-arrow">
+              <ng-icon name="heroArrowLongRight" class="h-5 w-5"></ng-icon>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ── EVENTS SECTION ── -->
+  <section id="events" class="events-section">
+    <div class="section-inner">
+      <div class="section-header">
+        <p class="section-eyebrow">Community Activities</p>
+        <h2 class="section-title">Upcoming Events</h2>
+        <p class="section-desc">
+          Stay in the loop with what's happening in your barangay.
+        </p>
+      </div>
+
+      <!-- Loading skeleton -->
+      @if (isLoading()) {
+        <div class="events-grid">
+          @for (s of [1,2,3,4,5,6]; track s) {
+            <div class="event-skeleton"></div>
+          }
+        </div>
+      }
+
+      <!-- Empty State -->
+      @if (!isLoading() && events().length === 0) {
+        <div class="events-empty">
+          <div class="empty-icon-wrap">
+            <ng-icon name="heroCalendarDays" class="h-10 w-10 text-teal-400"></ng-icon>
+          </div>
+          <h3 class="empty-title">No Upcoming Events</h3>
+          <p class="empty-desc">Check back soon for new barangay events and activities.</p>
+        </div>
+      }
+
+      <!-- Event Cards -->
+      @if (!isLoading() && events().length > 0) {
+        <div class="events-grid">
+          @for (event of events(); track event.id; let i = $index) {
+            <article class="event-card {{ getEventCardAccent(i) }}" (click)="openEventModal(event)">
+              <!-- Top date strip -->
+              <div class="event-date-strip">
+                <ng-icon name="heroCalendarDays" class="h-4 w-4 opacity-70"></ng-icon>
+                <span>{{ formatEventDate(event.start_date) }}</span>
+              </div>
+
+              <!-- Status badge -->
+              <span class="event-status {{ getStatusClass(event.status) }}">
+                {{ getStatusLabel(event.status) }}
+              </span>
+
+              <!-- Content -->
+              <div class="event-body">
+                <h3 class="event-title">{{ event.title }}</h3>
+                <p class="event-desc">{{ event.description || 'No description provided.' }}</p>
+              </div>
+
+              <!-- Footer -->
+              <div class="event-footer">
+                @if (event.zone || event.location) {
+                  <div class="event-location">
+                    <ng-icon name="heroMapPin" class="h-3.5 w-3.5 flex-shrink-0"></ng-icon>
+                    <span>
+                      @if (event.zone) { {{ event.zone.zone_name }} }
+                      @if (event.zone && event.location) { • }
+                      @if (event.location) { {{ event.location }} }
+                    </span>
+                  </div>
+                }
+                <div class="event-more">
+                  Details
+                  <ng-icon name="heroArrowLongRight" class="h-4 w-4"></ng-icon>
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer class="landing-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="footer-brand-row">
+          <div class="brand-icon brand-icon--sm">
+            <ng-icon name="heroMapPin" class="h-4 w-4 text-white"></ng-icon>
+          </div>
+          <span class="footer-brand-name">Barangay Connect</span>
+        </div>
+        <p class="footer-tagline">Serving our community with transparency and efficiency.</p>
+      </div>
+
+      <div class="footer-links">
+        <button class="footer-link" (click)="scrollToSection('hero')">Home</button>
+        <button class="footer-link" (click)="scrollToSection('services')">Services</button>
+        <button class="footer-link" (click)="scrollToSection('events')">Events</button>
+        <button class="footer-link" (click)="navigateToPortal()">Portal Login</button>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>© {{ currentYear }} Barangay Connect. All rights reserved.</span>
+    </div>
+  </footer>
+
+</div>
+
+<!-- ── EVENT DETAILS MODAL ── -->
+@if (isModalOpen() && selectedEvent()) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-panel" (click)="$event.stopPropagation()">
+
+      <!-- Close button -->
+      <button class="modal-close" (click)="closeModal()">
+        <ng-icon name="heroXMark" class="h-5 w-5"></ng-icon>
+      </button>
+
+      <!-- Modal header -->
+      <div class="modal-header">
+        <span class="modal-status {{ getStatusClass(selectedEvent().status) }}">
+          {{ getStatusLabel(selectedEvent().status) }}
+        </span>
+        <h2 class="modal-title">{{ selectedEvent().title }}</h2>
+      </div>
+
+      <!-- Meta row -->
+      <div class="modal-meta">
+        <div class="modal-meta-item">
+          <ng-icon name="heroCalendarDays" class="h-4 w-4 text-teal-400"></ng-icon>
+          <span>{{ formatEventDate(selectedEvent().start_date) }}</span>
+        </div>
+        @if (selectedEvent().zone || selectedEvent().location) {
+          <div class="modal-meta-item">
+            <ng-icon name="heroMapPin" class="h-4 w-4 text-teal-400"></ng-icon>
+            <span>
+              @if (selectedEvent().zone) { {{ selectedEvent().zone.zone_name }} }
+              @if (selectedEvent().zone && selectedEvent().location) { · }
+              @if (selectedEvent().location) { {{ selectedEvent().location }} }
+            </span>
+          </div>
+        }
+      </div>
+
+      <!-- Description -->
+      <div class="modal-body">
+        <p>{{ selectedEvent().description || 'No additional details provided for this event.' }}</p>
+      </div>
+
+      <!-- Actions -->
+      <div class="modal-footer">
+        <button class="modal-btn-secondary" (click)="closeModal()">Close</button>
+        <button class="modal-btn-primary" (click)="navigateToPortal()">
+          <ng-icon name="heroArrowRightCircle" class="h-4 w-4"></ng-icon>
+          Access Portal
+        </button>
+      </div>
+    </div>
+  </div>
+}

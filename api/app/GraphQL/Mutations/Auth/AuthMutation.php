@@ -120,9 +120,10 @@ class AuthMutation
                 'last_name' => $args['last_name'],
                 'email' => $args['email'],
                 'password' => Hash::make($args['password']),
+                'role' => 'guest',
             ]);
 
-            $user->assignRole('admin');
+            $user->assignRole('guest');
 
             Auth::guard('web')->login($user);
             $token = $user->createToken('auth_token')->plainTextToken;

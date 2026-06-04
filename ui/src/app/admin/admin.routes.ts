@@ -23,12 +23,14 @@ export const adminRoutes: Routes = [
             // DOCUMENT MODULE
             { path: 'barangay-clearance', loadComponent: () => import('./document-module/barangay-clearance/barangay-clearance.component').then(m => m.BarangayClearanceComponent) },
 
-            { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
+            { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
             // EVENTS MODULE
             { path: 'events', loadComponent: () => import('./events/events.component').then(m => m.EventsComponent) },
 
-            { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+            // BLOTTER MODULE
+            { path: 'blotter', loadComponent: () => import('./blotter/blotter.component').then(m => m.BlotterComponent) },
 
+            { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
         ]
     }
 ];

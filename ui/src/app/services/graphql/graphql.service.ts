@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { environment } from '../../../environments/environment';
 
 type GraphqlResponse<T> = {
   data?: T;
@@ -9,7 +10,7 @@ type GraphqlResponse<T> = {
   providedIn: 'root'
 })
 export class GraphqlService {
-  private readonly endpointBaseUrl = '/api/graphql';
+  private readonly endpointBaseUrl = environment.graphqlUrl;
   private readonly documentBaseUrl = '/gql';
   private readonly queryCache = new Map<string, string>();
   private readonly requestTimeoutMs = 10000;

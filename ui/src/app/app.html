@@ -1,10 +1,23 @@
 <ng-container *ngIf="authService.isAuthenticated() && (isSubRoute('/admin') || isSubRoute('/settings')); else authFlow">
-  <app-admin-layout 
-    [sidebarOpen]="sidebarOpen()" 
-    [navItems]="navigation()"
-    (toggleSidebar)="toggleSidebar()">
-    <router-outlet></router-outlet>
-  </app-admin-layout>
+  <!-- Guest users: empty sidebar + forced dashboard (pending approval screen) -->
+  <ng-container *ngIf="isGuestUser(); else normalAdmin">
+    <app-admin-layout 
+      [sidebarOpen]="sidebarOpen()" 
+      [navItems]="[]"
+      (toggleSidebar)="toggleSidebar()">
+      <app-dashboard></app-dashboard>
+    </app-admin-layout>
+  </ng-container>
+
+  <!-- Normal admin users: full sidebar + router outlet -->
+  <ng-template #normalAdmin>
+    <app-admin-layout 
+      [sidebarOpen]="sidebarOpen()" 
+      [navItems]="navigation()"
+      (toggleSidebar)="toggleSidebar()">
+      <router-outlet></router-outlet>
+    </app-admin-layout>
+  </ng-template>
 </ng-container>
 
 <ng-template #authFlow>

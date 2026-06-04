@@ -1,0 +1,17 @@
+query GetPublicEvents($first: Int!) {
+  publicEvents(first: $first) {
+    data {
+      id
+      title
+      description
+      start_date
+      end_date
+      location
+      zone {
+        id
+        zone_name
+      }
+      status
+    }
+  }
+}

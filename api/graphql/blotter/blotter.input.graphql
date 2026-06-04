@@ -1,0 +1,20 @@
+input CreateBlotterInput {
+    case_number: String!
+    complainant_name: String!
+    respondent_name: String!
+    incident_date: DateTime!
+    incident_location: String!
+    complaint_description: String!
+}
+
+input UpdateBlotterInput {
+    id: ID!
+    complainant_name: String
+    respondent_name: String
+    incident_date: DateTime
+    incident_location: String
+    complaint_description: String
+    status: String
+    event_id: Int
+    resolution_details: String
+}
