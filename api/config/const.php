@@ -40,5 +40,36 @@ return [
 
         // SETTINGS MODULE
         'settings.view',
+
+        // RESIDENCE MODULE
+        'residence.view',
+        'residence.create',
+        'residence.edit',
+        'residence.delete',
+
+        // CLEARANCE MODULE
+        'clearance.view',
+        'clearance.create',
+        'clearance.edit',
+        'clearance.delete',
+
+        // ZONE MODULE
+        'zone.view',
+        'zone.create',
+        'zone.edit',
+        'zone.delete',
+
+        // BARANGAY INFORMATION MODULE
+        'barangay_information.view',
+        'barangay_information.create',
+        'barangay_information.edit',
+        'barangay_information.delete',
+
+        // EVENTS MODULE
+        'events.view',
+        'events.create',
+        'events.edit',
+        'events.delete',
+
     ],
 ];

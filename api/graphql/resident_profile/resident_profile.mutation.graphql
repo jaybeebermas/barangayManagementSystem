@@ -1,0 +1,3 @@
+createResidentProfile(input: CreateResidentProfileInput!): ResidentProfile! @guard @can(ability: "residence.create") @field(resolver: "App\\GraphQL\\Mutations\\Residence\\ResidentProfile\\CreateResidentProfile")
+updateResidentProfile(input: UpdateResidentProfileInput!): ResidentProfile! @guard @can(ability: "residence.edit") @field(resolver: "App\\GraphQL\\Mutations\\Residence\\ResidentProfile\\UpdateResidentProfile")
+deleteResidentProfile(id: ID!): ResidentProfile! @guard @can(ability: "residence.delete") @field(resolver: "App\\GraphQL\\Mutations\\Residence\\ResidentProfile\\DeleteResidentProfile")
