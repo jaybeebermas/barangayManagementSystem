@@ -1,15 +1,21 @@
 #!/bin/sh
 set -e
 
-# Run migrations
-echo "========================================================"
-echo "Starting Application Entrypoint..."
-echo "========================================================"
+# Clear caches and optimize
+echo "Clearing caches and optimizing..."
+php artisan optimize:clear || true
+php artisan lighthouse:clear-cache || true
 
-# Check database connectivity and run migrations
+# Check database connectivity, run migrations, and run seeders
 echo "Running database migrations..."
 if php artisan migrate --force; then
     echo "Database migrations executed successfully."
+    echo "Running database seeding..."
+    if php artisan db:seed --force; then
+        echo "Database seeding executed successfully."
+    else
+        echo "WARNING: Database seeding failed!"
+    fi
 else
     echo "========================================================"
     echo "WARNING: Database migrations failed!"
