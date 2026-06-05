@@ -19,9 +19,11 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => explode(',', env('ALLOWED_ORIGINS', 'http://localhost,http://localhost:4200,127.0.0.1')),
+    'allowed_origins' => explode(',', env('ALLOWED_ORIGINS', 'http://localhost,http://localhost:4200,127.0.0.1,https://brgy-connect.vercel.app')),
 
-    'allowed_origins_patterns' => [],
+    'allowed_origins_patterns' => [
+        '#^https://.*\.vercel\.app$#',
+    ],
 
     'allowed_headers' => ['*'],
 
