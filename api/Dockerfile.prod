@@ -31,6 +31,9 @@ WORKDIR /var/www/html
 # Copy project files
 COPY . .
 
+# Set environment variable to allow running artisan commands in Docker
+ENV IN_DOCKER=true
+
 # Install Composer dependencies
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN composer install --no-interaction --optimize-autoloader --no-dev
