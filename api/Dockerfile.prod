@@ -41,9 +41,13 @@ RUN composer install --no-interaction --optimize-autoloader --no-dev
 # Set permissions for Laravel storage and bootstrap cache
 RUN chown -R www-data:www-data storage bootstrap/cache
 
+# Make docker-entrypoint.sh executable
+RUN chmod +x docker-entrypoint.sh
+
 # Expose port 80
 EXPOSE 80
 
-# Run migrations and start Apache
-CMD ["sh", "-c", "php artisan migrate --force && apache2-foreground"]
+# Set entrypoint and default command
+ENTRYPOINT ["/var/www/html/docker-entrypoint.sh"]
+CMD ["apache2-foreground"]
 
