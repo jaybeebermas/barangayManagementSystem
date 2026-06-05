@@ -1,11 +1,6 @@
 #!/bin/sh
 set -e
 
-# Clear caches and optimize
-echo "Clearing caches and optimizing..."
-php artisan optimize:clear || true
-php artisan lighthouse:clear-cache || true
-
 # Check database connectivity, run migrations, and run seeders
 echo "Running database migrations..."
 if php artisan migrate --force; then
@@ -25,6 +20,11 @@ else
     echo "allowing you to inspect runtime logs and configuration."
     echo "========================================================"
 fi
+
+# Clear caches and optimize
+echo "Clearing caches and optimizing..."
+php artisan optimize:clear || true
+php artisan lighthouse:clear-cache || true
 
 # Start the main container process (Apache)
 echo "Starting Apache web server..."
