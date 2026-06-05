@@ -11,6 +11,11 @@ final readonly class GetEvent
         return Event::query();
     }
 
+    public function publicEvents(null $_, array $args)
+    {
+        return Event::where('status', 'PUBLISHED');
+    }
+
     public function event(null $_, array $args)
     {
         return Event::find($args['id']);

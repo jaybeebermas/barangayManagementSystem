@@ -1,6 +1,6 @@
 import { Component, signal, ViewChild, ElementRef, AfterViewInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../services/auth/auth.service';
 import { NgIconComponent } from '@ng-icons/core';
@@ -91,9 +91,12 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
   };
 
   loginForm: FormGroup;
+  registerForm: FormGroup;
   isLoading = signal(false);
   errorMessage = signal('');
+  successMessage = signal('');
   showPassword = signal(false);
+  isSignUp = signal(false);
 
   private googlePalette = ['#4285F4', '#EA4335', '#FBBC05', '#34A853', '#A142F4', '#F482B1'];
 
@@ -111,6 +114,30 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
       password: ['', [Validators.required, Validators.minLength(8)]],
       rememberMe: [false]
     });
+
+    this.registerForm = this.fb.group({
+      username: ['', [Validators.required]],
+      first_name: ['', [Validators.required]],
+      last_name: ['', [Validators.required]],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(8)]],
+      confirm_password: ['', [Validators.required]]
+    }, { validators: this.passwordMatchValidator });
+
+    // Keep confirm_password in sync when password changes
+    this.registerForm.get('password')?.valueChanges.subscribe(() => {
+      this.registerForm.get('confirm_password')?.updateValueAndValidity();
+    });
+  }
+
+  passwordMatchValidator(group: AbstractControl): ValidationErrors | null {
+    const password = group.get('password')?.value;
+    const confirm = group.get('confirm_password')?.value;
+    if (password && confirm && password !== confirm) {
+      group.get('confirm_password')?.setErrors({ passwordMismatch: true });
+      return { passwordMismatch: true };
+    }
+    return null;
   }
 
   ngAfterViewInit() {
@@ -170,6 +197,15 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
     this.showPassword.update(v => !v);
   }
 
+  toggleMode(): void {
+    this.isSignUp.update(v => !v);
+    this.errorMessage.set('');
+    this.successMessage.set('');
+    this.loginForm.reset();
+    this.registerForm.reset();
+    this.showPassword.set(false);
+  }
+
   onSubmit(): void {
     if (this.loginForm.invalid) {
       return;
@@ -192,6 +228,34 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
       },
       error: (err) => {
         this.errorMessage.set(err.message || 'An error occurred during login.');
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+  onRegisterSubmit(): void {
+    if (this.registerForm.invalid) {
+      return;
+    }
+
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+    this.successMessage.set('');
+
+    const { username, first_name, last_name, email, password } = this.registerForm.value;
+
+    this.authService.register({ username, first_name, last_name, email, password }).subscribe({
+      next: (response) => {
+        if (response.data?.register?.status === 'SUCCESS') {
+          const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/admin/dashboard';
+          this.router.navigateByUrl(returnUrl);
+        } else {
+          this.errorMessage.set(response.data?.register?.message || 'Registration failed.');
+        }
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        this.errorMessage.set(err.message || 'An error occurred during registration.');
         this.isLoading.set(false);
       }
     });

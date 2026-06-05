@@ -24,6 +24,7 @@ export const adminRoutes: Routes = [
             { path: 'barangay-clearance', loadComponent: () => import('./document-module/barangay-clearance/barangay-clearance.component').then(m => m.BarangayClearanceComponent) },
             { path: 'blotter', loadComponent: () => import('./document-module/blotter/blotter.component').then(m => m.BlotterComponent) },
 
+            { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
             // EVENTS MODULE
             { path: 'events', loadComponent: () => import('./events/events.component').then(m => m.EventsComponent) },
 
