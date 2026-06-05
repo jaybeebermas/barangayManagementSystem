@@ -7,15 +7,17 @@ RUN apt-get update && apt-get install -y \
     libfreetype6-dev \
     libzip-dev \
     libxml2-dev \
+    libpq-dev \
     zip \
     unzip \
     git \
     curl \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo_mysql gd zip bcmath opcache xml dom
+    && docker-php-ext-install pdo_mysql pdo_pgsql pgsql gd zip bcmath opcache xml dom
 
 # Enable Apache Mod Rewrite
 RUN a2enmod rewrite
