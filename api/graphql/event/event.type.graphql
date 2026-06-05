@@ -1,0 +1,13 @@
+type Event {
+    id: ID!
+    title: String!
+    description: String
+    start_date: DateTime!
+    end_date: DateTime!
+    location: String
+    zone_id: ID
+    zone: Zone @belongsTo
+    status: String!
+    created_at: DateTime!
+    updated_at: DateTime!
+}

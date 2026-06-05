@@ -1,0 +1,11 @@
+mutation UpdateZone($input: UpdateZoneInput!) {
+  updateZone(input: $input) {
+    id
+    zone_code
+    zone_name
+    leader
+    status
+    created_at
+    updated_at
+  }
+}

@@ -7,3 +7,6 @@ export * from './ui-config/ui-config.service';
 export * from './toast/toast.service';
 export * from './modal/modal.service';
 export * from './role/role.service';
+export * from './zone/zone.service';
+export * from './resident-profile/resident-profile.service';
+export * from './barangay-clearance/barangay-clearance.service';

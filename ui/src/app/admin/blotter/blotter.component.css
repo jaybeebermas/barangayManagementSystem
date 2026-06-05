@@ -1,0 +1,23 @@
+/* Make disabled fields readable in View Mode */
+:host ::ng-deep .view-mode .mdc-text-field--disabled .mdc-text-field__input, 
+:host ::ng-deep .view-mode .mat-mdc-select-disabled .mat-mdc-select-value-text {
+  color: #18181b !important; 
+  -webkit-text-fill-color: #18181b !important;
+  opacity: 1 !important;
+  font-weight: 500;
+}
+
+/* Keep labels legible */
+:host ::ng-deep .view-mode .mat-mdc-form-field-disabled .mdc-floating-label {
+  color: #52525b !important; 
+}
+
+/* Hide the dropdown arrow when disabled to make it look like a plain text field */
+:host ::ng-deep .view-mode .mat-mdc-select-disabled .mat-mdc-select-arrow-wrapper {
+  display: none !important;
+}
+
+/* Hide the calendar icon when disabled */
+:host ::ng-deep .view-mode .mat-datepicker-toggle {
+  display: none !important;
+}

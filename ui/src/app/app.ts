@@ -6,6 +6,7 @@ import { NgIconComponent } from '@ng-icons/core';
 import { NavigationItem } from './shared/models';
 import { AdminLayoutComponent } from './shared/components/layout/admin-layout/admin-layout.component';
 import { ModalComponent } from './shared/components/ui/modal/modal.component';
+import { DashboardComponent } from './admin/dashboard/dashboard.component';
 
 type NavNode = Omit<NavigationItem, 'children'> & {
   children: NavNode[];
@@ -15,7 +16,7 @@ type NavNode = Omit<NavigationItem, 'children'> & {
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, AdminLayoutComponent, NgIconComponent, ModalComponent],
+  imports: [CommonModule, RouterOutlet, AdminLayoutComponent, NgIconComponent, ModalComponent, DashboardComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
@@ -36,6 +37,10 @@ export class App implements OnInit {
 
   isSubRoute(path: string): boolean {
     return this.router.url.startsWith(path);
+  }
+
+  isGuestUser(): boolean {
+    return this.authService.currentUser()?.role === 'guest';
   }
 
   constructor() {

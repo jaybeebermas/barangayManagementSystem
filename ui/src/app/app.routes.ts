@@ -5,6 +5,10 @@ import { settingsRoutes } from './admin/settings/settings.routes';
 import { authGuard } from './shared/guards/auth.guard';
 
 export const routes: Routes = [
+  {
+    path: 'landing',
+    loadComponent: () => import('./features/landing/landing.component').then(m => m.LandingComponent)
+  },
   { path: 'login', component: LoginComponent },
   {
     path: 'admin',
@@ -16,6 +20,6 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: settingsRoutes
   },
-  { path: '', redirectTo: 'admin', pathMatch: 'full' },
-  { path: '**', redirectTo: 'admin' }
+  { path: '', redirectTo: 'landing', pathMatch: 'full' },
+  { path: '**', redirectTo: 'landing' }
 ];

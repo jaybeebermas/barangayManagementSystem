@@ -1,0 +1,2 @@
+residentProfiles: [ResidentProfile!]! @guard @can(ability: "residence.view") @field(resolver: "App\\GraphQL\\Queries\\Residence\\ResidentProfile\\GetResidentProfile@residentProfiles")
+residentProfile(id: ID! @eq): ResidentProfile @guard @can(ability: "residence.view") @field(resolver: "App\\GraphQL\\Queries\\Residence\\ResidentProfile\\GetResidentProfile@residentProfile")

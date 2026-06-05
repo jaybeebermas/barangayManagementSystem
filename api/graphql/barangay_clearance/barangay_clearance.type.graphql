@@ -1,0 +1,14 @@
+type BarangayClearance {
+    id: ID!
+    clearance_number: String!
+    resident_id: ID!
+    resident: ResidentProfile @belongsTo
+    issued_by: ID!
+    issuer: User @belongsTo(relation: "issuer")
+    purpose: String!
+    issued_on: String!
+    valid_until: String!
+    status: String!
+    created_at: DateTime!
+    updated_at: DateTime!
+}

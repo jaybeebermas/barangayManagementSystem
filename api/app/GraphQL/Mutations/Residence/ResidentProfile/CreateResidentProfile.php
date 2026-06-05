@@ -1,0 +1,39 @@
+<?php declare(strict_types=1);
+
+namespace App\GraphQL\Mutations\Residence\ResidentProfile;
+
+use App\Models\ResidentProfile;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Throwable;
+
+final readonly class CreateResidentProfile
+{
+    public function __invoke(null $_, array $args): ResidentProfile
+    {
+        DB::beginTransaction();
+
+        try {
+            $input = $args['input'] ?? $args;
+            $residentProfile = ResidentProfile::create($input);
+
+            DB::commit();
+            Log::info('CreateResidentProfile mutation succeeded.', [
+                'resident_profile_id' => $residentProfile->id,
+                'first_name' => $residentProfile->first_name,
+                'last_name' => $residentProfile->last_name,
+            ]);
+
+            return $residentProfile;
+        } catch (Throwable $e) {
+            DB::rollBack();
+
+            Log::error('CreateResidentProfile mutation failed.', [
+                'input' => $args['input'] ?? $args,
+                'error' => $e->getMessage(),
+            ]);
+
+            throw $e;
+        }
+    }
+}
