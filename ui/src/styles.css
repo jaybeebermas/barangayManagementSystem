@@ -90,7 +90,7 @@
   }
 
   .input-field {
-    @apply w-full px-4 py-2.5 bg-white border border-zinc-200 rounded-xl focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all placeholder:text-zinc-400;
+    @apply w-full px-4 py-2.5 bg-white border border-zinc-200 rounded-lg focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all placeholder:text-zinc-400;
     font-size: 1rem;
   }
 
@@ -157,4 +157,42 @@
 
 ::-webkit-scrollbar-thumb {
   @apply bg-zinc-200 rounded-full hover:bg-zinc-300 transition-colors;
+}
+
+/* ── MOBILE RESPONSIVE UTILITIES ── */
+
+/* Tables scroll horizontally on small screens */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Ensure admin content doesn't overflow on mobile */
+@media (max-width: 640px) {
+  .btn-primary,
+  .btn-outline {
+    font-size: 0.875rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* Reduce card padding on very small screens */
+  .card-mobile {
+    padding: 1rem !important;
+  }
+
+  /* Make horizontal overflows scrollable */
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+}
+
+/* Safe-area insets for notched mobile devices */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .mobile-safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
 }

@@ -1,12 +1,13 @@
 import { Component, OnInit, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { NavigationService, AuthService, UIConfigService, ToastService, ModalService } from './services';
 import { NgIconComponent } from '@ng-icons/core';
 import { NavigationItem } from './shared/models';
 import { AdminLayoutComponent } from './shared/components/layout/admin-layout/admin-layout.component';
 import { ModalComponent } from './shared/components/ui/modal/modal.component';
 import { DashboardComponent } from './admin/dashboard/dashboard.component';
+import { filter } from 'rxjs';
 
 type NavNode = Omit<NavigationItem, 'children'> & {
   children: NavNode[];
@@ -48,7 +49,19 @@ export class App implements OnInit {
       this.checkScreenSize();
       window.addEventListener('resize', () => this.checkScreenSize());
     }
-    
+
+    // Set document title based on route
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe((event: any) => {
+      const url: string = event.urlAfterRedirects || event.url || '';
+      if (url.startsWith('/admin') || url.startsWith('/settings')) {
+        document.title = 'Brgy-Connect Admin';
+      } else if (url === '/' || url.startsWith('/landing')) {
+        document.title = 'Brgy-Connect';
+      }
+    });
+
     effect(() => {
       const isAuth = this.authService.isAuthenticated();
       this.loadNavigation();

@@ -10,7 +10,6 @@ import {
   AfterViewInit,
 } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { Router } from '@angular/router';
 import { NgIconComponent } from '@ng-icons/core';
 import { GraphqlService } from '../../services/graphql/graphql.service';
 
@@ -26,7 +25,6 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('heroCanvas') canvasRef!: ElementRef<HTMLCanvasElement>;
 
   private readonly gql = inject(GraphqlService);
-  private readonly router = inject(Router);
 
   events = signal<any[]>([]);
   isLoading = signal(true);
@@ -128,9 +126,6 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
     document.body.style.overflow = '';
   }
 
-  navigateToPortal(): void {
-    this.router.navigate(['/login']);
-  }
 
   scrollToSection(id: string): void {
     const el = document.getElementById(id);
