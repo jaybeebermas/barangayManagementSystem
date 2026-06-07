@@ -27,11 +27,6 @@
           (click)="scrollToSection('events')">Events</button>
       </div>
 
-      <!-- CTA -->
-      <button class="nav-cta" (click)="navigateToPortal()">
-        <ng-icon name="heroLockClosed" class="h-4 w-4"></ng-icon>
-        Portal Access
-      </button>
     </div>
   </nav>
 
@@ -62,11 +57,7 @@
       </p>
 
       <div class="hero-actions">
-        <button class="btn-hero-primary" (click)="navigateToPortal()">
-          <ng-icon name="heroArrowRightCircle" class="h-5 w-5"></ng-icon>
-          Access Portal
-        </button>
-        <button class="btn-hero-ghost" (click)="scrollToSection('events')">
+        <button class="btn-hero-primary" (click)="scrollToSection('events')">
           <ng-icon name="heroCalendarDays" class="h-5 w-5"></ng-icon>
           View Events
         </button>
@@ -82,7 +73,7 @@
     <div class="hero-stats">
       <div class="stat-item">
         <span class="stat-num">24/7</span>
-        <span class="stat-label">Portal Access</span>
+        <span class="stat-label">Service Updates</span>
       </div>
       <div class="stat-divider"></div>
       <div class="stat-item">
@@ -219,7 +210,6 @@
         <button class="footer-link" (click)="scrollToSection('hero')">Home</button>
         <button class="footer-link" (click)="scrollToSection('services')">Services</button>
         <button class="footer-link" (click)="scrollToSection('events')">Events</button>
-        <button class="footer-link" (click)="navigateToPortal()">Portal Login</button>
       </div>
     </div>
 
@@ -273,11 +263,7 @@
 
       <!-- Actions -->
       <div class="modal-footer">
-        <button class="modal-btn-secondary" (click)="closeModal()">Close</button>
-        <button class="modal-btn-primary" (click)="navigateToPortal()">
-          <ng-icon name="heroArrowRightCircle" class="h-4 w-4"></ng-icon>
-          Access Portal
-        </button>
+        <button class="modal-btn-primary" (click)="closeModal()">Close</button>
       </div>
     </div>
   </div>

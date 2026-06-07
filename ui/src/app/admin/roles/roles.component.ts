@@ -27,7 +27,8 @@ import { ConfirmDeleteComponent } from '../../shared/components/ui/confirm-delet
     HasPermissionDirective,
     ConfirmDeleteComponent
   ],
-  templateUrl: './roles.component.html'
+  templateUrl: './roles.component.html',
+  styleUrl: './roles.component.css'
 })
 export class RolesComponent implements OnInit {
   @ViewChild('roleModal') roleModalTemplate!: TemplateRef<any>;
@@ -52,6 +53,7 @@ export class RolesComponent implements OnInit {
   });
   selectedRole = signal<Role | null>(null);
   isLoading = signal(false);
+  mobileView: 'list' | 'detail' = 'list';
 
   availablePermissions = signal<string[]>([]);
   basePermissions = signal<string[]>([]);

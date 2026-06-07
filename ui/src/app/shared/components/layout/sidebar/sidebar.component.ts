@@ -27,12 +27,12 @@ type NavNode = Omit<NavigationItem, 'children'> & {
       <!-- Brand Area -->
       <div class="px-6 py-8">
         <div class="flex items-center gap-3">
-          <div class="h-10 w-10 rounded-2xl flex items-center justify-center overflow-hidden transition-all shadow-xl"
+          <div class="h-14 w-14 rounded-2xl flex items-center justify-center overflow-hidden transition-all shadow-xl"
                [ngClass]="configService.logoUrl() ? 'bg-transparent' : 'bg-gradient-to-br from-primary-600 to-primary-500 shadow-primary-600/20'">
              <!-- Uploaded Logo -->
              <img *ngIf="configService.logoUrl()" [src]="configService.logoUrl()" class="h-full w-full object-cover">
-             <!-- Default Icon -->
-             <ng-icon *ngIf="!configService.logoUrl()" name="heroBuildingLibrary" class="h-6 w-6 text-white"></ng-icon>
+             <!-- Default Logo -->
+             <img *ngIf="!configService.logoUrl()" src="/brgy-connect.png" alt="Brgy-Connect logo" class="h-full w-full object-cover">
           </div>
           <div class="transition-all duration-300" [class.opacity-0]="!isOpen" [class.translate-x-4]="!isOpen">
             <h2 class="text-xl font-black text-zinc-900 tracking-tight leading-none">Brgy<span class="text-primary-600">Sync</span></h2>
@@ -137,6 +137,7 @@ type NavNode = Omit<NavigationItem, 'children'> & {
 })
 export class SidebarComponent {
   @Input() isOpen = true;
+  @Output() closeSidebar = new EventEmitter<void>();
 
   public readonly configService = inject(BarangayConfigService);
 
@@ -168,11 +169,15 @@ export class SidebarComponent {
     // We defer the extraction slightly to ensure the router config is fully available
     setTimeout(() => this.extractValidRoutes(), 0);
 
-    // Listen to router navigation end events to automatically expand active section and collapse others
+    // Listen to router navigation end events
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe(() => {
       this.autoExpandActiveSection();
+      // Auto-close sidebar on mobile after navigating
+      if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+        this.closeSidebar.emit();
+      }
     });
   }
 
