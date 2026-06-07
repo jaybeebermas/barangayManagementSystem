@@ -1,0 +1,159 @@
+/* Roles Component — Mobile Responsive Layout */
+
+/* Full-height container */
+.roles-root {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 4rem);
+  margin: -1rem -1rem -1rem -1rem;
+  overflow: hidden;
+  background: #f4f4f5;
+}
+
+/* The 2-panel flex layout */
+.roles-layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Left sidebar (role list) */
+.roles-sidebar {
+  width: 20rem;
+  background: #fff;
+  border-right: 1px solid rgba(228, 228, 231, 0.6);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.roles-sidebar-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #f4f4f5;
+  background: rgba(255,255,255,0.5);
+  backdrop-filter: blur(4px);
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Right detail panel */
+.roles-detail {
+  flex: 1;
+  height: 100%;
+  overflow-y: auto;
+  padding: 1.5rem 2rem;
+}
+
+/* Mobile back button (hidden on desktop) */
+.roles-back-btn {
+  display: none;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding: 0.4rem 0.75rem 0.4rem 0.5rem;
+  background: none;
+  border: 1px solid #e4e4e7;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #52525b;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.roles-back-btn:hover {
+  background: #f4f4f5;
+  color: #18181b;
+}
+
+/* Mobile tab bar (hidden on desktop) */
+.roles-mobile-bar {
+  display: none;
+  background: #fff;
+  border-bottom: 1px solid #e4e4e7;
+  padding: 0.5rem 1rem;
+  gap: 0.5rem;
+}
+
+.roles-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border: 1px solid #e4e4e7;
+  border-radius: 10px;
+  background: transparent;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #71717a;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.roles-tab.active {
+  background: var(--color-primary-50, #f0fdfa);
+  border-color: var(--color-primary-200, #99f6e4);
+  color: var(--color-primary-700, #0f766e);
+}
+.roles-tab:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .roles-root {
+    margin: -1rem;
+    height: calc(100vh - 4rem);
+  }
+
+  .roles-mobile-bar {
+    display: flex;
+  }
+
+  .roles-layout {
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* On mobile, both panels take full width but only the active one is shown */
+  .roles-sidebar {
+    width: 100%;
+    height: 100%;
+    border-right: none;
+    border-bottom: none;
+  }
+
+  .roles-detail {
+    padding: 1rem;
+    width: 100%;
+    height: 100%;
+  }
+
+  .roles-back-btn {
+    display: inline-flex;
+  }
+
+  /* Hide inactive panel on mobile */
+  .mobile-hidden {
+    display: none !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .roles-mobile-bar { display: none !important; }
+  .roles-back-btn   { display: none !important; }
+  .roles-sidebar    { display: flex !important; }
+  .roles-detail     { display: block !important; }
+  .mobile-hidden    { display: flex !important; }
+}
+
+@media (max-width: 1024px) and (min-width: 769px) {
+  .roles-sidebar { width: 16rem; }
+  .roles-detail  { padding: 1.25rem; }
+}

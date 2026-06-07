@@ -54,6 +54,7 @@
         </div>
 
         <div class="flex-1 flex flex-col min-h-0">
+          <!-- Desktop Table View -->
           <div class="hidden md:block overflow-x-auto flex-1">
             <table class="w-full text-left border-collapse">
               <thead>
@@ -132,6 +133,62 @@
             </table>
           </div>
 
+          <!-- Mobile Cards View -->
+          <div class="block md:hidden flex-1 overflow-y-auto space-y-3 my-4">
+            <div *ngFor="let resident of paginatedResidents()" class="bg-white p-4 rounded-xl border border-zinc-200/60 shadow-sm flex flex-col gap-3">
+              <div class="flex justify-between items-start">
+                <div>
+                  <span class="block text-sm font-bold text-zinc-900 leading-none">{{ resident.first_name }} {{ resident.last_name }}</span>
+                  <span *ngIf="resident.email" class="text-[11px] text-zinc-400 font-semibold tracking-tight block mt-1.5 break-all">{{ resident.email }}</span>
+                  <span class="text-xs font-medium text-zinc-500 block mt-1">Zone: {{ resident.zone?.zone_name || 'N/A' }}</span>
+                </div>
+                <span
+                  [class.bg-emerald-100]="resident.status.toLowerCase() === 'active'"
+                  [class.text-emerald-700]="resident.status.toLowerCase() === 'active'"
+                  [class.bg-zinc-200/50]="resident.status.toLowerCase() !== 'active'"
+                  [class.text-zinc-500]="resident.status.toLowerCase() !== 'active'"
+                  class="inline-flex px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest">
+                  {{ resident.status }}
+                </span>
+              </div>
+              <div class="flex items-center justify-end gap-2 pt-2 border-t border-zinc-100">
+                <button
+                  *hasPermission="'residence.view'"
+                  (click)="openViewModal(resident)"
+                  type="button"
+                  class="flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold text-primary-700 bg-primary-50 hover:bg-primary-100 transition-colors cursor-pointer"
+                >
+                  View
+                </button>
+                <button
+                  *hasPermission="'residence.edit'"
+                  (click)="openEditModal(resident)"
+                  type="button"
+                  class="flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold text-pink-700 bg-pink-50 hover:bg-pink-100 transition-colors cursor-pointer"
+                >
+                  Edit
+                </button>
+                <button
+                  *hasPermission="'residence.delete'"
+                  (click)="deleteResident(resident.id)"
+                  type="button"
+                  class="flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 transition-colors cursor-pointer"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+            <!-- Empty state for mobile -->
+            <div *ngIf="paginatedResidents().length === 0 && !isLoading()" class="py-8 text-center text-zinc-500 text-sm font-medium">
+              No resident records found.
+            </div>
+            <!-- Loading state for mobile -->
+            <div *ngIf="isLoading()" class="py-8 text-center flex justify-center items-center gap-2">
+              <div class="animate-spin h-5 w-5 border-2 border-primary-600 border-t-transparent rounded-full"></div>
+              <span class="text-xs font-bold text-zinc-400 uppercase tracking-widest">Loading Records...</span>
+            </div>
+          </div>
+
           <!-- Pagination Bar -->
           <app-table-pagination
             [currentPage]="currentPage()"
@@ -160,7 +217,7 @@
           <ng-icon name="heroUser" class="text-zinc-300 h-5 w-5"></ng-icon>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="space-y-1">
             <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">First Name</p>
             <p class="text-sm font-bold text-zinc-900">{{ residentForm.get('first_name')?.value }}</p>
@@ -171,7 +228,7 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="space-y-1">
             <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Birthdate</p>
             <p class="text-sm font-bold text-zinc-900">{{ formatDate(residentForm.get('birthdate')?.value) }}</p>
@@ -187,7 +244,7 @@
           <p class="text-sm font-bold text-zinc-900">{{ residentForm.get('email')?.value || 'N/A' }}</p>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="space-y-1">
             <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Zone</p>
             <p class="text-sm font-bold text-zinc-900">
@@ -227,7 +284,7 @@
           <ng-icon name="heroUser" class="text-zinc-300 h-4 w-4"></ng-icon>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
             <mat-label>First Name</mat-label>
             <input matInput formControlName="first_name" placeholder="e.g. Maria">
@@ -240,7 +297,7 @@
           </mat-form-field>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <!-- Birthdate Datepicker -->
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
             <mat-label>Birthdate</mat-label>
@@ -262,7 +319,7 @@
           <input matInput type="email" formControlName="email" placeholder="maria.santos@example.com">
         </mat-form-field>
 
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <!-- Zone Dropdown -->
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
             <mat-label>Zone</mat-label>
@@ -288,6 +345,7 @@
       </div>
     </div>
   </form>
+
 </ng-template>
 
 <!-- Confirm Delete Modal Template -->
