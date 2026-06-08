@@ -82,10 +82,13 @@ class Particle {
 })
 export class LoginComponent implements AfterViewInit, OnDestroy {
   @ViewChild('particleCanvas') canvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('googleButton') googleButtonRef!: ElementRef<HTMLDivElement>;
   
   private ctx!: CanvasRenderingContext2D;
   private particles: Particle[] = [];
   private animationId: number | null = null;
+  private resizeTimeout: number | null = null;
+  private googleInitialized = false;
   private mouse = {
     x: null as number | null,
     y: null as number | null,
@@ -152,12 +155,18 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
     if (this.animationId) {
       cancelAnimationFrame(this.animationId);
     }
+    if (this.resizeTimeout) {
+      window.clearTimeout(this.resizeTimeout);
+    }
   }
 
   @HostListener('window:resize')
   onResize() {
     this.initCanvas();
-    this.renderGoogleButton();
+    if (this.resizeTimeout) {
+      window.clearTimeout(this.resizeTimeout);
+    }
+    this.resizeTimeout = window.setTimeout(() => this.renderGoogleButton(), 150);
   }
 
   @HostListener('window:mousemove', ['$event'])
@@ -219,17 +228,21 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
   initGoogleAuth(): void {
     if (typeof google === 'undefined') return;
 
-    google.accounts.id.initialize({
-      client_id: '853052679545-ph5bitniubfnm4cq2pnmdogsnqn2qdre.apps.googleusercontent.com',
-      callback: (response: any) => this.handleGoogleCredentialResponse(response)
-    });
+    if (!this.googleInitialized) {
+      google.accounts.id.initialize({
+        client_id: '853052679545-ph5bitniubfnm4cq2pnmdogsnqn2qdre.apps.googleusercontent.com',
+        callback: (response: any) => this.handleGoogleCredentialResponse(response)
+      });
+      this.googleInitialized = true;
+    }
 
     this.renderGoogleButton();
   }
 
   renderGoogleButton(): void {
-    const btnContainer = document.getElementById('googleBtn');
+    const btnContainer = this.googleButtonRef?.nativeElement;
     if (btnContainer && typeof google !== 'undefined') {
+      btnContainer.replaceChildren();
       google.accounts.id.renderButton(
         btnContainer,
         {
@@ -238,7 +251,7 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
           shape: 'rectangular',
           text: 'continue_with',
           logo_alignment: 'left',
-          width: btnContainer.parentElement?.clientWidth || 382
+          width: Math.floor(btnContainer.parentElement?.clientWidth || btnContainer.clientWidth || 382)
         }
       );
     }
