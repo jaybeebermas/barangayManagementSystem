@@ -10,3 +10,4 @@ export * from './role/role.service';
 export * from './zone/zone.service';
 export * from './resident-profile/resident-profile.service';
 export * from './barangay-clearance/barangay-clearance.service';
+export * from './loading/loading.service';

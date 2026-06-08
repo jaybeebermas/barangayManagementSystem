@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } 
 import { GraphqlService } from '../../services/graphql/graphql.service';
 import { AuthService } from '../../services/auth/auth.service';
 import { ToastService } from '../../services/toast/toast.service';
+import { LoadingService } from '../../services/loading/loading.service';
 import { GET_USERS, CREATE_USER, UPDATE_USER, DELETE_USER } from '../../services/User/user.gql';
 import { User } from '../../services/User/user.types';
 import { CreateUserInput, UpdateUserInput } from '../../services/User/user.input';
@@ -212,6 +213,7 @@ export class UsersComponent implements OnInit {
   private readonly toastService = inject(ToastService);
   public readonly modalService = inject(ModalService);
   private readonly roleService = inject(RoleService);
+  private readonly loadingService = inject(LoadingService);
 
   users = signal<User[]>([]);
   searchTerm = signal('');
@@ -343,6 +345,7 @@ export class UsersComponent implements OnInit {
 
   async loadUsers(): Promise<void> {
     this.isLoading.set(true);
+    this.loadingService.show();
     try {
       const response = await this.gql.request<{ users: User[] }>(GET_USERS);
       console.log('Users loaded:', response);
@@ -351,6 +354,7 @@ export class UsersComponent implements OnInit {
       console.error('Failed to load users', error);
     } finally {
       this.isLoading.set(false);
+      this.loadingService.hide();
     }
   }
 
@@ -430,6 +434,7 @@ export class UsersComponent implements OnInit {
     if (this.userForm.invalid) return;
 
     this.modalService.setLoading(true);
+    this.loadingService.show();
     try {
       if (this.modalMode() === 'add') {
         const input: CreateUserInput = this.userForm.value;
@@ -449,6 +454,7 @@ export class UsersComponent implements OnInit {
       this.toastService.show('Operation failed. Please try again.', 'error');
     } finally {
       this.modalService.setLoading(false);
+      this.loadingService.hide();
     }
   }
 
