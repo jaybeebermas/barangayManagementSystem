@@ -1,0 +1,171 @@
+<div class="flex h-[calc(100vh-4rem)] -m-4 md:-m-6 lg:-m-8 overflow-hidden bg-zinc-100">
+    <div class="flex-1 overflow-y-auto p-6 md:p-8">
+        <app-user-management-layout>
+
+            <!-- Page Header: Only visible if user has view permission -->
+            <app-page-header title="Footer Configuration"
+                subtitle="Manage layouts, copyright text, contact info, and status of site footers."
+                actionLabel="New Footer" permission="footer.create" (actionClick)="openAddModal()">
+            </app-page-header>
+
+            <!-- Search Filter -->
+            <app-search-filters placeholder="Search by label or copyright..."
+                (search)="searchTerm.set($event); currentPage.set(1)">
+            </app-search-filters>
+
+            <!-- Records Table Container -->
+            <div
+                class="flex-1 flex flex-col min-h-0 bg-white rounded-2xl border border-zinc-200/60 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto flex-1">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-zinc-100/50 border-b border-zinc-200/60">
+                                <th class="px-8 py-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                                    Footer Name</th>
+                                <th class="px-8 py-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                                    Copyright Details</th>
+                                <th
+                                    class="px-8 py-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest text-center">
+                                    Status</th>
+                                <th
+                                    class="px-8 py-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest text-right">
+                                    Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-zinc-100/50" *ngIf="!isLoading() && filteredFooters().length > 0">
+                            <tr *ngFor="let footer of paginatedFooters()"
+                                class="hover:bg-zinc-100/30 transition-all group">
+                                <td class="px-8 py-4 font-bold text-zinc-900">{{ footer.name }}</td>
+                                <td class="px-8 py-4 text-xs font-medium text-zinc-500 max-w-xs truncate">{{
+                                    footer.copyright || 'None' }}</td>
+                                <td class="px-8 py-4 text-center">
+                                    <span
+                                        [ngClass]="footer.status ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-zinc-100 text-zinc-600'"
+                                        class="inline-flex px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest">
+                                        {{ footer.status ? 'Active' : 'Inactive' }}
+                                    </span>
+                                </td>
+                                <td class="px-8 py-4 text-right whitespace-nowrap">
+                                    <div class="flex items-center justify-end gap-1.5">
+                                        <button *hasPermission="'footer.view'" (click)="openViewModal(footer)"
+                                            class="flex items-center justify-center w-8 h-8 rounded-full text-primary-600 hover:bg-primary-50 transition-colors">
+                                            <ng-icon name="heroEye" class="text-[17px]"></ng-icon>
+                                        </button>
+                                        <button *hasPermission="'footer.edit'" (click)="openEditModal(footer)"
+                                            class="flex items-center justify-center w-8 h-8 rounded-full text-pink-600 hover:bg-pink-50 transition-colors">
+                                            <ng-icon name="heroPencil" class="text-[17px]"></ng-icon>
+                                        </button>
+                                        <button *hasPermission="'footer.delete'" (click)="deleteFooter(footer)"
+                                            class="flex items-center justify-center w-8 h-8 rounded-full text-red-500 hover:bg-red-50 transition-colors">
+                                            <ng-icon name="heroTrash" class="text-[17px]"></ng-icon>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Empty State -->
+                    <div *ngIf="filteredFooters().length === 0 && !isLoading()" class="p-20 text-center">
+                        <h3 class="text-zinc-900 text-xl font-black mb-2 tracking-tight">No records found</h3>
+                        <p class="text-zinc-500 font-medium max-w-sm mx-auto text-base">Create a footer to display
+                            metadata here.</p>
+                    </div>
+
+                    <!-- Loading Indicator -->
+                    <div *ngIf="isLoading()" class="flex flex-col items-center justify-center p-24 gap-4">
+                        <div
+                            class="animate-spin h-10 w-10 border-4 border-primary-600 border-t-transparent rounded-full">
+                        </div>
+                        <p class="text-xs font-bold text-zinc-400 uppercase tracking-widest">Loading Records...</p>
+                    </div>
+                </div>
+
+                <!-- Custom Manual Pagination Component (app-table-pagination) -->
+                <app-table-pagination [currentPage]="currentPage()" [totalItems]="filteredFooters().length"
+                    [pageSize]="pageSize()" (pageChange)="currentPage.set($event)"
+                    (pageSizeChange)="pageSize.set($event); currentPage.set(1)">
+                </app-table-pagination>
+
+            </div>
+        </app-user-management-layout>
+    </div>
+
+    <!-- View Side Drawer -->
+    <app-drawer [isOpen]="isDrawerOpen()" title="View Footer Details" (close)="closeModal()" class="shrink-0">
+        <div class="space-y-6" *ngIf="modalMode() === 'view'">
+            <div class="bg-white p-6 rounded-2xl border border-zinc-100 shadow-sm space-y-4">
+                <div class="space-y-1">
+                    <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Name</p>
+                    <p class="text-sm font-bold text-zinc-900">{{ footerForm.get('name')?.value }}</p>
+                </div>
+                <div class="space-y-1">
+                    <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Copyright</p>
+                    <p class="text-sm font-medium text-zinc-700">{{ footerForm.get('copyright')?.value || 'None' }}</p>
+                </div>
+                <div class="space-y-1">
+                    <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Contact Email</p>
+                    <p class="text-sm font-medium text-zinc-700">{{ footerForm.get('email')?.value || 'None' }}</p>
+                </div>
+                <div class="space-y-1">
+                    <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Contact Phone</p>
+                    <p class="text-sm font-medium text-zinc-700">{{ footerForm.get('phone')?.value || 'None' }}</p>
+                </div>
+                <div class="space-y-1">
+                    <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Address</p>
+                    <p class="text-sm font-medium text-zinc-700">{{ footerForm.get('address')?.value || 'None' }}</p>
+                </div>
+            </div>
+        </div>
+        <div drawerFooter class="flex justify-end items-center">
+            <button (click)="closeModal()"
+                class="px-8 py-2.5 bg-zinc-900 text-white rounded-xl font-bold hover:bg-zinc-800 transition-all">Close</button>
+        </div>
+    </app-drawer>
+</div>
+
+<!-- Modal Form Template for Add/Edit -->
+<ng-template #footerModal>
+    <form [formGroup]="footerForm" class="py-1 space-y-4">
+        <div class="space-y-3">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                <mat-label>Footer Configuration Name</mat-label>
+                <input matInput formControlName="name" placeholder="e.g. Standard Layout">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                <mat-label>Copyright Text</mat-label>
+                <input matInput formControlName="copyright" placeholder="e.g. © 2026 BrgySync. All rights reserved.">
+            </mat-form-field>
+
+            <div class="grid grid-cols-2 gap-3">
+                <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                    <mat-label>Email Address</mat-label>
+                    <input matInput type="email" formControlName="email" placeholder="contact@barangay.gov">
+                </mat-form-field>
+                <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                    <mat-label>Phone / Landline</mat-label>
+                    <input matInput formControlName="phone" placeholder="+63 912 345 6789">
+                </mat-form-field>
+            </div>
+
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                <mat-label>Office Address</mat-label>
+                <input matInput formControlName="address" placeholder="e.g. Zone 1 Barangay Hall">
+            </mat-form-field>
+
+            <div class="flex items-center gap-3 pt-2">
+                <input type="checkbox" formControlName="status" id="footer-status"
+                    class="h-4 w-4 text-primary-600 border-zinc-300 rounded focus:ring-primary-500">
+                <label for="footer-status"
+                    class="text-xs font-bold text-zinc-500 uppercase tracking-widest cursor-pointer select-none">Active
+                    Configuration</label>
+            </div>
+        </div>
+    </form>
+</ng-template>
+
+<!-- Delete Confirm Modal Template -->
+<ng-template #deleteModal>
+    <app-confirm-delete [name]="footerToDelete()?.name || ''"></app-confirm-delete>
+</ng-template>

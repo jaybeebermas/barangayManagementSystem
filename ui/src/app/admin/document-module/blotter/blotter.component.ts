@@ -2,9 +2,10 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgIconComponent } from '@ng-icons/core';
-import { GraphqlService } from '../../services/graphql/graphql.service';
-import { ToastService } from '../../services/toast/toast.service';
-import { ModalComponent } from '../../shared/components/ui/modal/modal.component';
+import { GraphqlService } from '../../../services/graphql/graphql.service';
+import { ToastService } from '../../../services/toast/toast.service';
+import { ModalComponent } from '../../../shared/components/ui/modal/modal.component';
+
 
 // Angular Material Imports
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -117,12 +118,12 @@ export class BlotterComponent implements OnInit {
             status: blotter.status,
             resolution_details: blotter.resolution_details
         });
-        
+
         this.isViewMode.set(true);
         this.blotterForm.disable(); // Lock all fields for view mode
         this.showForm.set(true);
     }
-    
+
     enableEditMode() {
         this.isViewMode.set(false);
         this.blotterForm.enable();
@@ -142,7 +143,7 @@ export class BlotterComponent implements OnInit {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
-        
+
         // You can include the actual time if needed, but for simplicity we append 00:00:00 
         // to match the default behavior of the date picker.
         return `${year}-${month}-${day} 00:00:00`;

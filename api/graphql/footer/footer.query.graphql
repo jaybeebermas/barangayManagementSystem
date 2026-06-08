@@ -1,0 +1,3 @@
+footers: [Footer!]! @guard @can(ability: "footer.view") @field(resolver: "App\\GraphQL\\Queries\\Footer\\GetFooter@footers")
+footer(id: ID! @eq): Footer @guard @can(ability: "footer.view") @field(resolver: "App\\GraphQL\\Queries\\Footer\\GetFooter@footer")
+activeFooter: Footer @guard @field(resolver: "App\\GraphQL\\Queries\\Footer\\GetFooter@activeFooter")

@@ -71,5 +71,11 @@ return [
         'events.edit',
         'events.delete',
 
+        // FOOTER MODULE
+        'footer.view',
+        'footer.create',
+        'footer.edit',
+        'footer.delete',
+
     ],
 ];

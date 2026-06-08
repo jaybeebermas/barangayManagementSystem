@@ -1,0 +1,3 @@
+createFooter(input: CreateFooterInput!): Footer! @guard @can(ability: "footer.create") @field(resolver: "App\\GraphQL\\Mutations\\Footer\\CreateFooter")
+updateFooter(input: UpdateFooterInput!): Footer! @guard @can(ability: "footer.edit") @field(resolver: "App\\GraphQL\\Mutations\\Footer\\UpdateFooter")
+deleteFooter(id: ID!): Footer! @guard @can(ability: "footer.delete") @field(resolver: "App\\GraphQL\\Mutations\\Footer\\DeleteFooter")
