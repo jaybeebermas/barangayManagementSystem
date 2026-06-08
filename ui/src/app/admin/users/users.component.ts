@@ -15,6 +15,7 @@ import { DrawerComponent } from '../../shared/components/ui/drawer/drawer.compon
 import { ModalService } from '../../services/modal/modal.service';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { NgIconComponent } from '@ng-icons/core';
 import { MatMenuModule } from '@angular/material/menu';
@@ -189,6 +190,7 @@ import { TablePaginationComponent } from '../../shared/components/ui/user-manage
     SelectComponent,
     MatFormFieldModule,
     MatInputModule,
+    MatSelectModule,
     MatButtonModule,
     MatMenuModule,
     NgIconComponent,
