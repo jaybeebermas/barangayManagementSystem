@@ -10,6 +10,7 @@ import { RoleService, Role } from '../../services/role/role.service';
 import { PermissionService } from '../../services/permission/permission.service';
 import { ModalService } from '../../services/modal/modal.service';
 import { ToastService } from '../../services/toast/toast.service';
+import { LoadingService } from '../../services/loading/loading.service';
 import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
 import { ConfirmDeleteComponent } from '../../shared/components/ui/confirm-delete/confirm-delete.component';
 
@@ -41,6 +42,7 @@ export class RolesComponent implements OnInit {
   private readonly permissionService = inject(PermissionService);
   public readonly modalService = inject(ModalService);
   private readonly toastService = inject(ToastService);
+  private readonly loadingService = inject(LoadingService);
 
   roles = signal<Role[]>([]);
   currentPage = signal(1);
@@ -171,6 +173,7 @@ export class RolesComponent implements OnInit {
 
   async loadRoles(): Promise<void> {
     this.isLoading.set(true);
+    this.loadingService.show();
     try {
       const response = await this.roleService.getAll();
       this.roles.set(response || []);
@@ -188,6 +191,7 @@ export class RolesComponent implements OnInit {
       this.toastService.show('Failed to load roles from backend.', 'error');
     } finally {
       this.isLoading.set(false);
+      this.loadingService.hide();
     }
   }
 
@@ -326,6 +330,7 @@ export class RolesComponent implements OnInit {
     if (this.roleForm.invalid) return;
 
     this.modalService.setLoading(true);
+    this.loadingService.show();
     try {
       const input = {
         name: this.roleForm.value.name,
@@ -350,6 +355,7 @@ export class RolesComponent implements OnInit {
       this.toastService.show('Operation failed. Please try again.', 'error');
     } finally {
       this.modalService.setLoading(false);
+      this.loadingService.hide();
     }
   }
 
@@ -373,6 +379,7 @@ export class RolesComponent implements OnInit {
     if (!role) return;
 
     this.modalService.setLoading(true);
+    this.loadingService.show();
     try {
       await this.roleService.delete(role.id);
       if (this.selectedRole()?.id === role.id) {
@@ -386,6 +393,7 @@ export class RolesComponent implements OnInit {
       this.toastService.show('Failed to delete role.', 'error');
     } finally {
       this.modalService.setLoading(false);
+      this.loadingService.hide();
     }
   }
 }
