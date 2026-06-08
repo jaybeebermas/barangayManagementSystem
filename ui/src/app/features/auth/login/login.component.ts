@@ -5,6 +5,8 @@ import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../services/auth/auth.service';
 import { NgIconComponent } from '@ng-icons/core';
 
+declare var google: any;
+
 class Particle {
   x: number;
   y: number;
@@ -143,6 +145,7 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     this.initCanvas();
     this.animate();
+    this.loadGoogleScript();
   }
 
   ngOnDestroy() {
@@ -154,6 +157,7 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
   @HostListener('window:resize')
   onResize() {
     this.initCanvas();
+    this.renderGoogleButton();
   }
 
   @HostListener('window:mousemove', ['$event'])
@@ -193,6 +197,86 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
     this.animationId = requestAnimationFrame(() => this.animate());
   }
 
+  loadGoogleScript(): void {
+    if (typeof google !== 'undefined') {
+      this.initGoogleAuth();
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      this.initGoogleAuth();
+    };
+    script.onerror = () => {
+      console.error('Failed to load Google Identity Services script.');
+    };
+    document.head.appendChild(script);
+  }
+
+  initGoogleAuth(): void {
+    if (typeof google === 'undefined') return;
+
+    google.accounts.id.initialize({
+      client_id: '853052679545-ph5bitniubfnm4cq2pnmdogsnqn2qdre.apps.googleusercontent.com',
+      callback: (response: any) => this.handleGoogleCredentialResponse(response)
+    });
+
+    this.renderGoogleButton();
+  }
+
+  renderGoogleButton(): void {
+    const btnContainer = document.getElementById('googleBtn');
+    if (btnContainer && typeof google !== 'undefined') {
+      google.accounts.id.renderButton(
+        btnContainer,
+        {
+          theme: 'outline',
+          size: 'large',
+          shape: 'rectangular',
+          text: 'continue_with',
+          logo_alignment: 'left',
+          width: btnContainer.parentElement?.clientWidth || 382
+        }
+      );
+    }
+  }
+
+  handleGoogleCredentialResponse(response: any): void {
+    if (!response.credential) {
+      this.errorMessage.set('Google authentication failed.');
+      return;
+    }
+
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+
+    this.authService.loginWithGoogle(response.credential).subscribe({
+      next: (res) => {
+        if (res.errors && res.errors.length > 0) {
+          this.errorMessage.set(res.errors[0].message || 'Google login failed.');
+          this.isLoading.set(false);
+          return;
+        }
+
+        const data = res.data?.loginWithGoogle;
+        if (data && data.status === 'SUCCESS') {
+          const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/admin/dashboard';
+          this.router.navigateByUrl(returnUrl);
+        } else {
+          this.errorMessage.set(data?.message || 'Google login failed.');
+        }
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        this.errorMessage.set(err.message || 'An error occurred during Google login.');
+        this.isLoading.set(false);
+      }
+    });
+  }
+
   togglePassword(): void {
     this.showPassword.update(v => !v);
   }
@@ -204,6 +288,12 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
     this.loginForm.reset();
     this.registerForm.reset();
     this.showPassword.set(false);
+
+    if (!this.isSignUp()) {
+      setTimeout(() => {
+        this.renderGoogleButton();
+      }, 0);
+    }
   }
 
   onSubmit(): void {
