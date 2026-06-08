@@ -1,5 +1,7 @@
 <?php
 
+@unlink(__DIR__.'/../bootstrap/cache/lighthouse-schema.php');
+
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 

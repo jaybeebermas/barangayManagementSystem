@@ -99,6 +99,42 @@ export class AuthService {
     );
   }
 
+  loginWithGoogle(token: string): Observable<any> {
+    const query = `
+      mutation LoginWithGoogle($token: String!) {
+        loginWithGoogle(token: $token) {
+          status
+          message
+          token
+          user {
+            id
+            username
+            first_name
+            last_name
+            email
+            role
+            permissions
+          }
+        }
+      }
+    `;
+
+    return this.http.post<any>(this.apiUrl, {
+      query,
+      variables: { token }
+    }).pipe(
+      tap(response => {
+        const data = response.data?.loginWithGoogle;
+        if (data && data.status === 'SUCCESS') {
+          localStorage.setItem('auth_token', data.token);
+          localStorage.setItem('auth_timestamp', Date.now().toString());
+          this.currentUser.set(data.user);
+          this.isAuthenticated.set(true);
+        }
+      })
+    );
+  }
+
   register(input: any): Observable<any> {
     const query = `
       mutation Register($username: String!, $first_name: String!, $last_name: String!, $email: String!, $password: String!) {

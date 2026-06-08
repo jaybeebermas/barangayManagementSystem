@@ -6,8 +6,10 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Throwable;
 
 class AuthMutation
@@ -177,6 +179,118 @@ class AuthMutation
         } catch (Throwable $e) {
             DB::rollBack();
             Log::error('Logout mutation failed with exception.', [
+                'error' => $e->getMessage(),
+            ]);
+
+            throw $e;
+        }
+    }
+
+    /**
+     * @param  mixed  $_
+     * @param  array{token: string}  $args
+     * @return array{status: string, message: string, token?: string, user?: User}
+     */
+    public function loginWithGoogle(mixed $_, array $args): array
+    {
+        $token = $args['token'];
+
+        try {
+            // 1. Verify token with Google's tokeninfo API
+            $response = Http::timeout(10)
+                ->get('https://oauth2.googleapis.com/tokeninfo', [
+                    'id_token' => $token,
+                ]);
+
+            if (! $response->successful()) {
+                Log::warning('Google Auth failed. Token verification failed.', [
+                    'response' => $response->body(),
+                ]);
+                return [
+                    'status' => 'ERROR',
+                    'message' => 'Invalid Google token.',
+                ];
+            }
+
+            $payload = $response->json();
+
+            // 2. Verify audience matches our Google Client ID
+            $clientId = env('GOOGLE_CLIENT_ID', '853052679545-ph5bitniubfnm4cq2pnmdogsnqn2qdre.apps.googleusercontent.com');
+            if (($payload['aud'] ?? '') !== $clientId) {
+                Log::warning('Google Auth failed. Audience mismatch.', [
+                    'payload_aud' => $payload['aud'] ?? null,
+                ]);
+                return [
+                    'status' => 'ERROR',
+                    'message' => 'Invalid Google audience.',
+                ];
+            }
+
+            $email = $payload['email'] ?? null;
+            if (! $email) {
+                return [
+                    'status' => 'ERROR',
+                    'message' => 'Email not provided by Google.',
+                ];
+            }
+
+            // 3. Find or create user
+            $user = User::where('email', $email)->first();
+
+            DB::beginTransaction();
+            if (! $user) {
+                // Generate a unique username based on the email
+                $baseUsername = strstr($email, '@', true); // get text before @
+                if (! $baseUsername) {
+                    $baseUsername = 'user';
+                }
+                // Clean username to be alphanumeric
+                $baseUsername = preg_replace('/[^a-zA-Z0-9]/', '', $baseUsername);
+                
+                $username = $baseUsername;
+                $counter = 1;
+                while (User::where('username', $username)->exists()) {
+                    $username = $baseUsername . $counter;
+                    $counter++;
+                }
+
+                // Split name or use given/family names
+                $firstName = $payload['given_name'] ?? $payload['name'] ?? 'Google';
+                $lastName = $payload['family_name'] ?? 'User';
+
+                $user = User::create([
+                    'username' => $username,
+                    'first_name' => $firstName,
+                    'last_name' => $lastName,
+                    'email' => $email,
+                    'password' => Hash::make(Str::random(24)),
+                    'role' => 'guest',
+                ]);
+
+                // Assign default role guest
+                $user->assignRole('guest');
+                Log::info('Google Auth: Created new user.', ['user_id' => $user->id]);
+            }
+
+            Auth::guard('web')->login($user);
+            $tokenResult = $user->createToken('auth_token')->plainTextToken;
+
+            DB::commit();
+            Log::info('Google Login mutation succeeded.', [
+                'user_id' => $user->id,
+            ]);
+
+            return [
+                'status' => 'SUCCESS',
+                'message' => 'Login successful.',
+                'token' => $tokenResult,
+                'user' => $user,
+            ];
+        } catch (Throwable $e) {
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
+            Log::error('Google Login mutation failed with exception.', [
                 'error' => $e->getMessage(),
             ]);
 
