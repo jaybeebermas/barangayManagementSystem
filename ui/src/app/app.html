@@ -1,3 +1,10 @@
+<!-- ===== Global Loading Bar (nginx-style) ===== -->
+<div *ngIf="loadingService.isLoading()"
+     class="fixed top-0 left-0 right-0 z-[9999] h-[3px] overflow-hidden"
+     aria-label="Loading">
+  <div class="global-progress-bar h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-400"></div>
+</div>
+
 <ng-container *ngIf="authService.isAuthenticated() && (isSubRoute('/admin') || isSubRoute('/settings')); else authFlow">
   <!-- Guest users: empty sidebar + forced dashboard (pending approval screen) -->
   <ng-container *ngIf="isGuestUser(); else normalAdmin">

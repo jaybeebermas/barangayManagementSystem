@@ -40,6 +40,16 @@
   pointer-events: auto;
 }
 
+.google-button-host {
+  display: flex;
+  justify-content: center;
+  pointer-events: auto;
+}
+
+:host ::ng-deep .google-button-host iframe {
+  pointer-events: auto;
+}
+
 .animate-in {
   animation: slide-up-fade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }

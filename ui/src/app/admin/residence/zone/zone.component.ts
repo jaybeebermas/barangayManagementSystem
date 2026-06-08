@@ -7,6 +7,7 @@ import { NgIconComponent } from '@ng-icons/core';
 import { MatRippleModule } from '@angular/material/core';
 import { ModalService } from '../../../services/modal/modal.service';
 import { ToastService } from '../../../services/toast/toast.service';
+import { LoadingService } from '../../../services/loading/loading.service';
 import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 import { ConfirmDeleteComponent } from '../../../shared/components/ui/confirm-delete/confirm-delete.component';
 import { GraphqlService } from '../../../services/graphql/graphql.service';
@@ -40,6 +41,7 @@ export class ZoneComponent implements OnInit {
   private readonly gql = inject(GraphqlService);
   public readonly modalService = inject(ModalService);
   private readonly toastService = inject(ToastService);
+  private readonly loadingService = inject(LoadingService);
 
   zones = signal<Zone[]>([]);
   searchTerm = signal('');
@@ -102,6 +104,7 @@ export class ZoneComponent implements OnInit {
 
   async loadZones(): Promise<void> {
     this.isLoading.set(true);
+    this.loadingService.show();
     try {
       const response = await this.gql.request<{ zones: Zone[] }>(GET_ZONES);
       const zonesList = response.zones || [];
@@ -116,6 +119,7 @@ export class ZoneComponent implements OnInit {
       this.toastService.show('Failed to load zones from backend.', 'error');
     } finally {
       this.isLoading.set(false);
+      this.loadingService.hide();
     }
   }
 
@@ -178,6 +182,7 @@ export class ZoneComponent implements OnInit {
     if (this.zoneForm.invalid) return;
 
     this.modalService.setLoading(true);
+    this.loadingService.show();
     try {
       if (this.modalMode() === 'create') {
         const input: CreateZoneInput = {
@@ -209,6 +214,7 @@ export class ZoneComponent implements OnInit {
       this.toastService.show('Operation failed. Please try again.', 'error');
     } finally {
       this.modalService.setLoading(false);
+      this.loadingService.hide();
     }
   }
 
@@ -232,6 +238,7 @@ export class ZoneComponent implements OnInit {
     if (!zone) return;
 
     this.modalService.setLoading(true);
+    this.loadingService.show();
     try {
       await this.gql.request(DELETE_ZONE, { id: zone.id });
       if (this.selectedZone()?.id === zone.id) {
@@ -245,6 +252,7 @@ export class ZoneComponent implements OnInit {
       this.toastService.show('Failed to delete zone.', 'error');
     } finally {
       this.modalService.setLoading(false);
+      this.loadingService.hide();
     }
   }
 }

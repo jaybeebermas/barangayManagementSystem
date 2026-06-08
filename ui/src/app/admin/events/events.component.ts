@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { NgIconComponent } from '@ng-icons/core';
 import { GraphqlService } from '../../services/graphql/graphql.service';
 import { ToastService } from '../../services/toast/toast.service';
+import { LoadingService } from '../../services/loading/loading.service';
 import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
 import { ModalComponent } from '../../shared/components/ui/modal/modal.component';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
@@ -28,6 +29,7 @@ export class EventsComponent implements OnInit {
     private readonly gql = inject(GraphqlService);
     private readonly toastService = inject(ToastService);
     private readonly zoneService = inject(ZoneService);
+    private readonly loadingService = inject(LoadingService);
 
     events = signal<any[]>([]);
     zones = signal<any[]>([]);
@@ -116,6 +118,7 @@ export class EventsComponent implements OnInit {
 
     async loadEvents() {
         this.isLoading.set(true);
+        this.loadingService.show();
         try {
             const res = await this.gql.requestFromFile<any>('event', 'get-events.gql', { first: 100 });
             this.events.set(res.events.data);
@@ -123,6 +126,7 @@ export class EventsComponent implements OnInit {
             this.toastService.show(err.message || 'Failed to load events', 'error');
         } finally {
             this.isLoading.set(false);
+            this.loadingService.hide();
         }
     }
 
@@ -168,6 +172,7 @@ export class EventsComponent implements OnInit {
         };
 
         this.isSaving.set(true);
+        this.loadingService.show();
         try {
             if (editId) {
                 await this.gql.requestFromFile<any>('event', 'update-event.gql', {
@@ -188,6 +193,7 @@ export class EventsComponent implements OnInit {
             this.toastService.show(err.message || 'Failed to save event', 'error');
         } finally {
             this.isSaving.set(false);
+            this.loadingService.hide();
         }
     }
 
@@ -201,6 +207,7 @@ export class EventsComponent implements OnInit {
         if (!id) return;
 
         this.isDeleting.set(true);
+        this.loadingService.show();
         try {
             await this.gql.requestFromFile<any>('event', 'delete-event.gql', { id });
             this.toastService.show('Event deleted!', 'success');
@@ -210,6 +217,7 @@ export class EventsComponent implements OnInit {
             this.toastService.show('Failed to delete event', 'error');
         } finally {
             this.isDeleting.set(false);
+            this.loadingService.hide();
             this.eventToDelete.set(null);
         }
     }

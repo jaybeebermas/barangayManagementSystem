@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
-import { NavigationService, AuthService, UIConfigService, ToastService, ModalService } from './services';
+import { NavigationService, AuthService, UIConfigService, ToastService, ModalService, LoadingService } from './services';
 import { NgIconComponent } from '@ng-icons/core';
 import { NavigationItem } from './shared/models';
 import { AdminLayoutComponent } from './shared/components/layout/admin-layout/admin-layout.component';
@@ -33,6 +33,7 @@ export class App implements OnInit {
   public readonly authService = inject(AuthService);
   public readonly toastService = inject(ToastService);
   public readonly modalService = inject(ModalService);
+  public readonly loadingService = inject(LoadingService);
   private readonly router = inject(Router);
   private readonly uiConfig = inject(UIConfigService);
 

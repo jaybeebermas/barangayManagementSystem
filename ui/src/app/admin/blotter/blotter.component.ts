@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { NgIconComponent } from '@ng-icons/core';
 import { GraphqlService } from '../../services/graphql/graphql.service';
 import { ToastService } from '../../services/toast/toast.service';
+import { LoadingService } from '../../services/loading/loading.service';
 import { ModalComponent } from '../../shared/components/ui/modal/modal.component';
 
 // Angular Material Imports
@@ -35,6 +36,7 @@ export class BlotterComponent implements OnInit {
     private readonly fb = inject(FormBuilder);
     private readonly gql = inject(GraphqlService);
     private readonly toastService = inject(ToastService);
+    private readonly loadingService = inject(LoadingService);
 
     blotters = signal<any[]>([]);
     isLoading = signal(true);
@@ -84,6 +86,7 @@ export class BlotterComponent implements OnInit {
 
     async loadBlotters() {
         this.isLoading.set(true);
+        this.loadingService.show();
         const query = `
       query {
         blotters(first: 100) {
@@ -98,6 +101,7 @@ export class BlotterComponent implements OnInit {
             this.toastService.show(e.message || 'Error loading blotters', 'error');
         } finally {
             this.isLoading.set(false);
+            this.loadingService.hide();
         }
     }
 
@@ -155,6 +159,7 @@ export class BlotterComponent implements OnInit {
         }
 
         this.isSaving.set(true);
+        this.loadingService.show();
         // Use getRawValue() to include disabled fields like case_number
         const val = this.blotterForm.getRawValue();
         const isEdit = !!this.blotterToEdit();
@@ -191,6 +196,7 @@ export class BlotterComponent implements OnInit {
             this.toastService.show(e.message, 'error');
         } finally {
             this.isSaving.set(false);
+            this.loadingService.hide();
         }
     }
 }
