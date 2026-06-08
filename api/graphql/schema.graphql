@@ -14,6 +14,7 @@ extend type Query {
   #import barangay/barangay.query.graphql
   #import event/event.query.graphql
   #import blotter/blotter.query.graphql
+  #import footer/footer.query.graphql
 }
 
 extend type Mutation {
@@ -27,6 +28,7 @@ extend type Mutation {
   #import barangay/barangay.mutation.graphql
   #import event/event.mutation.graphql
   #import blotter/blotter.mutation.graphql
+  #import footer/footer.mutation.graphql
 }
 
 #import auth/auth.input.graphql
@@ -51,3 +53,5 @@ extend type Mutation {
 #import event/event.type.graphql
 #import blotter/blotter.input.graphql
 #import blotter/blotter.type.graphql
+#import footer/footer.type.graphql
+#import footer/footer.input.graphql

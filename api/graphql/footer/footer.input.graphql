@@ -1,0 +1,18 @@
+input CreateFooterInput {
+  name: String!
+  copyright: String
+  address: String
+  phone: String
+  email: String
+  status: Boolean
+}
+
+input UpdateFooterInput {
+  id: ID!
+  name: String!
+  copyright: String
+  address: String
+  phone: String
+  email: String
+  status: Boolean
+}

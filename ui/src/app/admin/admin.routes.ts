@@ -28,7 +28,14 @@ export const adminRoutes: Routes = [
             // EVENTS MODULE
             { path: 'events', loadComponent: () => import('./events/events.component').then(m => m.EventsComponent) },
 
-            { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
+            { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+
+            {
+                path: 'footers',
+                loadComponent: () => import('./footer/footer.component').then(m => m.FooterManagementComponent),
+                data: { permission: 'footer.view' }
+            }
+
         ]
     }
 ];
