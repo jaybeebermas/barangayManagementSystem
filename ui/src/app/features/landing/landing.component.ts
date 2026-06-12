@@ -17,7 +17,7 @@ import { GraphqlService } from '../../services/graphql/graphql.service';
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [CommonModule, NgIconComponent],
+  imports: [CommonModule, NgIconComponent,],
   providers: [DatePipe],
   templateUrl: './landing.component.html',
   styleUrl: './landing.component.css',
@@ -27,6 +27,8 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private readonly gql = inject(GraphqlService);
   private readonly router = inject(Router);
+
+  activeFooter = signal<any>(null);
 
   events = signal<any[]>([]);
   isLoading = signal(true);
@@ -70,6 +72,26 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadPublicEvents();
+    this.loadActiveFooter();
+  }
+
+  async loadActiveFooter(): Promise<void> {
+    try {
+      const query = `
+        query GetActiveFooter {
+          activeFooter {
+            copyright
+            address
+            phone
+            email
+          }
+        }
+      `;
+      const res = await this.gql.request<{ activeFooter: any }>(query);
+      this.activeFooter.set(res.activeFooter);
+    } catch (e) {
+      console.error('Failed to load active footer configuration:', e);
+    }
   }
 
   ngAfterViewInit(): void {
