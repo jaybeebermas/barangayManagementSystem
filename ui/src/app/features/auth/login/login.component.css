@@ -20,7 +20,7 @@
   background-color: #f8fafc; /* Lighter, cleaner background */
 }
 
-.particle-canvas {
+.particle-container {
   position: absolute;
   top: 0;
   left: 0;

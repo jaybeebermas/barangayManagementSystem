@@ -4,74 +4,11 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractContro
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../services/auth/auth.service';
 import { NgIconComponent } from '@ng-icons/core';
+import * as React from 'react';
+import { createRoot, Root } from 'react-dom/client';
+import { Medusae, MedusaeConfig } from 'antigravity-particle';
 
 declare var google: any;
-
-class Particle {
-  x: number;
-  y: number;
-  baseX: number;
-  baseY: number;
-  size: number;
-  color: string;
-  density: number;
-  ctx: CanvasRenderingContext2D;
-
-  constructor(x: number, y: number, color: string, ctx: CanvasRenderingContext2D) {
-    this.x = x;
-    this.y = y;
-    this.baseX = x;
-    this.baseY = y;
-    this.size = Math.random() * 2 + 1;
-    this.color = color;
-    this.density = (Math.random() * 40) + 5;
-    this.ctx = ctx;
-  }
-
-  draw() {
-    this.ctx.fillStyle = this.color;
-    this.ctx.beginPath();
-    // Drawing tiny vertical lines/rectangles as requested
-    this.ctx.fillRect(this.x, this.y, 2, this.size * 3);
-  }
-
-  update(mouse: { x: number | null, y: number | null, radius: number }) {
-    if (mouse.x !== null && mouse.y !== null) {
-      let dx = mouse.x - this.x;
-      let dy = mouse.y - this.y;
-      let distance = Math.sqrt(dx * dx + dy * dy);
-      let forceDirectionX = dx / distance;
-      let forceDirectionY = dy / distance;
-      let maxDistance = mouse.radius;
-      let force = (maxDistance - distance) / maxDistance;
-      let directionX = forceDirectionX * force * this.density;
-      let directionY = forceDirectionY * force * this.density;
-
-      if (distance < mouse.radius) {
-        this.x += directionX;
-        this.y += directionY;
-      } else {
-        if (this.x !== this.baseX) {
-          let dx = this.x - this.baseX;
-          this.x -= dx / 15;
-        }
-        if (this.y !== this.baseY) {
-          let dy = this.y - this.baseY;
-          this.y -= dy / 15;
-        }
-      }
-    } else {
-      if (this.x !== this.baseX) {
-        let dx = this.x - this.baseX;
-        this.x -= dx / 20;
-      }
-      if (this.y !== this.baseY) {
-        let dy = this.y - this.baseY;
-        this.y -= dy / 20;
-      }
-    }
-  }
-}
 
 @Component({
   selector: 'app-login',
@@ -81,19 +18,12 @@ class Particle {
   styleUrl: './login.component.css'
 })
 export class LoginComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('particleCanvas') canvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('particleContainer', { static: true }) containerRef!: ElementRef<HTMLDivElement>;
   @ViewChild('googleButton') googleButtonRef!: ElementRef<HTMLDivElement>;
   
-  private ctx!: CanvasRenderingContext2D;
-  private particles: Particle[] = [];
-  private animationId: number | null = null;
+  private reactRoot!: Root;
   private resizeTimeout: number | null = null;
   private googleInitialized = false;
-  private mouse = {
-    x: null as number | null,
-    y: null as number | null,
-    radius: 150
-  };
 
   loginForm: FormGroup;
   registerForm: FormGroup;
@@ -102,8 +32,6 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
   successMessage = signal('');
   showPassword = signal(false);
   isSignUp = signal(false);
-
-  private googlePalette = ['#4285F4', '#EA4335', '#FBBC05', '#34A853', '#A142F4', '#F482B1'];
 
   constructor(
     private fb: FormBuilder,
@@ -146,14 +74,13 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    this.initCanvas();
-    this.animate();
+    this.initReactParticles();
     this.loadGoogleScript();
   }
 
   ngOnDestroy() {
-    if (this.animationId) {
-      cancelAnimationFrame(this.animationId);
+    if (this.reactRoot) {
+      this.reactRoot.unmount();
     }
     if (this.resizeTimeout) {
       window.clearTimeout(this.resizeTimeout);
@@ -162,48 +89,38 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
 
   @HostListener('window:resize')
   onResize() {
-    this.initCanvas();
     if (this.resizeTimeout) {
       window.clearTimeout(this.resizeTimeout);
     }
     this.resizeTimeout = window.setTimeout(() => this.renderGoogleButton(), 150);
   }
 
-  @HostListener('window:mousemove', ['$event'])
-  onMouseMove(event: MouseEvent) {
-    this.mouse.x = event.x;
-    this.mouse.y = event.y;
-  }
+  private initReactParticles() {
+    const container = this.containerRef.nativeElement;
+    this.reactRoot = createRoot(container);
 
-  @HostListener('window:mouseout')
-  onMouseOut() {
-    this.mouse.x = null;
-    this.mouse.y = null;
-  }
+    const config: any = {
+      particles: {
+        colorBase: "#0d9488", // Teal base
+        colorOne: "#2563eb",  // Blue (Sign In primary)
+        colorTwo: "#10b981",  // Emerald (Sign Up primary)
+        colorThree: "#fbbf24", // Yellow/Amber
+        baseSize: 0.016,
+        activeSize: 0.044,
+      },
+      cursor: {
+        radius: 0.065,
+        strength: 4,
+        dragFactor: 0.015,
+      },
+      background: {
+        color: "transparent",
+      }
+    };
 
-  private initCanvas() {
-    const canvas = this.canvasRef.nativeElement;
-    this.ctx = canvas.getContext('2d')!;
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    this.particles = [];
-    const numberOfParticles = 400;
-    for (let i = 0; i < numberOfParticles; i++) {
-      const x = Math.random() * canvas.width;
-      const y = Math.random() * canvas.height;
-      const color = this.googlePalette[Math.floor(Math.random() * this.googlePalette.length)];
-      this.particles.push(new Particle(x, y, color, this.ctx));
-    }
-  }
-
-  private animate() {
-    this.ctx.clearRect(0, 0, this.canvasRef.nativeElement.width, this.canvasRef.nativeElement.height);
-    for (let i = 0; i < this.particles.length; i++) {
-      this.particles[i].update(this.mouse);
-      this.particles[i].draw();
-    }
-    this.animationId = requestAnimationFrame(() => this.animate());
+    this.reactRoot.render(
+      React.createElement(Medusae as any, { config })
+    );
   }
 
   loadGoogleScript(): void {
